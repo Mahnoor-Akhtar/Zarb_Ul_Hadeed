@@ -36,7 +36,7 @@ class MockDataManager {
 
   Future<List<Map<String, dynamic>>> getCommandGroup() async {
     final prefs = await SharedPreferences.getInstance();
-    final str = prefs.getString('commandGroup');
+    final str = prefs.getString('commandGroup_v2');
     if (str != null) {
       try {
         final List decoded = jsonDecode(str);
@@ -47,14 +47,20 @@ class MockDataManager {
     }
     
     // Initialize default group of 12 members
-    final List<Map<String, dynamic>> defaultGroup = [];
-    defaultGroup.add({"slotId": 1, "role": "superadmin", "armyNo": null, "username": "", "password": ""});
-    for (int i = 2; i <= 5; i++) {
-      defaultGroup.add({"slotId": i, "role": "admin", "armyNo": null, "username": "", "password": ""});
-    }
-    for (int i = 6; i <= 12; i++) {
-      defaultGroup.add({"slotId": i, "role": "user", "armyNo": null, "username": "", "password": ""});
-    }
+    final List<Map<String, dynamic>> defaultGroup = [
+      {"slotId": 1, "role": "superadmin", "armyNo": "PA-43337", "username": "tayyab", "password": "123456"},
+      {"slotId": 2, "role": "admin", "armyNo": "PA-45571", "username": "usman", "password": "123456"},
+      {"slotId": 3, "role": "admin", "armyNo": "PA-55563", "username": "azfar", "password": "123456"},
+      {"slotId": 4, "role": "admin", "armyNo": "PA-52402", "username": "umair", "password": "123456"},
+      {"slotId": 5, "role": "admin", "armyNo": "PA-56482", "username": "raza", "password": "123456"},
+      {"slotId": 6, "role": "user", "armyNo": "PA-61131", "username": "nabeel", "password": "123456"},
+      {"slotId": 7, "role": "user", "armyNo": "PA-61755", "username": "ali", "password": "123456"},
+      {"slotId": 8, "role": "user", "armyNo": "PA-65543", "username": "taimoor", "password": "123456"},
+      {"slotId": 9, "role": "user", "armyNo": "PA-63499", "username": "bilal", "password": "123456"},
+      {"slotId": 10, "role": "user", "armyNo": "PA-64380", "username": "hamza", "password": "123456"},
+      {"slotId": 11, "role": "user", "armyNo": "PA-63799", "username": "talha", "password": "123456"},
+      {"slotId": 12, "role": "user", "armyNo": "PA-65902", "username": "sameer", "password": "123456"}
+    ];
     
     await saveCommandGroup(defaultGroup);
     return defaultGroup;
@@ -62,7 +68,7 @@ class MockDataManager {
 
   Future<void> saveCommandGroup(List<Map<String, dynamic>> group) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('commandGroup', jsonEncode(group));
+    await prefs.setString('commandGroup_v2', jsonEncode(group));
   }
 
   Future<void> assignSlot(int slotId, String armyNo, String username, String password) async {

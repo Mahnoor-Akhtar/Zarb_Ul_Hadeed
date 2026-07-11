@@ -2506,60 +2506,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  void _showInstructionsDialog(
-    BuildContext context,
-    bool isDark,
-    Color textThemeColor,
-    Color silverText,
-    Color goldAccent,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.info_outline_rounded, color: goldAccent, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'MOBILE SYSTEM INSTRUCTIONS',
-                style: TextStyle(
-                  color: goldAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildInstructionRow('Expand / Collapse', 'Tap any main category headers on the Dashboard to expand or collapse subcategories.'),
-                _buildInstructionRow('Soldier Detail Card', 'Double-tap or long-press on any soldier tag to open their comprehensive military ID profile card.'),
-                _buildInstructionRow('Assign Locations', 'Data Entry admins can navigate to the "Edit" tab to select a soldier, set their status, start date, and end date range.'),
-                _buildInstructionRow('Theme Synchronization', 'Your chosen theme setting is automatically saved on device storage for subsequent sessions.'),
-                _buildInstructionRow('Account Security', 'Always log out using the settings panel or the top-right menu avatar when leaving the console.'),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
 
   void _showManageAdminsDialog(
     BuildContext pageContext,
@@ -3360,6 +3307,121 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  Widget _buildProfileHeader(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+    Color valueGreenColor,
+  ) {
+    final currentUsername = MockDataManager().username ?? 'SUPERADMIN';
+    final role = MockDataManager().role ?? 'Administrator';
+    final armyNo = MockDataManager().adminArmyNo;
+
+    String displayName = currentUsername.toUpperCase();
+    String subDetails = 'System Account';
+    
+    if (armyNo != null) {
+      final person = nominalRollList.firstWhere(
+        (p) => (p['armyNo'] ?? '').toLowerCase() == armyNo.toLowerCase(),
+        orElse: () => <String, String>{},
+      );
+      if (person.isNotEmpty) {
+        displayName = '${person['rank']} ${person['name']}';
+        subDetails = 'Army No: ${person['armyNo']} • ${person['trade']}';
+      }
+    } else {
+      if (currentUsername.toLowerCase() == 'superadmin') {
+        displayName = 'REGIMENTAL SUPER ADMIN';
+      } else if (currentUsername.toLowerCase() == 'admin') {
+        displayName = 'SYSTEM DATA ENTRY ADMIN';
+      } else if (currentUsername.toLowerCase() == 'user') {
+        displayName = 'GUEST AUDITOR';
+      }
+    }
+
+    String roleLabel = 'VIEW-ONLY';
+    if (role == 'Administrator') roleLabel = 'SUPER ADMIN';
+    if (role == 'Data Entry') roleLabel = 'ADMIN';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+          width: 1.0,
+        ),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+            child: Icon(
+              role == 'Administrator' ? Icons.shield_rounded : Icons.person_rounded,
+              color: goldAccent,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subDetails,
+                  style: TextStyle(
+                    color: silverText.withValues(alpha: 0.8),
+                    fontSize: 11,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: role == 'Administrator' 
+                        ? goldAccent.withValues(alpha: 0.15)
+                        : (role == 'Data Entry' ? valueGreenColor.withValues(alpha: 0.15) : Colors.blue.withValues(alpha: 0.15)),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: role == 'Administrator' 
+                          ? goldAccent 
+                          : (role == 'Data Entry' ? valueGreenColor : Colors.blue),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    roleLabel,
+                    style: TextStyle(
+                      color: role == 'Administrator' 
+                          ? goldAccent 
+                          : (role == 'Data Entry' ? valueGreenColor : Colors.blue),
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSettingsTab(
     BuildContext context,
     bool isDark,
@@ -3396,6 +3458,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 24),
               children: [
+                // 1. Profile Header
+                _buildProfileHeader(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
+                const SizedBox(height: 16),
+
+                // 2. App Theme Mode
                 _buildSettingsModuleCard(
                   isDark,
                   goldAccent,
@@ -3421,27 +3488,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
                 const SizedBox(height: 12),
 
-                _buildSettingsModuleCard(
-                  isDark,
-                  goldAccent,
-                  child: ListTile(
-                    leading: Icon(Icons.info_outline_rounded, color: goldAccent, size: 20),
-                    title: Text(
-                      'Mobile & System Instructions',
-                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
-                    ),
-                    subtitle: Text(
-                      'Learn gestures, user roles & layout tips',
-                      style: TextStyle(color: silverText, fontSize: 11),
-                    ),
-                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
-                    onTap: () {
-                      _showInstructionsDialog(context, isDark, textThemeColor, silverText, goldAccent);
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
-
+                // 3. Manage Command Group (Superadmin Only)
                 if (isSuperAdmin) ...[
                   _buildSettingsModuleCard(
                     isDark,
@@ -3465,6 +3512,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   const SizedBox(height: 12),
                 ],
 
+                // 4. Change My Credentials (Admin Only)
                 if (MockDataManager().role == 'Data Entry' && MockDataManager().adminArmyNo != null) ...[
                   _buildSettingsModuleCard(
                     isDark,
@@ -3488,23 +3536,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   const SizedBox(height: 12),
                 ],
 
-                _buildSettingsModuleCard(
-                  isDark,
-                  goldAccent,
-                  child: ListTile(
-                    leading: Icon(Icons.military_tech_rounded, color: goldAccent, size: 20),
-                    title: Text(
-                      'Zarb-ul-Hadeed Console',
-                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
-                    ),
-                    subtitle: Text(
-                      '117 SP Regt. • Version 1.0.0',
-                      style: TextStyle(color: silverText, fontSize: 11),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
+                // 5. Logout Session
                 _buildSettingsModuleCard(
                   isDark,
                   goldAccent,
@@ -3543,29 +3575,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ),
       ),
       child: child,
-    );
-  }
-
-  Widget _buildInstructionRow(String title, String body) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '• $title',
-            style: const TextStyle(color: Color(0xFFCD9B2D), fontWeight: FontWeight.bold, fontSize: 11),
-          ),
-          const SizedBox(height: 2),
-          Padding(
-            padding: const EdgeInsets.only(left: 10.0),
-            child: Text(
-              body,
-              style: const TextStyle(color: Colors.grey, fontSize: 10.5, height: 1.3),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
