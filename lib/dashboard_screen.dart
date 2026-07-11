@@ -2652,6 +2652,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         ? '${person['rank']} ${person['name']} (${person['armyNo']})'
                                         : adminUser;
 
+// Renders admin credential list tile
                                     return Container(
                                       margin: const EdgeInsets.symmetric(vertical: 4),
                                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -2672,15 +2673,44 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                               overflow: TextOverflow.ellipsis,
                                             ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
-                                            onPressed: () async {
-                                              await MockDataManager().removeAdmin(adminUser);
-                                              setDialogState(() {});
-                                              setState(() {});
-                                            },
-                                            constraints: const BoxConstraints(),
-                                            padding: const EdgeInsets.all(4),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: Icon(Icons.edit_outlined, color: goldAccent, size: 16),
+                                                onPressed: () {
+                                                  Navigator.pop(statefulContext);
+                                                  Future.delayed(Duration.zero, () {
+                                                    if (pageContext.mounted) {
+                                                      _showEditAdminCredentialsDialog(
+                                                        pageContext,
+                                                        statefulContext,
+                                                        adminUser,
+                                                        displayName,
+                                                        isDark,
+                                                        textThemeColor,
+                                                        silverText,
+                                                        goldAccent,
+                                                        valueGreenColor,
+                                                      );
+                                                    }
+                                                  });
+                                                },
+                                                constraints: const BoxConstraints(),
+                                                padding: const EdgeInsets.all(4),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              IconButton(
+                                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
+                                                onPressed: () async {
+                                                  await MockDataManager().removeAdmin(adminUser);
+                                                  setDialogState(() {});
+                                                  setState(() {});
+                                                },
+                                                constraints: const BoxConstraints(),
+                                                padding: const EdgeInsets.all(4),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
@@ -2986,6 +3016,161 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Credentials updated successfully!'),
+                        backgroundColor: Color(0xFF0C5A32),
+                      ),
+                    );
+                  },
+                  child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showEditAdminCredentialsDialog(
+    BuildContext pageContext,
+    BuildContext manageAdminsContext,
+    String armyNo,
+    String displayName,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+    Color valueGreenColor,
+  ) {
+    showDialog(
+      context: pageContext,
+      builder: (context) {
+        return FutureBuilder<Map<String, dynamic>>(
+          future: MockDataManager().getAdminAccounts(),
+          builder: (context, snapshot) {
+            final accounts = snapshot.data ?? {};
+            final accountData = accounts[armyNo] as Map? ?? {};
+            final currentUsername = accountData['username'] as String? ?? armyNo;
+            final currentPassword = accountData['password'] as String? ?? '123456';
+            
+            final userController = TextEditingController(text: currentUsername);
+            final passController = TextEditingController(text: currentPassword);
+            
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+              ),
+              title: Text(
+                'EDIT ADMIN CREDENTIALS',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Editing credentials for $displayName.',
+                    style: TextStyle(color: silverText, fontSize: 11),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: userController,
+                    style: TextStyle(color: textThemeColor, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passController,
+                    style: TextStyle(color: textThemeColor, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                  },
+                  child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final newUsername = userController.text.trim();
+                    final newPassword = passController.text;
+                    
+                    if (newUsername.isEmpty || newPassword.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Fields cannot be empty.')),
+                      );
+                      return;
+                    }
+                    
+                    final textLower = newUsername.toLowerCase();
+                    if (textLower == 'superadmin' || textLower == 'admin' || textLower == 'user') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cannot overwrite system accounts.')),
+                      );
+                      return;
+                    }
+
+                    var duplicate = false;
+                    for (var entry in accounts.entries) {
+                      if (entry.key != armyNo && (entry.value as Map)['username'].toString().toLowerCase() == textLower) {
+                        duplicate = true;
+                        break;
+                      }
+                    }
+                    if (duplicate) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Username already taken.')),
+                      );
+                      return;
+                    }
+
+                    await MockDataManager().saveAdmin(armyNo, newUsername, newPassword);
+                    
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                    
+                    ScaffoldMessenger.of(pageContext).showSnackBar(
+                      const SnackBar(
+                        content: Text('Admin credentials updated successfully!'),
                         backgroundColor: Color(0xFF0C5A32),
                       ),
                     );
