@@ -3588,12 +3588,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
-            child: Icon(
-              role == 'Administrator' ? Icons.shield_rounded : Icons.person_rounded,
-              color: goldAccent,
-              size: 28,
-            ),
+            backgroundImage: const AssetImage('assets/images/profile_avatar.jpg'),
           ),
           const SizedBox(width: 16),
           Expanded(
