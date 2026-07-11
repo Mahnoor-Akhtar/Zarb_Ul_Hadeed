@@ -641,7 +641,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         ? _buildNominalRollTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
                         : _selectedTabIndex == 3
                             ? (_canAccessEditTab ? _buildEditTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor) : Container())
-                            : (isSuperAdmin ? _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent) : Container()),
+                            : (isSuperAdmin ? _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor) : Container()),
           ),
 
           // 4. FLOATING GLOWING SEARCH BAR
@@ -2506,12 +2506,168 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  void _showSelectSoldierAdminDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+    Color valueGreenColor,
+  ) {
+    String query = '';
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return FutureBuilder<List<String>>(
+              future: MockDataManager().getAdmins(),
+              builder: (context, snapshot) {
+                final customAdmins = snapshot.data ?? [];
+                
+                final filtered = nominalRollList.where((p) {
+                  final armyNo = p['armyNo'] ?? '';
+                  if (customAdmins.contains(armyNo.toLowerCase())) return false;
+                  
+                  if (query.isEmpty) return true;
+                  
+                  final name = (p['name'] ?? '').toLowerCase();
+                  final rank = (p['rank'] ?? '').toLowerCase();
+                  final no = armyNo.toLowerCase();
+                  return name.contains(query) || rank.contains(query) || no.contains(query);
+                }).toList();
+                
+                return AlertDialog(
+                  backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                  ),
+                  title: Text(
+                    'SELECT SOLDIER AS ADMIN',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  content: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.95,
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          style: TextStyle(color: textThemeColor, fontSize: 13),
+                          decoration: InputDecoration(
+                            prefixIcon: Icon(Icons.search, color: goldAccent, size: 16),
+                            hintText: 'Search by Name, Rank, or Army No...',
+                            hintStyle: TextStyle(color: silverText.withValues(alpha: 0.45), fontSize: 12),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: goldAccent),
+                            ),
+                          ),
+                          onChanged: (val) {
+                            setDialogState(() {
+                              query = val.trim().toLowerCase();
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: filtered.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No matching soldiers found.',
+                                    style: TextStyle(color: silverText, fontSize: 12, fontStyle: FontStyle.italic),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final person = filtered[index];
+                                    final armyNo = person['armyNo'] ?? '';
+                                    final name = person['name'] ?? '';
+                                    final rank = person['rank'] ?? '';
+                                    
+                                    return Card(
+                                      color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                                      margin: const EdgeInsets.symmetric(vertical: 4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        side: BorderSide(color: goldAccent.withValues(alpha: 0.1)),
+                                      ),
+                                      child: ListTile(
+                                        title: Text(
+                                          '$rank $name',
+                                          style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                        subtitle: Text(
+                                          'Army No: $armyNo',
+                                          style: TextStyle(color: valueGreenColor, fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
+                                        trailing: ElevatedButton(
+                                          onPressed: () async {
+                                            await MockDataManager().addAdmin(armyNo);
+                                            setState(() {});
+                                            if (!context.mounted) return;
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(
+                                                content: Text('$rank $name is now an Admin!'),
+                                                backgroundColor: const Color(0xFF0C5A32),
+                                              ),
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFF0C5A32),
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            elevation: 0,
+                                          ),
+                                          child: const Text('MAKE ADMIN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('CLOSE', style: TextStyle(color: silverText, fontSize: 12)),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildSettingsTab(
     BuildContext context,
     bool isDark,
     Color textThemeColor,
     Color silverText,
     Color goldAccent,
+    Color valueGreenColor,
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -2519,95 +2675,46 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         children: [
           SizedBox(height: MediaQuery.of(context).padding.top + 80.0),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.settings_rounded, color: goldAccent, size: 22),
-              const SizedBox(width: 8),
-              Text(
-                'SYSTEM SETTINGS',
-                style: TextStyle(
-                  color: goldAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  letterSpacing: 1.0,
+              Row(
+                children: [
+                  Icon(Icons.settings_rounded, color: goldAccent, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SYSTEM SETTINGS',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                ],
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  _showSelectSoldierAdminDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                },
+                icon: const Icon(Icons.person_add_rounded, size: 16),
+                label: const Text('ADD ADMIN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0C5A32),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3)),
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
-                width: 1.0,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'CREATE NEW ADMIN ACCOUNT',
-                  style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _settingsAdminUsernameController,
-                        style: TextStyle(color: textThemeColor, fontSize: 13),
-                        decoration: InputDecoration(
-                          hintText: 'New Admin Username...',
-                          hintStyle: TextStyle(color: silverText.withValues(alpha: 0.45), fontSize: 12),
-                          filled: true,
-                          fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: goldAccent),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final text = _settingsAdminUsernameController.text.trim().toLowerCase();
-                        if (text.isEmpty) return;
-                        if (text == 'superadmin' || text == 'admin' || text == 'user') {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Cannot overwrite default system roles.')),
-                          );
-                          return;
-                        }
-                        await MockDataManager().addAdmin(text);
-                        _settingsAdminUsernameController.clear();
-                        setState(() {});
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0C5A32),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
           Row(
             children: [
               Text(
-                'CUSTOM ADMIN ACCOUNTS',
+                'CUSTOM ADMIN ACCOUNTS (PASSWORD IS "123456" BY DEFAULT)',
                 style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5),
               ),
             ],
@@ -2637,6 +2744,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   itemCount: list.length,
                   itemBuilder: (context, index) {
                     final adminUser = list[index];
+                    
+                    // Look up soldier info by Army Number
+                    final person = nominalRollList.firstWhere(
+                      (p) => (p['armyNo'] ?? '').toLowerCase() == adminUser.toLowerCase(),
+                      orElse: () => <String, String>{},
+                    );
+                    final displayName = person.isNotEmpty
+                        ? '${person['rank']} ${person['name']} (${person['armyNo']})'
+                        : adminUser;
+
                     return Container(
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -2651,15 +2768,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Icon(Icons.shield_outlined, color: goldAccent, size: 16),
-                              const SizedBox(width: 8),
-                              Text(
-                                adminUser,
-                                style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
-                              ),
-                            ],
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Icon(Icons.shield_outlined, color: goldAccent, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    displayName,
+                                    style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
