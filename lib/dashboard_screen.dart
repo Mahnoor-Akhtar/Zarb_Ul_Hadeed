@@ -2506,6 +2506,202 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  void _showInstructionsDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.info_outline_rounded, color: goldAccent, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'MOBILE SYSTEM INSTRUCTIONS',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildInstructionRow('Expand / Collapse', 'Tap any main category headers on the Dashboard to expand or collapse subcategories.'),
+                _buildInstructionRow('Soldier Detail Card', 'Double-tap or long-press on any soldier tag to open their comprehensive military ID profile card.'),
+                _buildInstructionRow('Assign Locations', 'Data Entry admins can navigate to the "Edit" tab to select a soldier, set their status, start date, and end date range.'),
+                _buildInstructionRow('Theme Synchronization', 'Your chosen theme setting is automatically saved on device storage for subsequent sessions.'),
+                _buildInstructionRow('Account Security', 'Always log out using the settings panel or the top-right menu avatar when leaving the console.'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showManageAdminsDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+    Color valueGreenColor,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return FutureBuilder<List<String>>(
+              future: MockDataManager().getAdmins(),
+              builder: (context, snapshot) {
+                final list = snapshot.data ?? [];
+                
+                return AlertDialog(
+                  backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                  ),
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'MANAGE ADMINS',
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          _showSelectSoldierAdminDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                          Navigator.pop(context);
+                        },
+                        icon: const Icon(Icons.person_add_rounded, size: 14),
+                        label: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0C5A32),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: goldAccent.withValues(alpha: 0.3)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  content: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.95,
+                    height: MediaQuery.of(context).size.height * 0.5,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CUSTOM ADMIN ACCOUNTS (PASSWORD IS "123456")',
+                          style: TextStyle(color: silverText, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                        ),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: list.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No custom admin accounts created yet.',
+                                    style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  physics: const BouncingScrollPhysics(),
+                                  itemCount: list.length,
+                                  itemBuilder: (context, index) {
+                                    final adminUser = list[index];
+                                    final person = nominalRollList.firstWhere(
+                                      (p) => (p['armyNo'] ?? '').toLowerCase() == adminUser.toLowerCase(),
+                                      orElse: () => <String, String>{},
+                                    );
+                                    final displayName = person.isNotEmpty
+                                        ? '${person['rank']} ${person['name']} (${person['armyNo']})'
+                                        : adminUser;
+
+                                    return Container(
+                                      margin: const EdgeInsets.symmetric(vertical: 4),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.4),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(
+                                          color: isDark ? goldAccent.withValues(alpha: 0.1) : const Color(0xFF0C5A32).withValues(alpha: 0.05),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              displayName,
+                                              style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
+                                            onPressed: () async {
+                                              await MockDataManager().removeAdmin(adminUser);
+                                              setDialogState(() {});
+                                              setState(() {});
+                                            },
+                                            constraints: const BoxConstraints(),
+                                            padding: const EdgeInsets.all(4),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _showSelectSoldierAdminDialog(
     BuildContext context,
     bool isDark,
@@ -2622,6 +2818,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             setState(() {});
                                             if (!context.mounted) return;
                                             Navigator.pop(context);
+                                            // Reopen the Manage Admins Dialog after selecting
+                                            _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
                                             ScaffoldMessenger.of(context).showSnackBar(
                                               SnackBar(
                                                 content: Text('$rank $name is now an Admin!'),
@@ -2648,8 +2846,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   ),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('CLOSE', style: TextStyle(color: silverText, fontSize: 12)),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                      },
+                      child: Text('BACK', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
                   ],
                 );
@@ -2672,7 +2873,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final isSuperAdmin = MockDataManager().role == 'Administrator';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Column(
         children: [
           SizedBox(height: MediaQuery.of(context).padding.top + 80.0),
@@ -2681,7 +2882,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               Icon(Icons.settings_rounded, color: goldAccent, size: 22),
               const SizedBox(width: 8),
               Text(
-                'SYSTEM SETTINGS',
+                'SETTINGS CENTRE',
                 style: TextStyle(
                   color: goldAccent,
                   fontWeight: FontWeight.bold,
@@ -2697,19 +2898,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 24),
               children: [
-                Card(
-                  color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1)),
-                  ),
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
                   child: SwitchListTile(
+                    secondary: Icon(Icons.palette_outlined, color: goldAccent, size: 20),
                     title: Text(
-                      'Dark Mode Theme',
+                      'App Theme Mode',
                       style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     subtitle: Text(
-                      isDark ? 'Dark Theme Active' : 'Light Theme Active',
+                      isDark ? 'Dark Mode Active' : 'Light Theme Active',
                       style: TextStyle(color: silverText, fontSize: 11),
                     ),
                     value: isDark,
@@ -2722,152 +2921,107 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                Card(
-                  color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1)),
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: Icon(Icons.info_outline_rounded, color: goldAccent, size: 20),
+                    title: Text(
+                      'Mobile & System Instructions',
+                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      'Learn gestures, user roles & layout tips',
+                      style: TextStyle(color: silverText, fontSize: 11),
+                    ),
+                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                    onTap: () {
+                      _showInstructionsDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                    },
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.info_outline_rounded, color: goldAccent, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              'MOBILE SYSTEM INSTRUCTIONS',
-                              style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 0.5),
-                            ),
-                          ],
-                        ),
-                        const Divider(height: 20, color: Color(0xFFCD9B2D)),
-                        _buildInstructionRow('Expand / Collapse', 'Tap any main category headers on the Dashboard to expand or collapse subcategories.'),
-                        _buildInstructionRow('Soldier Detail Card', 'Double-tap or long-press on any soldier tag to open their comprehensive military ID profile card.'),
-                        _buildInstructionRow('Assign Locations', 'Data Entry admins can navigate to the "Edit" tab to select a soldier, set their status, start date, and end date range.'),
-                        _buildInstructionRow('Theme Synchronization', 'Your chosen theme setting is automatically saved on device storage for subsequent sessions.'),
-                        _buildInstructionRow('Account Security', 'Always log out using the menu items at the top-right menu avatar when leaving the console.'),
-                      ],
+                ),
+                const SizedBox(height: 12),
+
+                if (isSuperAdmin) ...[
+                  _buildSettingsModuleCard(
+                    isDark,
+                    goldAccent,
+                    child: ListTile(
+                      leading: Icon(Icons.admin_panel_settings_rounded, color: goldAccent, size: 20),
+                      title: Text(
+                        'Manage Admin Accounts',
+                        style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      subtitle: Text(
+                        'Promote personnel & manage system credentials',
+                        style: TextStyle(color: silverText, fontSize: 11),
+                      ),
+                      trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                      onTap: () {
+                        _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: Icon(Icons.military_tech_rounded, color: goldAccent, size: 20),
+                    title: Text(
+                      'Zarb-ul-Hadeed Console',
+                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      '117 SP Regt. • Version 1.0.0',
+                      style: TextStyle(color: silverText, fontSize: 11),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                if (isSuperAdmin) ...[
-                  Card(
-                    color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1)),
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                    title: const Text(
+                      'Logout Session',
+                      style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'MANAGE ADMIN ACCOUNTS',
-                                style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 0.5),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  _showSelectSoldierAdminDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                                },
-                                icon: const Icon(Icons.person_add_rounded, size: 14),
-                                label: const Text('ADD ADMIN', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0C5A32),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3)),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 20, color: Color(0xFFCD9B2D)),
-                          FutureBuilder<List<String>>(
-                            future: MockDataManager().getAdmins(),
-                            builder: (context, snapshot) {
-                              final list = snapshot.data ?? [];
-                              if (list.isEmpty) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  child: Text(
-                                    'No custom admin accounts created yet.',
-                                    style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
-                                  ),
-                                );
-                              }
-                              return ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: list.length,
-                                itemBuilder: (context, index) {
-                                  final adminUser = list[index];
-                                  final person = nominalRollList.firstWhere(
-                                    (p) => (p['armyNo'] ?? '').toLowerCase() == adminUser.toLowerCase(),
-                                    orElse: () => <String, String>{},
-                                  );
-                                  final displayName = person.isNotEmpty
-                                      ? '${person['rank']} ${person['name']} (${person['armyNo']})'
-                                      : adminUser;
-
-                                  return Container(
-                                    margin: const EdgeInsets.symmetric(vertical: 4),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.4),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: isDark ? goldAccent.withValues(alpha: 0.1) : const Color(0xFF0C5A32).withValues(alpha: 0.05),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            displayName,
-                                            style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.bold),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
-                                          onPressed: () async {
-                                            await MockDataManager().removeAdmin(adminUser);
-                                            setState(() {});
-                                          },
-                                          constraints: const BoxConstraints(),
-                                          padding: const EdgeInsets.all(4),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                    subtitle: Text(
+                      'Securely exit your console session',
+                      style: TextStyle(color: silverText, fontSize: 11),
                     ),
+                    onTap: () {
+                      MockDataManager().logout();
+                      widget.onLogout();
+                    },
                   ),
-                ],
+                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSettingsModuleCard(bool isDark, Color goldAccent, {required Widget child}) {
+    return Card(
+      margin: EdgeInsets.zero,
+      color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1),
+        ),
+      ),
+      child: child,
     );
   }
 
