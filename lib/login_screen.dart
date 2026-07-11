@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'splash_screen.dart'; // Import to reuse TopographicPainter
 import 'mock_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -80,37 +79,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    if (!mounted) return;
-    final savedSuperadminPass = prefs.getString('system_superadmin_password') ?? '123456';
-    final savedAdminPass = prefs.getString('system_admin_password') ?? '123456';
-    final savedUserPass = prefs.getString('system_user_password') ?? '123456';
-
-    if (usernameLower == 'superadmin') {
-      if (password != savedSuperadminPass) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
-        );
-        return;
-      }
-      role = 'Administrator';
-    } else if (usernameLower == 'admin') {
-      if (password != savedAdminPass) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
-        );
-        return;
-      }
-      role = 'Data Entry';
-    } else if (usernameLower == 'user') {
-      if (password != savedUserPass) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
-        );
-        return;
-      }
-      role = 'View-Only';
-    } else if (matchedSlot != null) {
+    if (matchedSlot != null) {
       final accPassword = matchedSlot['password'] as String;
       if (password != accPassword) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -130,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('No role configured for user "$username".'),
+          content: Text('User "$username" is not registered in the command group.'),
           backgroundColor: Colors.redAccent,
         ),
       );
