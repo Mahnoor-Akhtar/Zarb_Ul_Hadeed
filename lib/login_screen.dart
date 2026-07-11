@@ -64,17 +64,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     String? adminArmyNo;
     final usernameLower = username.toLowerCase();
 
-    // Look up custom admin accounts
-    final accounts = await MockDataManager().getAdminAccounts();
+    // Look up custom admin accounts from command group slots
+    final group = await MockDataManager().getCommandGroup();
     if (!mounted) return;
     
-    MapEntry<String, dynamic>? matchedAccount;
-    for (var entry in accounts.entries) {
-      final accountData = entry.value as Map;
-      final accUsername = (accountData['username'] as String).toLowerCase();
-      if (accUsername == usernameLower) {
-        matchedAccount = entry;
-        break;
+    Map? matchedSlot;
+    for (var slot in group) {
+      if (slot['armyNo'] != null) {
+        final accUsername = (slot['username'] as String).toLowerCase();
+        if (accUsername == usernameLower) {
+          matchedSlot = slot;
+          break;
+        }
       }
     }
 
@@ -94,17 +95,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         return;
       }
       role = 'Data Entry';
-    } else if (matchedAccount != null) {
-      final accountData = matchedAccount.value as Map;
-      final accPassword = accountData['password'] as String;
-      if (password != accPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
-        );
-        return;
-      }
-      role = 'Data Entry';
-      adminArmyNo = matchedAccount.key;
     } else if (usernameLower == 'user') {
       if (password != '123456') {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +103,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         return;
       }
       role = 'View-Only';
+    } else if (matchedSlot != null) {
+      final accPassword = matchedSlot['password'] as String;
+      if (password != accPassword) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+      final slotRole = matchedSlot['role'] as String;
+      if (slotRole == 'superadmin') {
+        role = 'Administrator';
+      } else if (slotRole == 'admin') {
+        role = 'Data Entry';
+      } else {
+        role = 'View-Only';
+      }
+      adminArmyNo = matchedSlot['armyNo'] as String;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
