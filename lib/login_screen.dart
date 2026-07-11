@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'splash_screen.dart'; // Import to reuse TopographicPainter
 import 'mock_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -79,8 +80,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final savedSuperadminPass = prefs.getString('system_superadmin_password') ?? '123456';
+    final savedAdminPass = prefs.getString('system_admin_password') ?? '123456';
+    final savedUserPass = prefs.getString('system_user_password') ?? '123456';
+
     if (usernameLower == 'superadmin') {
-      if (password != '123456') {
+      if (password != savedSuperadminPass) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
         );
@@ -88,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
       role = 'Administrator';
     } else if (usernameLower == 'admin') {
-      if (password != '123456') {
+      if (password != savedAdminPass) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
         );
@@ -96,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       }
       role = 'Data Entry';
     } else if (usernameLower == 'user') {
-      if (password != '123456') {
+      if (password != savedUserPass) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
         );

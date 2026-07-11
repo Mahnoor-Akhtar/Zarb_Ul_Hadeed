@@ -3307,6 +3307,208 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  void _showSystemProfileDialog(
+    BuildContext context,
+    String displayName,
+    String roleLabel,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+          ),
+          title: Text(
+            'SYSTEM CONSOLE PROFILE',
+            style: TextStyle(
+              color: goldAccent,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              letterSpacing: 1.0,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 36,
+                  backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+                  child: Icon(Icons.shield_rounded, color: goldAccent, size: 36),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  displayName,
+                  style: TextStyle(color: textThemeColor, fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  'ROLE: $roleLabel',
+                  style: TextStyle(color: goldAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Divider(color: Colors.grey, height: 1),
+              const SizedBox(height: 12),
+              _buildProfileDetailRow('System Level:', 'Regimental HQ Core Console', isDark ? Colors.white : Colors.black),
+              _buildProfileDetailRow('Authentication:', 'Hardcoded System Bypass', isDark ? Colors.white : Colors.black),
+              _buildProfileDetailRow('Operation Privileges:', roleLabel == 'SUPER ADMIN' ? 'Full Read/Write/Admin Access' : (roleLabel == 'ADMIN' ? 'Read/Write Status updates' : 'Read-only view access'), isDark ? Colors.white : Colors.black),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildProfileDetailRow(String label, String value, Color textColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+          Text(value, style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.bold)),
+        ],
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    final currentUsername = MockDataManager().username ?? '';
+    final newPassController = TextEditingController();
+    final confirmPassController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+          ),
+          title: Text(
+            'CHANGE PASSWORD',
+            style: TextStyle(
+              color: goldAccent,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              letterSpacing: 1.0,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: newPassController,
+                style: TextStyle(color: textThemeColor, fontSize: 13),
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'New Password',
+                  labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: goldAccent),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: confirmPassController,
+                style: TextStyle(color: textThemeColor, fontSize: 13),
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'Confirm Password',
+                  labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                  filled: true,
+                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: goldAccent),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+            ),
+            TextButton(
+              onPressed: () async {
+                final newPass = newPassController.text;
+                final confirmPass = confirmPassController.text;
+                
+                if (newPass.isEmpty || confirmPass.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Password fields cannot be empty.')),
+                  );
+                  return;
+                }
+                
+                if (newPass != confirmPass) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Passwords do not match.')),
+                  );
+                  return;
+                }
+                
+                await MockDataManager().changePassword(currentUsername, newPass);
+                if (!context.mounted) return;
+                Navigator.pop(context);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Password updated successfully!'),
+                    backgroundColor: Color(0xFF0C5A32),
+                  ),
+                );
+              },
+              child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildProfileHeader(
     BuildContext context,
     bool isDark,
@@ -3345,8 +3547,34 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     if (role == 'Administrator') roleLabel = 'SUPER ADMIN';
     if (role == 'Data Entry') roleLabel = 'ADMIN';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
+        return GestureDetector(
+      onTap: () {
+        if (armyNo != null) {
+          final person = nominalRollList.firstWhere(
+            (p) => (p['armyNo'] ?? '').toLowerCase() == armyNo.toLowerCase(),
+            orElse: () => <String, String>{},
+          );
+          if (person.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PersonnelIdCardScreen(
+                  person: person,
+                  isDark: isDark,
+                  textThemeColor: textThemeColor,
+                  silverText: silverText,
+                  goldAccent: goldAccent,
+                  valueGreenColor: valueGreenColor,
+                ),
+              ),
+            );
+          }
+        } else {
+          _showSystemProfileDialog(context, displayName, roleLabel, isDark, textThemeColor, silverText, goldAccent);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -3419,6 +3647,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -3461,6 +3690,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 // 1. Profile Header
                 _buildProfileHeader(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
                 const SizedBox(height: 16),
+
+                // Change Password Tile
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: Icon(Icons.vpn_key_rounded, color: goldAccent, size: 20),
+                    title: Text(
+                      'Change My Password',
+                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      'Change your login password credential',
+                      style: TextStyle(color: silverText, fontSize: 11),
+                    ),
+                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                    onTap: () {
+                      _showChangePasswordDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // 2. App Theme Mode
                 _buildSettingsModuleCard(

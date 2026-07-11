@@ -139,4 +139,23 @@ class MockDataManager {
         .map((s) => s['username'].toString().toLowerCase())
         .toList();
   }
+  Future<void> changePassword(String currentUsername, String newPassword) async {
+    final prefs = await SharedPreferences.getInstance();
+    final usernameLower = currentUsername.toLowerCase();
+    
+    if (usernameLower == 'superadmin' || usernameLower == 'admin' || usernameLower == 'user') {
+      await prefs.setString('system_${usernameLower}_password', newPassword);
+      return;
+    }
+    
+    final group = await getCommandGroup();
+    for (var slot in group) {
+      if (slot['username'].toString().toLowerCase() == usernameLower) {
+        slot['password'] = newPassword;
+        break;
+      }
+    }
+    await saveCommandGroup(group);
+  }
+
 }
