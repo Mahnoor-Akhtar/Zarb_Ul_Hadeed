@@ -99,7 +99,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final isSuperAdmin = MockDataManager().role == 'Administrator';
     final maxTabs = _canAccessEditTab ? 5 : 4;
     if (_selectedTabIndex >= maxTabs) {
       _selectedTabIndex = 0;
@@ -640,9 +639,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ? _buildAnalysisTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
                     : _selectedTabIndex == 2
                         ? _buildNominalRollTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
-                        : _selectedTabIndex == 3
-                            ? (_canAccessEditTab ? _buildEditTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor) : Container())
-                            : (isSuperAdmin ? _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor) : Container()),
+                        : _canAccessEditTab
+                            ? (_selectedTabIndex == 3
+                                ? _buildEditTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
+                                : _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor))
+                            : _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
           ),
 
           // 4. FLOATING GLOWING SEARCH BAR
