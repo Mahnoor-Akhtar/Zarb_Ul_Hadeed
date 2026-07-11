@@ -2598,9 +2598,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         ),
                       ),
                       ElevatedButton.icon(
-                        onPressed: () async {
-                          _showSelectSoldierAdminDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        onPressed: () {
                           Navigator.pop(statefulContext);
+                          Future.delayed(Duration.zero, () {
+                            if (pageContext.mounted) {
+                              _showSelectSoldierAdminDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                            }
+                          });
                         },
                         icon: const Icon(Icons.person_add_rounded, size: 14),
                         label: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
@@ -2818,8 +2822,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             setState(() {});
                                             if (!statefulContext.mounted) return;
                                             Navigator.pop(statefulContext);
-                                            // Reopen the Manage Admins Dialog after selecting
-                                            _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                                            Future.delayed(Duration.zero, () {
+                                              if (pageContext.mounted) {
+                                                _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                                              }
+                                            });
                                             ScaffoldMessenger.of(pageContext).showSnackBar(
                                               SnackBar(
                                                 content: Text('$rank $name is now an Admin!'),
@@ -2848,7 +2855,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     TextButton(
                       onPressed: () {
                         Navigator.pop(statefulContext);
-                        _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        Future.delayed(Duration.zero, () {
+                          if (pageContext.mounted) {
+                            _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                          }
+                        });
                       },
                       child: Text('BACK', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
