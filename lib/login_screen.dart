@@ -60,26 +60,58 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    if (password != '123456') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Incorrect password.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
+    String role = '';
+    String? adminArmyNo;
+    final usernameLower = username.toLowerCase();
+
+    // Look up custom admin accounts
+    final accounts = await MockDataManager().getAdminAccounts();
+    if (!mounted) return;
+    
+    MapEntry<String, dynamic>? matchedAccount;
+    for (var entry in accounts.entries) {
+      final accountData = entry.value as Map;
+      final accUsername = (accountData['username'] as String).toLowerCase();
+      if (accUsername == usernameLower) {
+        matchedAccount = entry;
+        break;
+      }
     }
 
-    String role = '';
-    final usernameLower = username.toLowerCase();
-    final customAdmins = await MockDataManager().getAdmins();
-    if (!mounted) return;
-
     if (usernameLower == 'superadmin') {
+      if (password != '123456') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
       role = 'Administrator';
-    } else if (usernameLower == 'admin' || customAdmins.contains(usernameLower)) {
+    } else if (usernameLower == 'admin') {
+      if (password != '123456') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
       role = 'Data Entry';
+    } else if (matchedAccount != null) {
+      final accountData = matchedAccount.value as Map;
+      final accPassword = accountData['password'] as String;
+      if (password != accPassword) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
+      role = 'Data Entry';
+      adminArmyNo = matchedAccount.key;
     } else if (usernameLower == 'user') {
+      if (password != '123456') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
+        );
+        return;
+      }
       role = 'View-Only';
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -91,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    MockDataManager().login(usernameLower, role);
+    MockDataManager().login(username, role, adminArmyNo: adminArmyNo);
     widget.onLoginSuccess();
   }
 
