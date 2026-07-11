@@ -172,7 +172,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     ),
                                     child: ClipOval(
                                       child: Image.asset(
-                                        'assets/images/army_crest.jpg',
+                                        'assets/images/army_crest.png',
                                         fit: BoxFit.cover,
                                       ),
                                     ),

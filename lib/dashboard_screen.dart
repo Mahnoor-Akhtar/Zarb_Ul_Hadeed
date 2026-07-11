@@ -336,7 +336,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       width: 1.5,
                     ),
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/army_crest.jpg'),
+                      image: AssetImage('assets/images/profile_avatar.jpg'),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -4699,15 +4699,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           color: goldAccent.withValues(alpha: 0.35),
                                           width: 1.2,
                                         ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          rank,
-                                          style: TextStyle(
-                                            color: goldAccent,
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        image: const DecorationImage(
+                                          image: AssetImage('assets/images/profile_avatar.jpg'),
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),
@@ -4736,7 +4730,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        name,
+                                        '$rank $name',
                                         style: TextStyle(
                                           color: textThemeColor,
                                           fontWeight: FontWeight.bold,
@@ -6604,7 +6598,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                       width: 1.2,
                                     ),
                                     image: const DecorationImage(
-                                      image: AssetImage('assets/images/army_crest.jpg'),
+                                      image: AssetImage('assets/images/profile_avatar.jpg'),
                                       fit: BoxFit.cover,
                                     ),
                                   ),

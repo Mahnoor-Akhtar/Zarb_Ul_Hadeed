@@ -266,7 +266,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                               child: ClipOval(
                                 child: Image.asset(
-                                  'assets/images/army_crest.jpg',
+                                  'assets/images/army_crest.png',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return const Icon(

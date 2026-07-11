@@ -59,7 +59,8 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/army_crest.jpg
+    - assets/images/army_crest.png
+    - assets/images/profile_avatar.jpg
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
