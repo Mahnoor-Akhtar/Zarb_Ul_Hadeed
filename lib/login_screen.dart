@@ -46,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     super.dispose();
   }
 
-  void _handleLogin() {
+  void _handleLogin() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
@@ -72,9 +72,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
     String role = '';
     final usernameLower = username.toLowerCase();
+    final customAdmins = await MockDataManager().getAdmins();
+    if (!mounted) return;
+
     if (usernameLower == 'superadmin') {
       role = 'Administrator';
-    } else if (usernameLower == 'admin') {
+    } else if (usernameLower == 'admin' || customAdmins.contains(usernameLower)) {
       role = 'Data Entry';
     } else if (usernameLower == 'user') {
       role = 'View-Only';
@@ -88,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       return;
     }
 
-    // Set user session in singleton manager
     MockDataManager().login(usernameLower, role);
     widget.onLoginSuccess();
   }

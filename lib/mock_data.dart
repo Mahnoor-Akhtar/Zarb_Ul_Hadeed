@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 class MockDataManager {
   static final MockDataManager _instance = MockDataManager._internal();
 
@@ -21,6 +23,31 @@ class MockDataManager {
     _username = null;
     _role = null;
     _isLoggedIn = false;
+  }
+
+  Future<List<String>> getAdmins() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList('customAdmins') ?? [];
+  }
+
+  Future<void> addAdmin(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('customAdmins') ?? [];
+    final usernameLower = username.trim().toLowerCase();
+    if (!list.contains(usernameLower)) {
+      list.add(usernameLower);
+      await prefs.setStringList('customAdmins', list);
+    }
+  }
+
+  Future<void> removeAdmin(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList('customAdmins') ?? [];
+    final usernameLower = username.trim().toLowerCase();
+    if (list.contains(usernameLower)) {
+      list.remove(usernameLower);
+      await prefs.setStringList('customAdmins', list);
+    }
   }
 
   String? get username => _username;

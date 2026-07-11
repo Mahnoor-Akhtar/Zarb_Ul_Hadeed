@@ -248,6 +248,23 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
             const SizedBox(width: 12),
 
+            // Settings Button (Superadmin Only)
+            if (MockDataManager().role == 'Administrator')
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.settings_rounded,
+                    color: isDark ? Colors.white : const Color(0xFF0C5A32),
+                    size: 22,
+                  ),
+                  onPressed: () {
+                    _showAdminSettingsDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                  },
+                  tooltip: 'Admin Settings',
+                ),
+              ),
+
             // Profile avatar with menu
             Padding(
               padding: const EdgeInsets.only(top: 8.0, right: 16.0),
@@ -2491,6 +2508,161 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               child: const Text('DELETE', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 11)),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showAdminSettingsDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    final usernameController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return FutureBuilder<List<String>>(
+              future: MockDataManager().getAdmins(),
+              builder: (context, snapshot) {
+                final list = snapshot.data ?? [];
+                
+                return AlertDialog(
+                  backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                  ),
+                  title: Text(
+                    'MANAGE ADMIN ACCOUNTS',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      letterSpacing: 1.0,
+                    ),
+                  ),
+                  content: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: usernameController,
+                                style: TextStyle(color: textThemeColor, fontSize: 13),
+                                decoration: InputDecoration(
+                                  hintText: 'New Admin Username...',
+                                  hintStyle: TextStyle(color: silverText.withValues(alpha: 0.45), fontSize: 12),
+                                  filled: true,
+                                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: goldAccent),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final text = usernameController.text.trim().toLowerCase();
+                                if (text.isEmpty) return;
+                                if (text == 'superadmin' || text == 'admin' || text == 'user') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Cannot overwrite default system roles.')),
+                                  );
+                                  return;
+                                }
+                                await MockDataManager().addAdmin(text);
+                                usernameController.clear();
+                                setDialogState(() {});
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0C5A32),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              child: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'CUSTOM ADMINS (PASSWORD IS "123456" BY DEFAULT)',
+                          style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        if (list.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Text(
+                              'No custom admin accounts created yet.',
+                              style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
+                            ),
+                          )
+                        else
+                          Flexible(
+                            child: SizedBox(
+                              height: 180,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: list.length,
+                                itemBuilder: (context, index) {
+                                  final adminUser = list[index];
+                                  return Card(
+                                    color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.4),
+                                    margin: const EdgeInsets.symmetric(vertical: 4),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                      side: BorderSide(color: goldAccent.withValues(alpha: 0.1)),
+                                    ),
+                                    child: ListTile(
+                                      title: Text(
+                                        adminUser,
+                                        style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      trailing: IconButton(
+                                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
+                                        onPressed: () async {
+                                          await MockDataManager().removeAdmin(adminUser);
+                                          setDialogState(() {});
+                                        },
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.all(4),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         );
       },
     );
