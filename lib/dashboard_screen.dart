@@ -2562,7 +2562,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   void _showManageAdminsDialog(
-    BuildContext context,
+    BuildContext pageContext,
     bool isDark,
     Color textThemeColor,
     Color silverText,
@@ -2570,10 +2570,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     showDialog(
-      context: context,
-      builder: (context) {
+      context: pageContext,
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (statefulContext, setDialogState) {
             return FutureBuilder<List<String>>(
               future: MockDataManager().getAdmins(),
               builder: (context, snapshot) {
@@ -2599,8 +2599,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       ElevatedButton.icon(
                         onPressed: () async {
-                          _showSelectSoldierAdminDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                          Navigator.pop(context);
+                          _showSelectSoldierAdminDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                          Navigator.pop(statefulContext);
                         },
                         icon: const Icon(Icons.person_add_rounded, size: 14),
                         label: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
@@ -2689,7 +2689,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   ),
                   actions: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => Navigator.pop(statefulContext),
                       child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
                   ],
@@ -2703,7 +2703,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 
   void _showSelectSoldierAdminDialog(
-    BuildContext context,
+    BuildContext pageContext,
     bool isDark,
     Color textThemeColor,
     Color silverText,
@@ -2713,10 +2713,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     String query = '';
     
     showDialog(
-      context: context,
-      builder: (context) {
+      context: pageContext,
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (statefulContext, setDialogState) {
             return FutureBuilder<List<String>>(
               future: MockDataManager().getAdmins(),
               builder: (context, snapshot) {
@@ -2816,11 +2816,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           onPressed: () async {
                                             await MockDataManager().addAdmin(armyNo);
                                             setState(() {});
-                                            if (!context.mounted) return;
-                                            Navigator.pop(context);
+                                            if (!statefulContext.mounted) return;
+                                            Navigator.pop(statefulContext);
                                             // Reopen the Manage Admins Dialog after selecting
-                                            _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                                            ScaffoldMessenger.of(pageContext).showSnackBar(
                                               SnackBar(
                                                 content: Text('$rank $name is now an Admin!'),
                                                 backgroundColor: const Color(0xFF0C5A32),
@@ -2847,8 +2847,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   actions: [
                     TextButton(
                       onPressed: () {
-                        Navigator.pop(context);
-                        _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        Navigator.pop(statefulContext);
+                        _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
                       },
                       child: Text('BACK', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
                     ),
