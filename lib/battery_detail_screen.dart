@@ -39,21 +39,83 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
     if (person['isFighting'] == 'true') return true;
     final category = (person['category'] ?? '').toLowerCase();
     final combined = '${person['rank'] ?? ''} ${person['name'] ?? ''}'.toLowerCase();
-    if (category == 'clks' || category == 'c/us' || category == 'sws' || category == 'ncbs') return false;
+    if (category == 'clks' || category == 'c/us' || category == 'sws' || category == 's/ws' || category == 'ncbs' || category == 'civs' || category == 'lads') return false;
     if (combined.contains('clk') || combined.contains('ck ') || combined.contains('ck(') ||
         combined.contains('c/u') || combined.contains('c/m') || combined.contains('engr') ||
         combined.contains('n/a') || combined.contains('lad') || combined.contains('civ') ||
-        combined.contains('ncb') || combined.contains('sw')) return false;
+        combined.contains('ncb') || combined.contains('sw') || combined.contains('s/w')) return false;
     return true;
   }
 
+  String _getTrade(Map<String, String> person) {
+    final category = (person['category'] ?? '').toLowerCase();
+    final rank = (person['rank'] ?? '').toLowerCase();
+    final name = (person['name'] ?? '').toLowerCase();
+    final combined = '$rank $name'.toLowerCase();
+
+    if (category == 'clks' || combined.contains('clk')) return 'Clk';
+    if (category == 'ncbs' || combined.contains('ncb')) return 'NCB';
+    if (category == 'sws' || combined.contains('sw') || combined.contains('s/w')) return 'S/W';
+    if (category == 'c/us' || combined.contains('ck') || combined.contains('c/u') || combined.contains('c/m')) return 'Ck';
+    if (category == 'civs' || combined.contains('civ')) return 'Civ';
+    if (category == 'lads' || combined.contains('lad')) return 'LAD';
+
+    if (category == 'jcos') {
+      if (combined.contains('gnr')) return 'Gnr';
+      if (combined.contains('ta')) return 'TA';
+      if (combined.contains('ocu')) return 'OCU';
+      if (combined.contains('dmt')) return 'DMT';
+      if (combined.contains('dsv')) return 'DSV';
+      if (combined.contains('svy') || combined.contains('sry')) return 'Svy';
+    }
+    if (category == 'svys' || combined.contains('svy') || combined.contains('sry')) return 'Svy';
+    if (category == 'tas' || combined.contains('ta')) return 'TA';
+    if (category == 'ocsu' || combined.contains('ocu')) return 'OCU';
+    if (category == 'dsvs' || combined.contains('dsv')) return 'DSV';
+    if (category == 'dmts' || combined.contains('dmt')) return 'DMT';
+    if (category == 'gnrs' || combined.contains('gnr')) return 'Gnr';
+
+    return 'Gnr';
+  }
+
+  String _getRankSubcategory(String rank, String name) {
+    final r = rank.trim().toLowerCase();
+
+    // 1. Officers
+    if (r == 'lt col' || r.startsWith('lt col') || r.contains('lt col')) return 'Lt Col';
+    if (r == 'maj' || r.startsWith('maj') || r.contains('maj')) return 'Maj';
+    if (r == 'capt' || r.startsWith('capt') || r.contains('capt')) return 'Capt';
+    if (r == '2/lt' || r == '2-lt' || r == '2/ lt' || r.contains('2/lt')) return '2/Lt';
+    if (r == 'lt' || r == 'lieutenant') return 'Lt';
+
+    // 2. JCOs
+    if (r == 'sm' || r == 'subedar major') return 'SM';
+    if (r == 'n/sub' || r == 'n-sub' || r == 'naib subedar' || r.contains('n/sub')) return 'N/Sub';
+    if (r == 'sub' || r == 'subedar') return 'Sub';
+
+    // 3. Soldiers
+    if (r.contains('hav') || r.contains('bqmh') || r.contains('rqmh') || r == 'havildar') {
+      return 'Hav';
+    }
+    if (r == 'lhav' || r == 'lhv' || r == 'lance havildar' || r.contains('lhav') || r.contains('lhv')) {
+      return 'Lhav';
+    }
+    if (r == 'lnk' || r == 'l/nk' || r == 'lance naik' || r.contains('lnk') || r.contains('l/nk')) {
+      return 'Lnk';
+    }
+    if (r == 'nk' || r == 'naik' || r == 'nco' || r.contains('nk')) {
+      return 'Nk';
+    }
+
+    return 'Sep';
+  }
+
   String _getRankCategory(String rank, String name) {
-    final combined = '${rank.toLowerCase()} ${name.toLowerCase()}';
-    if (combined.contains('lt col') || combined.contains('maj') ||
-        combined.contains('capt') || combined.contains('lt ') || combined.contains('2/lt')) {
+    final sub = _getRankSubcategory(rank, name);
+    if (['Lt Col', 'Maj', 'Capt', 'Lt', '2/Lt'].contains(sub)) {
       return 'OFFICERS';
     }
-    if (combined.contains('sm') || combined.contains('sub') || combined.contains('n/sub')) {
+    if (['SM', 'Sub', 'N/Sub'].contains(sub)) {
       return 'JCOs';
     }
     return 'SLDRS';
@@ -91,11 +153,26 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
       if (_filterCategory == 'All') return true;
       final isFighting = _isFighting(p);
       if (_filterCategory == 'Non-Fighting') return !isFighting;
-      final rankCat = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
-      if (_filterCategory == 'Officers') return isFighting && rankCat == 'OFFICERS';
-      if (_filterCategory == 'JCOs') return isFighting && rankCat == 'JCOs';
-      if (_filterCategory == 'Sldrs') return isFighting && rankCat == 'SLDRS';
-      return true;
+      
+      final selectedRank = _filterCategory.trim();
+      
+      if (['Clk', 'Ck', 'Civ', 'LAD', 'NCB', 'S/W', 'Engr', 'N/A'].contains(selectedRank)) {
+        return !isFighting && _getTrade(p).toLowerCase() == selectedRank.toLowerCase();
+      }
+      
+      final subcat = _getRankSubcategory(p['rank'] ?? '', p['name'] ?? '');
+      final cat = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
+      
+      if (selectedRank == 'Officers') {
+        return isFighting && cat == 'OFFICERS';
+      } else if (selectedRank == 'JCOs') {
+        return isFighting && cat == 'JCOs';
+      } else if (selectedRank == 'Sldrs' || selectedRank == 'Soldiers' || selectedRank == 'SLDRS') {
+        return isFighting && cat == 'SLDRS';
+      } else {
+        if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
+        return isFighting;
+      }
     }).toList();
   }
 
@@ -443,7 +520,32 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
-                      children: ['All', 'Officers', 'JCOs', 'Sldrs', 'Non-Fighting']
+                      children: [
+                        'All',
+                        'Officers',
+                        'Lt Col',
+                        'Maj',
+                        'Capt',
+                        'Lt',
+                        '2/Lt',
+                        'JCOs',
+                        'SM',
+                        'Sub',
+                        'N/Sub',
+                        'Sldrs',
+                        'Hav',
+                        'Lhav',
+                        'Nk',
+                        'Lnk',
+                        'Sep',
+                        'Non-Fighting',
+                        'Clk',
+                        'Ck',
+                        'Civ',
+                        'LAD',
+                        'NCB',
+                        'S/W',
+                      ]
                           .map((cat) => _filterChip(cat, accent, textColor, subText, isDark))
                           .toList(),
                     ),

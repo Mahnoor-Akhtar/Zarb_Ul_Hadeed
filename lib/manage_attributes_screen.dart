@@ -61,57 +61,179 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
   }
 
   void _showAddEditDialog(String type, {String? existingValue, int? index}) {
-    final TextEditingController controller = TextEditingController(text: existingValue);
-    
+    final TextEditingController controller = TextEditingController(
+      text: type == 'Rank' && existingValue != null ? existingValue.trim() : existingValue,
+    );
+
+    String selectedType = 'Subcategory';
+    String? selectedParent;
+    final List<String> categories = _ranks.where((r) => r.toLowerCase() != 'all' && !r.startsWith(' ')).toList();
+
+    if (type == 'Rank') {
+      if (existingValue != null) {
+        if (existingValue.startsWith(' ')) {
+          selectedType = 'Subcategory';
+          String? foundParent;
+          for (int i = index! - 1; i >= 0; i--) {
+            if (!_ranks[i].startsWith(' ') && _ranks[i].toLowerCase() != 'all') {
+              foundParent = _ranks[i];
+              break;
+            }
+          }
+          selectedParent = foundParent;
+        } else {
+          selectedType = 'Category';
+        }
+      } else {
+        selectedType = categories.isNotEmpty ? 'Subcategory' : 'Category';
+      }
+      if (selectedParent == null && categories.isNotEmpty) {
+        selectedParent = categories.first;
+      }
+    }
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
-          title: Text(
-            existingValue == null ? 'Add New $type' : 'Edit $type',
-            style: TextStyle(color: widget.textThemeColor, fontWeight: FontWeight.bold),
-          ),
-          content: TextField(
-            controller: controller,
-            style: TextStyle(color: widget.textThemeColor),
-            decoration: InputDecoration(
-              hintText: 'Enter $type name',
-              hintStyle: TextStyle(color: widget.silverText),
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent.withOpacity(0.5))),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent)),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: TextStyle(color: widget.silverText)),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final val = controller.text.trim();
-                if (val.isEmpty) return;
-                
-                Navigator.pop(context);
-                setState(() {
-                  if (type == 'Trade') {
-                    if (existingValue == null) _trades.add(val);
-                    else _trades[index!] = val;
-                  } else if (type == 'Rank') {
-                    if (existingValue == null) _ranks.add(val);
-                    else _ranks[index!] = val;
-                  } else if (type == 'Battery') {
-                    if (existingValue == null) _batteries.add(val);
-                    else _batteries[index!] = val;
-                  }
-                });
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
+              title: Text(
+                existingValue == null ? 'Add New $type' : 'Edit $type',
+                style: TextStyle(color: widget.textThemeColor, fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (type == 'Rank' && categories.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: RadioListTile<String>(
+                            title: const Text('Subcategory', style: TextStyle(fontSize: 12)),
+                            value: 'Subcategory',
+                            groupValue: selectedType,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedType = val);
+                              }
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: RadioListTile<String>(
+                            title: const Text('Category', style: TextStyle(fontSize: 12)),
+                            value: 'Category',
+                            groupValue: selectedType,
+                            contentPadding: EdgeInsets.zero,
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() => selectedType = val);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (selectedType == 'Subcategory') ...[
+                      const SizedBox(height: 8),
+                      const Text('Parent Category:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      DropdownButton<String>(
+                        value: selectedParent,
+                        isExpanded: true,
+                        dropdownColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
+                        style: TextStyle(color: widget.textThemeColor, fontSize: 12),
+                        items: categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setDialogState(() => selectedParent = val);
+                          }
+                        },
+                      ),
+                    ],
+                    const SizedBox(height: 12),
+                  ],
+                  TextField(
+                    controller: controller,
+                    style: TextStyle(color: widget.textThemeColor),
+                    decoration: InputDecoration(
+                      hintText: type == 'Rank'
+                          ? (selectedType == 'Category' ? 'Enter Category name' : 'Enter Rank name')
+                          : 'Enter $type name',
+                      hintStyle: TextStyle(color: widget.silverText),
+                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent.withValues(alpha: 0.5))),
+                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent)),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Cancel', style: TextStyle(color: widget.silverText)),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final val = controller.text.trim();
+                    if (val.isEmpty) return;
 
-                await _saveAttributes(type);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: widget.goldAccent),
-              child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-            ),
-          ],
+                    Navigator.pop(context);
+                    setState(() {
+                      if (type == 'Trade') {
+                        if (existingValue != null && index != null) {
+                          _trades[index] = val;
+                        } else {
+                          _trades.add(val);
+                        }
+                      } else if (type == 'Battery') {
+                        if (existingValue != null && index != null) {
+                          _batteries[index] = val;
+                        } else {
+                          _batteries.add(val);
+                        }
+                      } else if (type == 'Rank') {
+                        final formattedVal = selectedType == 'Category' ? val : '  $val';
+
+                        if (existingValue != null && index != null) {
+                          _ranks.removeAt(index);
+                        }
+
+                        if (selectedType == 'Category') {
+                          if (existingValue != null && index != null && index < _ranks.length) {
+                            _ranks.insert(index, formattedVal);
+                          } else {
+                            _ranks.add(formattedVal);
+                          }
+                        } else {
+                          if (selectedParent != null) {
+                            int insertIdx = _ranks.indexOf(selectedParent!);
+                            if (insertIdx != -1) {
+                              int i = insertIdx + 1;
+                              while (i < _ranks.length && _ranks[i].startsWith(' ')) {
+                                i++;
+                              }
+                              _ranks.insert(i, formattedVal);
+                            } else {
+                              _ranks.add(formattedVal);
+                            }
+                          } else {
+                            _ranks.add(formattedVal);
+                          }
+                        }
+                      }
+                    });
+
+                    await _saveAttributes(type);
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: widget.goldAccent),
+                  child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -161,33 +283,51 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
         final item = items[index];
         final isAll = item.toLowerCase() == 'all';
         
-        return Card(
-          color: widget.isDark ? const Color(0xFF0C5A32).withOpacity(0.1) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-            side: BorderSide(color: widget.goldAccent.withOpacity(0.3)),
-          ),
-          margin: const EdgeInsets.only(bottom: 10),
-          child: ListTile(
-            title: Text(
-              item,
-              style: TextStyle(
-                color: isAll ? widget.goldAccent : widget.textThemeColor,
-                fontWeight: isAll ? FontWeight.bold : FontWeight.w500,
+        final isSub = type == 'Rank' && item.startsWith(' ');
+        final displayText = isSub ? item.trim() : item;
+        final isCategoryHeader = type == 'Rank' && !isSub && !isAll;
+
+        return Padding(
+          padding: EdgeInsets.only(left: isSub ? 20.0 : 0.0),
+          child: Card(
+            color: isCategoryHeader 
+                ? (widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.2) : const Color(0xFFE8F5EE))
+                : (widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.1) : Colors.white),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(
+                color: isCategoryHeader ? widget.goldAccent : widget.goldAccent.withValues(alpha: 0.3),
+                width: isCategoryHeader ? 1.2 : 1.0,
               ),
             ),
-            trailing: isAll ? const SizedBox.shrink() : Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit, color: widget.valueGreenColor, size: 20),
-                  onPressed: () => _showAddEditDialog(type, existingValue: item, index: index),
+            margin: const EdgeInsets.only(bottom: 10),
+            child: ListTile(
+              leading: isSub 
+                  ? Icon(Icons.subdirectory_arrow_right, color: widget.goldAccent.withValues(alpha: 0.7), size: 16) 
+                  : null,
+              title: Text(
+                displayText,
+                style: TextStyle(
+                  color: isAll 
+                      ? widget.goldAccent 
+                      : (isCategoryHeader ? widget.goldAccent : widget.textThemeColor),
+                  fontWeight: (isAll || isCategoryHeader) ? FontWeight.bold : FontWeight.w500,
+                  fontSize: isCategoryHeader ? 14 : 13,
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                  onPressed: () => _deleteAttribute(type, index),
-                ),
-              ],
+              ),
+              trailing: isAll ? const SizedBox.shrink() : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: widget.valueGreenColor, size: 20),
+                    onPressed: () => _showAddEditDialog(type, existingValue: item, index: index),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                    onPressed: () => _deleteAttribute(type, index),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -202,7 +342,7 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
       child: Scaffold(
         backgroundColor: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
         appBar: AppBar(
-          backgroundColor: widget.isDark ? const Color(0xFF03140A).withOpacity(0.85) : Colors.white.withOpacity(0.85),
+          backgroundColor: widget.isDark ? const Color(0xFF03140A).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.85),
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: widget.goldAccent),

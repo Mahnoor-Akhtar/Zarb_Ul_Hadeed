@@ -25,7 +25,8 @@ class DashboardScreen extends StatefulWidget {
   State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _bgAnimationController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -45,13 +46,48 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   String _analysisFilterRank = 'All';
 
   // Dynamic Attributes Lists
-  List<String> _tradesList = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
-  List<String> _ranksList = ['All', 'Officers', 'JCOs', 'Soldiers'];
+  List<String> _tradesList = [
+    'All',
+    'Gnr',
+    'TA',
+    'OCU',
+    'DMT',
+    'DSV',
+    'Svy',
+    'Clk',
+    'Ck',
+    'Engr',
+    'N/A',
+    'LAD',
+    'NCB',
+    'S/W',
+    'Civ',
+  ];
+  List<String> _ranksList = [
+    'All',
+    'Officers',
+    '  Lt Col',
+    '  Maj',
+    '  Capt',
+    '  Lt',
+    '  2/Lt',
+    'JCOs',
+    '  SM',
+    '  Sub',
+    '  N/Sub',
+    'Soldiers',
+    '  Hav',
+    '  Lhav',
+    '  Nk',
+    '  Lnk',
+    '  Sep',
+  ];
   List<String> _batteriesList = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
 
   // Edit Tab State Variables
   final TextEditingController _editSearchController = TextEditingController();
-  final TextEditingController _settingsAdminUsernameController = TextEditingController();
+  final TextEditingController _settingsAdminUsernameController =
+      TextEditingController();
   String _editSearchQuery = '';
   final Set<String> _expandedEditCategories = {};
   final Set<String> _expandedEditSubcategories = {};
@@ -68,7 +104,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   bool get _canAccessFABs {
     return MockDataManager().role == 'Administrator';
   }
-
 
   @override
   void initState() {
@@ -135,25 +170,30 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     // Theme Colors refined for maximum visibility in both Light and Dark modes
     final bgColor = isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE);
     final textThemeColor = isDark ? Colors.white : const Color(0xFF042011);
-    final silverText = isDark ? const Color(0xFFE5E5E5) : const Color(0xFF4A5D52);
-    final goldAccent = isDark ? const Color(0xFFCD9B2D) : const Color(0xFF9E7715);
+    final silverText = isDark
+        ? const Color(0xFFE5E5E5)
+        : const Color(0xFF4A5D52);
+    final goldAccent = isDark
+        ? const Color(0xFFCD9B2D)
+        : const Color(0xFF9E7715);
     final neonGreen = const Color(0xFF00FF66);
     final valueGreenColor = isDark ? neonGreen : const Color(0xFF0C5A32);
 
     final manager = PersonnelDataManager();
     // Filter categories based on search input and populate count dynamically
-    final filteredCategories = manager.categoryHierarchy.keys.map((name) {
-      return {
-        'name': name,
-        'count': manager.getCountForCategory(name),
-      };
-    }).where((cat) {
-      return cat['name'].toString().toLowerCase().contains(_searchQuery);
-    }).toList();
+    final filteredCategories = manager.categoryHierarchy.keys
+        .map((name) {
+          return {'name': name, 'count': manager.getCountForCategory(name)};
+        })
+        .where((cat) {
+          return cat['name'].toString().toLowerCase().contains(_searchQuery);
+        })
+        .toList();
 
     return Scaffold(
       backgroundColor: bgColor,
-      extendBodyBehindAppBar: true, // Enables content to scroll behind glass app bar
+      extendBodyBehindAppBar:
+          true, // Enables content to scroll behind glass app bar
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70.0),
         child: AppBar(
@@ -218,7 +258,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? const Color(0xFFE5E5E5) : const Color(0xFF4A5D52),
+                    color: isDark
+                        ? const Color(0xFFE5E5E5)
+                        : const Color(0xFF4A5D52),
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -236,7 +278,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   size: 22,
                 ),
                 onPressed: widget.onToggleTheme,
-                tooltip: isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+                tooltip: isDark
+                    ? 'Switch to Light Theme'
+                    : 'Switch to Dark Theme',
               ),
             ),
 
@@ -258,7 +302,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     child: Container(
                       padding: const EdgeInsets.all(3.5),
                       decoration: const BoxDecoration(
-                        color: Color(0xFF00FF66), // Neon Green always on dark app bar
+                        color: Color(
+                          0xFF00FF66,
+                        ), // Neon Green always on dark app bar
                         shape: BoxShape.circle,
                       ),
                       child: const Text(
@@ -289,18 +335,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 offset: const Offset(0, 45),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(
-                    color: Color(0xFFCD9B2D),
-                    width: 1,
-                  ),
+                  side: const BorderSide(color: Color(0xFFCD9B2D), width: 1),
                 ),
-                color: isDark ? const Color(0xFF0A2214) : const Color(0xFFE2EFE9),
+                color: isDark
+                    ? const Color(0xFF0A2214)
+                    : const Color(0xFFE2EFE9),
                 itemBuilder: (BuildContext context) => [
                   PopupMenuItem<String>(
                     enabled: false,
                     child: Row(
                       children: [
-                        const Icon(Icons.person, color: Color(0xFFCD9B2D), size: 18),
+                        const Icon(
+                          Icons.person,
+                          color: Color(0xFFCD9B2D),
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           MockDataManager().username != null
@@ -319,14 +368,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     enabled: false,
                     child: Row(
                       children: [
-                        Icon(Icons.shield_outlined, color: silverText, size: 18),
+                        Icon(
+                          Icons.shield_outlined,
+                          color: silverText,
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           MockDataManager().role ?? 'Administrator',
-                          style: TextStyle(
-                            color: silverText,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: silverText, fontSize: 12),
                         ),
                       ],
                     ),
@@ -336,7 +386,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     value: 'logout',
                     child: Row(
                       children: [
-                        const Icon(Icons.logout, color: Colors.redAccent, size: 18),
+                        const Icon(
+                          Icons.logout,
+                          color: Colors.redAccent,
+                          size: 18,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Logout',
@@ -427,24 +481,40 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                             children: [
                               // SUMMARY STATS CARD (Overall glass-morphism header)
                               Container(
-                                padding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 14.0),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18.0,
+                                  horizontal: 14.0,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.18) : Colors.white,
+                                  color: isDark
+                                      ? const Color(
+                                          0xFF0C5A32,
+                                        ).withValues(alpha: 0.18)
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: isDark ? goldAccent.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.25),
+                                    color: isDark
+                                        ? goldAccent.withValues(alpha: 0.35)
+                                        : const Color(
+                                            0xFF0C5A32,
+                                          ).withValues(alpha: 0.25),
                                     width: 1.2,
                                   ),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: isDark ? Colors.black.withValues(alpha: 0.2) : const Color(0xFF0C5A32).withValues(alpha: 0.06),
+                                      color: isDark
+                                          ? Colors.black.withValues(alpha: 0.2)
+                                          : const Color(
+                                              0xFF0C5A32,
+                                            ).withValues(alpha: 0.06),
                                       blurRadius: 12,
                                       spreadRadius: 1,
                                     ),
                                   ],
                                 ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
                                   children: [
                                     // Total Stats (Gold)
                                     _buildSummaryItem(
@@ -457,7 +527,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                     // Fighting Stats (Neon Green / Deep Emerald)
                                     _buildSummaryItem(
                                       label: 'FIGHTING',
-                                      value: '${nominalRollList.where((p) => _isFighting(p)).length}',
+                                      value:
+                                          '${nominalRollList.where((p) => _isFighting(p)).length}',
                                       valueColor: valueGreenColor,
                                       labelColor: silverText,
                                     ),
@@ -465,7 +536,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                     // Non Fighting Stats (Gold / Deep Emerald)
                                     _buildSummaryItem(
                                       label: 'NON FIGHTING',
-                                      value: '${nominalRollList.where((p) => !_isFighting(p)).length}',
+                                      value:
+                                          '${nominalRollList.where((p) => !_isFighting(p)).length}',
                                       valueColor: valueGreenColor,
                                       labelColor: silverText,
                                     ),
@@ -478,12 +550,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               GridView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  childAspectRatio: 2.6,
-                                ),
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 2,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      childAspectRatio: 2.6,
+                                    ),
                                 padding: EdgeInsets.zero,
                                 itemCount: filteredCategories.length,
                                 itemBuilder: (context, index) {
@@ -493,35 +566,49 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => CategoryPersonnelListScreen(
-                                            categoryName: cat['name'] as String,
-                                            isDark: isDark,
-                                            textThemeColor: textThemeColor,
-                                            silverText: silverText,
-                                            goldAccent: goldAccent,
-                                            valueGreenColor: valueGreenColor,
-                                            getPersonStatus: _getPersonStatus,
-                                          ),
+                                          builder: (context) =>
+                                              CategoryPersonnelListScreen(
+                                                categoryName:
+                                                    cat['name'] as String,
+                                                isDark: isDark,
+                                                textThemeColor: textThemeColor,
+                                                silverText: silverText,
+                                                goldAccent: goldAccent,
+                                                valueGreenColor:
+                                                    valueGreenColor,
+                                                getPersonStatus:
+                                                    _getPersonStatus,
+                                              ),
                                         ),
                                       );
                                     },
                                     child: Container(
                                       decoration: BoxDecoration(
                                         color: isDark
-                                            ? const Color(0xFF0C5A32).withValues(alpha: 0.12)
+                                            ? const Color(
+                                                0xFF0C5A32,
+                                              ).withValues(alpha: 0.12)
                                             : Colors.white,
                                         borderRadius: BorderRadius.circular(12),
                                         border: Border.all(
                                           color: isDark
-                                              ? goldAccent.withValues(alpha: 0.25)
-                                              : const Color(0xFF0C5A32).withValues(alpha: 0.18),
+                                              ? goldAccent.withValues(
+                                                  alpha: 0.25,
+                                                )
+                                              : const Color(
+                                                  0xFF0C5A32,
+                                                ).withValues(alpha: 0.18),
                                           width: 1.0,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
                                             color: isDark
-                                                ? Colors.black.withValues(alpha: 0.1)
-                                                : const Color(0xFF0C5A32).withValues(alpha: 0.03),
+                                                ? Colors.black.withValues(
+                                                    alpha: 0.1,
+                                                  )
+                                                : const Color(
+                                                    0xFF0C5A32,
+                                                  ).withValues(alpha: 0.03),
                                             blurRadius: 8,
                                           ),
                                         ],
@@ -537,17 +624,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
                                                     cat['name'] as String,
                                                     maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
                                                     style: TextStyle(
                                                       color: textThemeColor,
                                                       fontSize: 13,
-                                                      fontWeight: FontWeight.w700,
+                                                      fontWeight:
+                                                          FontWeight.w700,
                                                       letterSpacing: 0.3,
                                                     ),
                                                   ),
@@ -557,14 +648,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                                     style: TextStyle(
                                                       color: silverText,
                                                       fontSize: 10,
-                                                      fontWeight: FontWeight.w500,
+                                                      fontWeight:
+                                                          FontWeight.w500,
                                                     ),
                                                   ),
                                                 ],
                                               ),
                                             ),
                                             Padding(
-                                              padding: const EdgeInsets.only(right: 14.0),
+                                              padding: const EdgeInsets.only(
+                                                right: 14.0,
+                                              ),
                                               child: Text(
                                                 '${cat['count']}',
                                                 style: TextStyle(
@@ -586,86 +680,116 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
                               // DETAILED STRENGTH BREAKDOWNS SECTION
                               if (_searchQuery.isEmpty) ...[
-                                ...manager.categoryHierarchy.entries.where((entry) => entry.value != null).map((entry) {
-                                  final categoryName = entry.key;
-                                  final categoryData = entry.value;
-                                  final count = manager.getCountForCategory(categoryName);
-                                  
-                                  List<Widget> columns = [];
-                                  if (categoryData is List) {
-                                    final List<String> list = List<String>.from(categoryData);
-                                    final mid = (list.length / 2).ceil();
-                                    final leftItems = list.take(mid).toList();
-                                    final rightItems = list.skip(mid).toList();
-                                    
-                                    columns = [
-                                      _buildDetailColumn(
-                                        isDark: isDark,
-                                        textThemeColor: textThemeColor,
-                                        goldAccent: goldAccent,
-                                        silverText: silverText,
-                                        valueGreenColor: valueGreenColor,
-                                        mainCategory: categoryName,
-                                        context: context,
-                                        items: leftItems.map((sub) => {
-                                          'name': sub,
-                                          'val': '${manager.getCountForSubcategory(categoryName, sub)}',
-                                        }).toList(),
-                                      ),
-                                      if (rightItems.isNotEmpty)
-                                        _buildDetailColumn(
-                                          isDark: isDark,
-                                          textThemeColor: textThemeColor,
-                                          goldAccent: goldAccent,
-                                          silverText: silverText,
-                                          valueGreenColor: valueGreenColor,
-                                          mainCategory: categoryName,
-                                          context: context,
-                                          items: rightItems.map((sub) => {
-                                            'name': sub,
-                                            'val': '${manager.getCountForSubcategory(categoryName, sub)}',
-                                          }).toList(),
-                                        ),
-                                    ];
-                                  } else if (categoryData is Map) {
-                                    final map = Map<String, dynamic>.from(categoryData);
-                                    columns = map.entries.map((subEntry) {
-                                      final subName = subEntry.key;
-                                      final List<String> subSubList = List<String>.from(subEntry.value as List);
-                                      
-                                      return _buildDetailColumn(
-                                        header: '$subName - ${manager.getCountForSubcategory(categoryName, subName)}',
-                                        isDark: isDark,
-                                        textThemeColor: textThemeColor,
-                                        goldAccent: goldAccent,
-                                        silverText: silverText,
-                                        valueGreenColor: valueGreenColor,
-                                        mainCategory: categoryName,
-                                        subCategory: subName,
-                                        context: context,
-                                        items: subSubList.map((subSub) => {
-                                          'name': subSub,
-                                          'val': '${manager.getCountForSubSubcategory(categoryName, subName, subSub)}',
-                                        }).toList(),
+                                ...manager.categoryHierarchy.entries
+                                    .where((entry) => entry.value != null)
+                                    .map((entry) {
+                                      final categoryName = entry.key;
+                                      final categoryData = entry.value;
+                                      final count = manager.getCountForCategory(
+                                        categoryName,
                                       );
-                                    }).toList();
-                                  }
-                                  
-                                  return Column(
-                                    children: [
-                                      _buildDetailsPanel(
-                                        title: '$categoryName - $count',
-                                        isDark: isDark,
-                                        goldAccent: goldAccent,
-                                        silverText: silverText,
-                                        textThemeColor: textThemeColor,
-                                        bulletColor: valueGreenColor,
-                                        columns: columns,
-                                      ),
-                                      const SizedBox(height: 15),
-                                    ],
-                                  );
-                                }),
+
+                                      List<Widget> columns = [];
+                                      if (categoryData is List) {
+                                        final List<String> list =
+                                            List<String>.from(categoryData);
+                                        final mid = (list.length / 2).ceil();
+                                        final leftItems = list
+                                            .take(mid)
+                                            .toList();
+                                        final rightItems = list
+                                            .skip(mid)
+                                            .toList();
+
+                                        columns = [
+                                          _buildDetailColumn(
+                                            isDark: isDark,
+                                            textThemeColor: textThemeColor,
+                                            goldAccent: goldAccent,
+                                            silverText: silverText,
+                                            valueGreenColor: valueGreenColor,
+                                            mainCategory: categoryName,
+                                            context: context,
+                                            items: leftItems
+                                                .map(
+                                                  (sub) => {
+                                                    'name': sub,
+                                                    'val':
+                                                        '${manager.getCountForSubcategory(categoryName, sub)}',
+                                                  },
+                                                )
+                                                .toList(),
+                                          ),
+                                          if (rightItems.isNotEmpty)
+                                            _buildDetailColumn(
+                                              isDark: isDark,
+                                              textThemeColor: textThemeColor,
+                                              goldAccent: goldAccent,
+                                              silverText: silverText,
+                                              valueGreenColor: valueGreenColor,
+                                              mainCategory: categoryName,
+                                              context: context,
+                                              items: rightItems
+                                                  .map(
+                                                    (sub) => {
+                                                      'name': sub,
+                                                      'val':
+                                                          '${manager.getCountForSubcategory(categoryName, sub)}',
+                                                    },
+                                                  )
+                                                  .toList(),
+                                            ),
+                                        ];
+                                      } else if (categoryData is Map) {
+                                        final map = Map<String, dynamic>.from(
+                                          categoryData,
+                                        );
+                                        columns = map.entries.map((subEntry) {
+                                          final subName = subEntry.key;
+                                          final List<String> subSubList =
+                                              List<String>.from(
+                                                subEntry.value as List,
+                                              );
+
+                                          return _buildDetailColumn(
+                                            header:
+                                                '$subName - ${manager.getCountForSubcategory(categoryName, subName)}',
+                                            isDark: isDark,
+                                            textThemeColor: textThemeColor,
+                                            goldAccent: goldAccent,
+                                            silverText: silverText,
+                                            valueGreenColor: valueGreenColor,
+                                            mainCategory: categoryName,
+                                            subCategory: subName,
+                                            context: context,
+                                            items: subSubList
+                                                .map(
+                                                  (subSub) => {
+                                                    'name': subSub,
+                                                    'val':
+                                                        '${manager.getCountForSubSubcategory(categoryName, subName, subSub)}',
+                                                  },
+                                                )
+                                                .toList(),
+                                          );
+                                        }).toList();
+                                      }
+
+                                      return Column(
+                                        children: [
+                                          _buildDetailsPanel(
+                                            title: '$categoryName - $count',
+                                            isDark: isDark,
+                                            goldAccent: goldAccent,
+                                            silverText: silverText,
+                                            textThemeColor: textThemeColor,
+                                            bulletColor: valueGreenColor,
+                                            columns: columns,
+                                          ),
+                                          const SizedBox(height: 15),
+                                        ],
+                                      );
+                                    }),
                               ],
                             ],
                           ),
@@ -674,80 +798,121 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ],
                   )
                 : _selectedTabIndex == 1
-                    ? _buildAnalysisTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
-                    : _selectedTabIndex == 2
-                        ? _buildNominalRollTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
-                        : _canAccessEditTab
-                            ? (_selectedTabIndex == 3
-                                ? _buildEditTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor)
-                                : _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor))
-                            : _buildSettingsTab(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
+                ? _buildAnalysisTab(
+                    context,
+                    isDark,
+                    textThemeColor,
+                    silverText,
+                    goldAccent,
+                    valueGreenColor,
+                  )
+                : _selectedTabIndex == 2
+                ? _buildNominalRollTab(
+                    context,
+                    isDark,
+                    textThemeColor,
+                    silverText,
+                    goldAccent,
+                    valueGreenColor,
+                  )
+                : _canAccessEditTab
+                ? (_selectedTabIndex == 3
+                      ? _buildEditTab(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        )
+                      : _buildSettingsTab(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        ))
+                : _buildSettingsTab(
+                    context,
+                    isDark,
+                    textThemeColor,
+                    silverText,
+                    goldAccent,
+                    valueGreenColor,
+                  ),
           ),
 
           // 4. FLOATING GLOWING SEARCH BAR
           if (_selectedTabIndex == 0)
             Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.08),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: TextFormField(
-                controller: _searchController,
-                style: TextStyle(
-                  color: textThemeColor,
-                  fontSize: 15,
-                ),
-                decoration: InputDecoration(
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: goldAccent.withValues(alpha: 0.8),
-                    size: 22,
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: Icon(Icons.clear, color: silverText, size: 20),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  hintText: 'Search Personnel...',
-                  hintStyle: TextStyle(
-                    color: isDark ? Colors.white.withValues(alpha: 0.4) : const Color(0xFF0C5A32).withValues(alpha: 0.5),
-                    fontSize: 15,
-                  ),
-                  filled: true,
-                  fillColor: isDark ? const Color(0xFF0A2214).withValues(alpha: 0.85) : Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: isDark ? goldAccent.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.25),
-                      width: 1.0,
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? const Color(0xFF0C5A32).withValues(alpha: 0.25)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                      offset: const Offset(0, -2),
                     ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(
-                      color: goldAccent,
-                      width: 1.2,
+                  ],
+                ),
+                child: TextFormField(
+                  controller: _searchController,
+                  style: TextStyle(color: textThemeColor, fontSize: 15),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: goldAccent.withValues(alpha: 0.8),
+                      size: 22,
+                    ),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              color: silverText,
+                              size: 20,
+                            ),
+                            onPressed: () {
+                              _searchController.clear();
+                            },
+                          )
+                        : null,
+                    hintText: 'Search Personnel...',
+                    hintStyle: TextStyle(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.4)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.5),
+                      fontSize: 15,
+                    ),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF0A2214).withValues(alpha: 0.85)
+                        : Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: isDark
+                            ? goldAccent.withValues(alpha: 0.35)
+                            : const Color(0xFF0C5A32).withValues(alpha: 0.25),
+                        width: 1.0,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: goldAccent, width: 1.2),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
           // MAIN DYNAMIC FAB SPEED DIAL
           if (_selectedTabIndex == 0 && _canAccessFABs) ...[
             // 1. ADD SUB-FAB (PLUS)
@@ -768,7 +933,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+                          color: isDark
+                              ? const Color(0xFFCD9B2D).withValues(alpha: 0.25)
+                              : const Color(0xFF0C5A32).withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -776,8 +943,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { _isFabMenuOpen = false; });
-                        _showAddCategoryDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        setState(() {
+                          _isFabMenuOpen = false;
+                        });
+                        _showAddCategoryDialog(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        );
                       },
                       mini: true,
                       backgroundColor: goldAccent,
@@ -789,7 +965,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               ),
             ),
-            
+
             // 2. EDIT SUB-FAB (PENCIL)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
@@ -808,7 +984,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+                          color: isDark
+                              ? const Color(0xFFCD9B2D).withValues(alpha: 0.25)
+                              : const Color(0xFF0C5A32).withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -816,8 +994,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { _isFabMenuOpen = false; });
-                        _showManageCategoryDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        setState(() {
+                          _isFabMenuOpen = false;
+                        });
+                        _showManageCategoryDialog(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        );
                       },
                       mini: true,
                       backgroundColor: goldAccent,
@@ -829,7 +1016,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               ),
             ),
-            
+
             // 3. DELETE SUB-FAB (TRASH)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
@@ -848,7 +1035,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+                          color: isDark
+                              ? const Color(0xFFCD9B2D).withValues(alpha: 0.25)
+                              : const Color(0xFF0C5A32).withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -856,8 +1045,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { _isFabMenuOpen = false; });
-                        _showDeleteCategoryDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        setState(() {
+                          _isFabMenuOpen = false;
+                        });
+                        _showDeleteCategoryDialog(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        );
                       },
                       mini: true,
                       backgroundColor: goldAccent,
@@ -869,7 +1067,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               ),
             ),
-            
+
             // 4. MAIN TRIGGER FAB (MENU / CLOSE)
             Positioned(
               bottom: 95,
@@ -881,7 +1079,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.28),
+                      color: isDark
+                          ? const Color(0xFFCD9B2D).withValues(alpha: 0.35)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.28),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -928,7 +1128,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+                          color: isDark
+                              ? const Color(0xFFCD9B2D).withValues(alpha: 0.25)
+                              : const Color(0xFF0C5A32).withValues(alpha: 0.2),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -936,8 +1138,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { _isRollFabMenuOpen = false; });
-                        _showPersonFormDialog(context, isDark: isDark, textThemeColor: textThemeColor, silverText: silverText, goldAccent: goldAccent, valueGreenColor: valueGreenColor);
+                        setState(() {
+                          _isRollFabMenuOpen = false;
+                        });
+                        _showPersonFormDialog(
+                          context,
+                          isDark: isDark,
+                          textThemeColor: textThemeColor,
+                          silverText: silverText,
+                          goldAccent: goldAccent,
+                          valueGreenColor: valueGreenColor,
+                        );
                       },
                       mini: true,
                       backgroundColor: goldAccent,
@@ -949,7 +1160,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               ),
             ),
-            
+
             // 2. TOGGLE EDIT MODE SUB-FAB (PENCIL)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
@@ -968,9 +1179,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: _isRollEditMode 
+                          color: _isRollEditMode
                               ? Colors.redAccent.withValues(alpha: 0.3)
-                              : (isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2)),
+                              : (isDark
+                                    ? const Color(
+                                        0xFFCD9B2D,
+                                      ).withValues(alpha: 0.25)
+                                    : const Color(
+                                        0xFF0C5A32,
+                                      ).withValues(alpha: 0.2)),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -978,23 +1195,30 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { 
-                          _isRollFabMenuOpen = false; 
+                        setState(() {
+                          _isRollFabMenuOpen = false;
                           _isRollEditMode = !_isRollEditMode;
                           _isRollDeleteMode = false;
                         });
                       },
                       mini: true,
-                      backgroundColor: _isRollEditMode ? Colors.redAccent : goldAccent,
+                      backgroundColor: _isRollEditMode
+                          ? Colors.redAccent
+                          : goldAccent,
                       foregroundColor: isDark ? Colors.black : Colors.white,
                       elevation: 0,
-                      child: Icon(_isRollEditMode ? Icons.edit_off_rounded : Icons.edit_rounded, size: 18),
+                      child: Icon(
+                        _isRollEditMode
+                            ? Icons.edit_off_rounded
+                            : Icons.edit_rounded,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-            
+
             // 3. TOGGLE DELETE MODE SUB-FAB (TRASH)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
@@ -1015,7 +1239,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         BoxShadow(
                           color: _isRollDeleteMode
                               ? Colors.redAccent.withValues(alpha: 0.3)
-                              : (isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2)),
+                              : (isDark
+                                    ? const Color(
+                                        0xFFCD9B2D,
+                                      ).withValues(alpha: 0.25)
+                                    : const Color(
+                                        0xFF0C5A32,
+                                      ).withValues(alpha: 0.2)),
                           blurRadius: 6,
                           offset: const Offset(0, 1.5),
                         ),
@@ -1023,23 +1253,30 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() { 
-                          _isRollFabMenuOpen = false; 
+                        setState(() {
+                          _isRollFabMenuOpen = false;
                           _isRollDeleteMode = !_isRollDeleteMode;
                           _isRollEditMode = false;
                         });
                       },
                       mini: true,
-                      backgroundColor: _isRollDeleteMode ? Colors.redAccent : goldAccent,
+                      backgroundColor: _isRollDeleteMode
+                          ? Colors.redAccent
+                          : goldAccent,
                       foregroundColor: isDark ? Colors.black : Colors.white,
                       elevation: 0,
-                      child: Icon(_isRollDeleteMode ? Icons.delete_forever_rounded : Icons.delete_rounded, size: 18),
+                      child: Icon(
+                        _isRollDeleteMode
+                            ? Icons.delete_forever_rounded
+                            : Icons.delete_rounded,
+                        size: 18,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-            
+
             // 4. MAIN TRIGGER FAB (MENU / CLOSE)
             Positioned(
               bottom: 95,
@@ -1051,7 +1288,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: isDark ? const Color(0xFFCD9B2D).withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.28),
+                      color: isDark
+                          ? const Color(0xFFCD9B2D).withValues(alpha: 0.35)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.28),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -1070,7 +1309,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     duration: const Duration(milliseconds: 250),
                     turns: _isRollFabMenuOpen ? 0.25 : 0.0,
                     child: Icon(
-                      _isRollFabMenuOpen ? Icons.close_rounded : Icons.menu_rounded,
+                      _isRollFabMenuOpen
+                          ? Icons.close_rounded
+                          : Icons.menu_rounded,
                       size: 22,
                     ),
                   ),
@@ -1121,7 +1362,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               unselectedItemColor: isDark
                   ? silverText.withValues(alpha: 0.5)
                   : const Color(0xFF0C5A32).withValues(alpha: 0.55),
-              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
               unselectedLabelStyle: const TextStyle(fontSize: 11),
               items: [
                 const BottomNavigationBarItem(
@@ -1170,8 +1414,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         final armyNo = (person['armyNo'] ?? '').toLowerCase();
         final rank = (person['rank'] ?? '').toLowerCase();
         return name.contains(_editSearchQuery) ||
-               armyNo.contains(_editSearchQuery) ||
-               rank.contains(_editSearchQuery);
+            armyNo.contains(_editSearchQuery) ||
+            rank.contains(_editSearchQuery);
       }).toList();
     } else {
       filteredList = [];
@@ -1180,7 +1424,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return Column(
       children: [
         SizedBox(height: MediaQuery.of(context).padding.top + 80.0),
-        
+
         // Search bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -1189,7 +1433,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.15)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.04),
                   blurRadius: 8,
                 ),
               ],
@@ -1209,16 +1455,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     : null,
                 hintText: 'Search person to edit assignment...',
                 hintStyle: TextStyle(
-                  color: isDark ? Colors.white.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.45),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.45),
                   fontSize: 14,
                 ),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.05) : Colors.white,
+                fillColor: isDark
+                    ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
+                    : Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                    color: isDark
+                        ? goldAccent.withValues(alpha: 0.25)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.15),
                     width: 1.0,
                   ),
                 ),
@@ -1230,33 +1482,55 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
           ),
         ),
-        
+
         const SizedBox(height: 12),
 
         Expanded(
           child: _editSearchQuery.isNotEmpty
               ? filteredList.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No Personnel Found',
-                        style: TextStyle(color: silverText, fontSize: 13),
-                      ),
-                    )
-                  : ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      itemCount: filteredList.length,
-                      itemBuilder: (context, index) {
-                        return _buildEditPersonnelRow(filteredList[index], isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                      },
-                    )
+                    ? Center(
+                        child: Text(
+                          'No Personnel Found',
+                          style: TextStyle(color: silverText, fontSize: 13),
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                        itemCount: filteredList.length,
+                        itemBuilder: (context, index) {
+                          return _buildEditPersonnelRow(
+                            filteredList[index],
+                            isDark,
+                            textThemeColor,
+                            silverText,
+                            goldAccent,
+                            valueGreenColor,
+                          );
+                        },
+                      )
               : ListView.builder(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(left: 20, right: 20, bottom: 100),
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 100,
+                  ),
                   itemCount: manager.categoryHierarchy.keys.length,
                   itemBuilder: (context, index) {
-                    final categoryName = manager.categoryHierarchy.keys.elementAt(index);
-                    return _buildCategoryTreeTile(categoryName, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                    final categoryName = manager.categoryHierarchy.keys
+                        .elementAt(index);
+                    return _buildCategoryTreeTile(
+                      categoryName,
+                      isDark,
+                      textThemeColor,
+                      silverText,
+                      goldAccent,
+                      valueGreenColor,
+                    );
                   },
                 ),
         ),
@@ -1280,10 +1554,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.08) : Colors.white,
+        color: isDark
+            ? const Color(0xFF0C5A32).withValues(alpha: 0.08)
+            : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+          color: isDark
+              ? goldAccent.withValues(alpha: 0.25)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.15),
           width: 1.0,
         ),
       ),
@@ -1292,25 +1570,38 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           ListTile(
             title: Text(
               categoryName,
-              style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(
+                color: textThemeColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: valueGreenColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     '$count',
-                    style: TextStyle(color: valueGreenColor, fontWeight: FontWeight.bold, fontSize: 12),
+                    style: TextStyle(
+                      color: valueGreenColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: goldAccent,
                 ),
               ],
@@ -1329,7 +1620,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             const Divider(height: 1, thickness: 0.5),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: _buildCategoryChildren(categoryName, categoryData, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
+              child: _buildCategoryChildren(
+                categoryName,
+                categoryData,
+                isDark,
+                textThemeColor,
+                silverText,
+                goldAccent,
+                valueGreenColor,
+              ),
             ),
           ],
         ],
@@ -1351,7 +1650,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     if (categoryData == null) {
       // Leaf node directly: show personnel list
       final people = manager.getPeopleInNode(category: categoryName);
-      return _buildEditPersonnelList(people, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+      return _buildEditPersonnelList(
+        people,
+        isDark,
+        textThemeColor,
+        silverText,
+        goldAccent,
+        valueGreenColor,
+      );
     }
 
     if (categoryData is List<String>) {
@@ -1360,15 +1666,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         children: categoryData.map((subName) {
           final subPath = '$categoryName -> $subName';
           final isSubExpanded = _expandedEditSubcategories.contains(subPath);
-          final subCount = manager.getCountForSubcategory(categoryName, subName);
+          final subCount = manager.getCountForSubcategory(
+            categoryName,
+            subName,
+          );
 
           return Container(
             margin: const EdgeInsets.only(bottom: 6),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.5) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+              color: isDark
+                  ? const Color(0xFF03140A).withValues(alpha: 0.5)
+                  : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                color: isDark
+                    ? goldAccent.withValues(alpha: 0.15)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.08),
               ),
             ),
             child: Column(
@@ -1377,18 +1690,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   dense: true,
                   title: Text(
                     subName,
-                    style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      color: textThemeColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '$subCount',
-                        style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Icon(
-                        isSubExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                        isSubExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
                         color: goldAccent,
                         size: 18,
                       ),
@@ -1409,7 +1732,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   Padding(
                     padding: const EdgeInsets.all(6.0),
                     child: _buildEditPersonnelList(
-                      manager.getPeopleInNode(category: categoryName, subcategory: subName),
+                      manager.getPeopleInNode(
+                        category: categoryName,
+                        subcategory: subName,
+                      ),
                       isDark,
                       textThemeColor,
                       silverText,
@@ -1431,15 +1757,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         children: categoryData.keys.map((subName) {
           final subPath = '$categoryName -> $subName';
           final isSubExpanded = _expandedEditSubcategories.contains(subPath);
-          final subCount = manager.getCountForSubcategory(categoryName, subName);
+          final subCount = manager.getCountForSubcategory(
+            categoryName,
+            subName,
+          );
 
           return Container(
             margin: const EdgeInsets.only(bottom: 6),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.5) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+              color: isDark
+                  ? const Color(0xFF03140A).withValues(alpha: 0.5)
+                  : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                color: isDark
+                    ? goldAccent.withValues(alpha: 0.15)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.08),
               ),
             ),
             child: Column(
@@ -1448,18 +1781,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   dense: true,
                   title: Text(
                     subName,
-                    style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      color: textThemeColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         '$subCount',
-                        style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Icon(
-                        isSubExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                        isSubExpanded
+                            ? Icons.keyboard_arrow_up_rounded
+                            : Icons.keyboard_arrow_down_rounded,
                         color: goldAccent,
                         size: 18,
                       ),
@@ -1481,14 +1824,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     padding: const EdgeInsets.all(6.0),
                     child: Column(
                       children: categoryData[subName]!.map((subSubName) {
-                        final subSubPath = '$categoryName -> $subName -> $subSubName';
-                        final isSubSubExpanded = _expandedEditSubSubcategories.contains(subSubPath);
-                        final subSubCount = manager.getCountForSubSubcategory(categoryName, subName, subSubName);
+                        final subSubPath =
+                            '$categoryName -> $subName -> $subSubName';
+                        final isSubSubExpanded = _expandedEditSubSubcategories
+                            .contains(subSubPath);
+                        final subSubCount = manager.getCountForSubSubcategory(
+                          categoryName,
+                          subName,
+                          subSubName,
+                        );
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.black.withValues(alpha: 0.3) : Colors.white.withValues(alpha: 0.6),
+                            color: isDark
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.6),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Column(
@@ -1497,18 +1848,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 dense: true,
                                 title: Text(
                                   subSubName,
-                                  style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.w600),
+                                  style: TextStyle(
+                                    color: textThemeColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       '$subSubCount',
-                                      style: TextStyle(color: valueGreenColor, fontSize: 11, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        color: valueGreenColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const SizedBox(width: 8),
                                     Icon(
-                                      isSubSubExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                                      isSubSubExpanded
+                                          ? Icons.keyboard_arrow_up_rounded
+                                          : Icons.keyboard_arrow_down_rounded,
                                       color: goldAccent,
                                       size: 16,
                                     ),
@@ -1517,9 +1878,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 onTap: () {
                                   setState(() {
                                     if (isSubSubExpanded) {
-                                      _expandedEditSubSubcategories.remove(subSubPath);
+                                      _expandedEditSubSubcategories.remove(
+                                        subSubPath,
+                                      );
                                     } else {
-                                      _expandedEditSubSubcategories.add(subSubPath);
+                                      _expandedEditSubSubcategories.add(
+                                        subSubPath,
+                                      );
                                     }
                                   });
                                 },
@@ -1573,7 +1938,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         child: Center(
           child: Text(
             'No personnel assigned.',
-            style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
+            style: TextStyle(
+              color: silverText.withValues(alpha: 0.7),
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ),
       );
@@ -1581,7 +1950,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     return Column(
       children: people.map((person) {
-        return _buildEditPersonnelRow(person, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+        return _buildEditPersonnelRow(
+          person,
+          isDark,
+          textThemeColor,
+          silverText,
+          goldAccent,
+          valueGreenColor,
+        );
       }).toList(),
     );
   }
@@ -1654,10 +2030,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 const SizedBox(height: 2),
                 Text(
                   '$armyNo  •  ${status.displayPath}',
-                  style: TextStyle(
-                    color: silverText,
-                    fontSize: 10,
-                  ),
+                  style: TextStyle(color: silverText, fontSize: 10),
                 ),
               ],
             ),
@@ -1712,21 +2085,34 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           ),
           title: Text(
             title,
-            style: TextStyle(color: goldAccent, fontSize: 13, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: goldAccent,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: TextField(
             controller: controller,
             style: TextStyle(color: textThemeColor, fontSize: 13),
             decoration: InputDecoration(
               isDense: true,
-              enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.3))),
-              focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: goldAccent)),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                ),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: goldAccent),
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 11)),
+              child: Text(
+                'CANCEL',
+                style: TextStyle(color: silverText, fontSize: 11),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -1736,7 +2122,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 }
                 Navigator.pop(context);
               },
-              child: Text('RENAME', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 11)),
+              child: Text(
+                'RENAME',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
             ),
           ],
         );
@@ -1763,23 +2156,40 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           ),
           title: const Text(
             'CONFIRM DELETE',
-            style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Text(
             'Are you sure you want to delete "$itemName"? Assigned personnel will be updated.',
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12),
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black87,
+              fontSize: 12,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 11)),
+              child: Text(
+                'CANCEL',
+                style: TextStyle(color: silverText, fontSize: 11),
+              ),
             ),
             TextButton(
               onPressed: () {
                 onDelete();
                 Navigator.pop(context);
               },
-              child: const Text('DELETE', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 11)),
+              child: const Text(
+                'DELETE',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
             ),
           ],
         );
@@ -1796,7 +2206,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     final manager = PersonnelDataManager();
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -1806,7 +2216,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: Text(
                 'EDIT CATEGORY NAMES',
@@ -1824,13 +2237,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   physics: const BouncingScrollPhysics(),
                   children: manager.categoryHierarchy.keys.map((category) {
                     final catData = manager.categoryHierarchy[category];
-                    
+
                     return Card(
-                      color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      color: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                        side: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       child: ExpansionTile(
                         iconColor: goldAccent,
@@ -1840,11 +2257,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                             Expanded(
                               child: Text(
                                 category,
-                                style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(
+                                  color: textThemeColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                             IconButton(
-                              icon: Icon(Icons.edit_note_rounded, color: goldAccent, size: 18),
+                              icon: Icon(
+                                Icons.edit_note_rounded,
+                                color: goldAccent,
+                                size: 18,
+                              ),
                               onPressed: () {
                                 _showRenameDialog(
                                   context,
@@ -1873,25 +2298,43 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               padding: const EdgeInsets.all(10),
                               child: Text(
                                 'No subcategories assigned.',
-                                style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
+                                style: TextStyle(
+                                  color: silverText.withValues(alpha: 0.7),
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             )
                           else if (catData is List)
                             ...catData.map((sub) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.subdirectory_arrow_right_rounded, color: Colors.grey, size: 14),
+                                    const Icon(
+                                      Icons.subdirectory_arrow_right_rounded,
+                                      color: Colors.grey,
+                                      size: 14,
+                                    ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         sub,
-                                        style: TextStyle(color: textThemeColor, fontSize: 12),
+                                        style: TextStyle(
+                                          color: textThemeColor,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
                                     IconButton(
-                                      icon: Icon(Icons.edit_note_rounded, color: goldAccent, size: 16),
+                                      icon: Icon(
+                                        Icons.edit_note_rounded,
+                                        color: goldAccent,
+                                        size: 16,
+                                      ),
                                       onPressed: () {
                                         _showRenameDialog(
                                           context,
@@ -1899,7 +2342,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           sub,
                                           (newName) {
                                             setDialogState(() {
-                                              manager.renameSubcategory(category, sub, newName);
+                                              manager.renameSubcategory(
+                                                category,
+                                                sub,
+                                                newName,
+                                              );
                                             });
                                             setState(() {});
                                           },
@@ -1919,21 +2366,34 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           else if (catData is Map)
                             ...catData.entries.map((subEntry) {
                               final subName = subEntry.key;
-                              final subSubList = List<String>.from(subEntry.value as List);
-                              
+                              final subSubList = List<String>.from(
+                                subEntry.value as List,
+                              );
+
                               return Padding(
-                                padding: const EdgeInsets.only(left: 16, right: 8),
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 8,
+                                ),
                                 child: ExpansionTile(
                                   title: Row(
                                     children: [
                                       Expanded(
                                         child: Text(
                                           subName,
-                                          style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: textThemeColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                       IconButton(
-                                        icon: Icon(Icons.edit_note_rounded, color: goldAccent, size: 16),
+                                        icon: Icon(
+                                          Icons.edit_note_rounded,
+                                          color: goldAccent,
+                                          size: 16,
+                                        ),
                                         onPressed: () {
                                           _showRenameDialog(
                                             context,
@@ -1941,7 +2401,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             subName,
                                             (newName) {
                                               setDialogState(() {
-                                                manager.renameSubcategory(category, subName, newName);
+                                                manager.renameSubcategory(
+                                                  category,
+                                                  subName,
+                                                  newName,
+                                                );
                                               });
                                               setState(() {});
                                             },
@@ -1962,25 +2426,46 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           'No sub-subcategories details assigned.',
-                                          style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 10, fontStyle: FontStyle.italic),
+                                          style: TextStyle(
+                                            color: silverText.withValues(
+                                              alpha: 0.7,
+                                            ),
+                                            fontSize: 10,
+                                            fontStyle: FontStyle.italic,
+                                          ),
                                         ),
                                       )
                                     else
                                       ...subSubList.map((subSub) {
                                         return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 4,
+                                          ),
                                           child: Row(
                                             children: [
-                                              const Icon(Icons.subdirectory_arrow_right_rounded, color: Colors.grey, size: 12),
+                                              const Icon(
+                                                Icons
+                                                    .subdirectory_arrow_right_rounded,
+                                                color: Colors.grey,
+                                                size: 12,
+                                              ),
                                               const SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
                                                   subSub,
-                                                  style: TextStyle(color: textThemeColor, fontSize: 11),
+                                                  style: TextStyle(
+                                                    color: textThemeColor,
+                                                    fontSize: 11,
+                                                  ),
                                                 ),
                                               ),
                                               IconButton(
-                                                icon: Icon(Icons.edit_note_rounded, color: goldAccent, size: 14),
+                                                icon: Icon(
+                                                  Icons.edit_note_rounded,
+                                                  color: goldAccent,
+                                                  size: 14,
+                                                ),
                                                 onPressed: () {
                                                   _showRenameDialog(
                                                     context,
@@ -1988,7 +2473,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                                     subSub,
                                                     (newName) {
                                                       setDialogState(() {
-                                                        manager.renameSubSubcategory(category, subName, subSub, newName);
+                                                        manager
+                                                            .renameSubSubcategory(
+                                                              category,
+                                                              subName,
+                                                              subSub,
+                                                              newName,
+                                                            );
                                                       });
                                                       setState(() {});
                                                     },
@@ -1998,17 +2489,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                                     silverText,
                                                   );
                                                 },
-                                                constraints: const BoxConstraints(),
-                                                padding: const EdgeInsets.all(4),
+                                                constraints:
+                                                    const BoxConstraints(),
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         );
-                                      })
+                                      }),
                                   ],
                                 ),
                               );
-                            })
+                            }),
                         ],
                       ),
                     );
@@ -2018,7 +2512,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'CLOSE',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -2037,7 +2538,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     final manager = PersonnelDataManager();
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -2047,7 +2548,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: Colors.redAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: const Text(
                 'DELETE CATEGORIES',
@@ -2065,13 +2569,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   physics: const BouncingScrollPhysics(),
                   children: manager.categoryHierarchy.keys.map((category) {
                     final catData = manager.categoryHierarchy[category];
-                    
+
                     return Card(
-                      color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      color: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
-                        side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.15)),
+                        side: BorderSide(
+                          color: Colors.redAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       child: ExpansionTile(
                         iconColor: Colors.redAccent,
@@ -2081,11 +2589,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                             Expanded(
                               child: Text(
                                 category,
-                                style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(
+                                  color: textThemeColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 18),
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.redAccent,
+                                size: 18,
+                              ),
                               onPressed: () {
                                 _showDeleteConfirmDialog(
                                   context,
@@ -2112,32 +2628,53 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               padding: const EdgeInsets.all(10),
                               child: Text(
                                 'No subcategories assigned.',
-                                style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 11, fontStyle: FontStyle.italic),
+                                style: TextStyle(
+                                  color: silverText.withValues(alpha: 0.7),
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
                               ),
                             )
                           else if (catData is List)
                             ...catData.map((sub) {
                               return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.subdirectory_arrow_right_rounded, color: Colors.grey, size: 14),
+                                    const Icon(
+                                      Icons.subdirectory_arrow_right_rounded,
+                                      color: Colors.grey,
+                                      size: 14,
+                                    ),
                                     const SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         sub,
-                                        style: TextStyle(color: textThemeColor, fontSize: 12),
+                                        style: TextStyle(
+                                          color: textThemeColor,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: Colors.redAccent,
+                                        size: 16,
+                                      ),
                                       onPressed: () {
                                         _showDeleteConfirmDialog(
                                           context,
                                           sub,
                                           () {
                                             setDialogState(() {
-                                              manager.deleteSubcategory(category, sub);
+                                              manager.deleteSubcategory(
+                                                category,
+                                                sub,
+                                              );
                                             });
                                             setState(() {});
                                           },
@@ -2156,28 +2693,44 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                           else if (catData is Map)
                             ...catData.entries.map((subEntry) {
                               final subName = subEntry.key;
-                              final subSubList = List<String>.from(subEntry.value as List);
-                              
+                              final subSubList = List<String>.from(
+                                subEntry.value as List,
+                              );
+
                               return Padding(
-                                padding: const EdgeInsets.only(left: 16, right: 8),
+                                padding: const EdgeInsets.only(
+                                  left: 16,
+                                  right: 8,
+                                ),
                                 child: ExpansionTile(
                                   title: Row(
                                     children: [
                                       Expanded(
                                         child: Text(
                                           subName,
-                                          style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: textThemeColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 16),
+                                        icon: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Colors.redAccent,
+                                          size: 16,
+                                        ),
                                         onPressed: () {
                                           _showDeleteConfirmDialog(
                                             context,
                                             subName,
                                             () {
                                               setDialogState(() {
-                                                manager.deleteSubcategory(category, subName);
+                                                manager.deleteSubcategory(
+                                                  category,
+                                                  subName,
+                                                );
                                               });
                                               setState(() {});
                                             },
@@ -2197,32 +2750,58 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         padding: const EdgeInsets.all(8.0),
                                         child: Text(
                                           'No sub-subcategories details assigned.',
-                                          style: TextStyle(color: silverText.withValues(alpha: 0.7), fontSize: 10, fontStyle: FontStyle.italic),
+                                          style: TextStyle(
+                                            color: silverText.withValues(
+                                              alpha: 0.7,
+                                            ),
+                                            fontSize: 10,
+                                            fontStyle: FontStyle.italic,
+                                          ),
                                         ),
                                       )
                                     else
                                       ...subSubList.map((subSub) {
                                         return Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 4,
+                                          ),
                                           child: Row(
                                             children: [
-                                              const Icon(Icons.subdirectory_arrow_right_rounded, color: Colors.grey, size: 12),
+                                              const Icon(
+                                                Icons
+                                                    .subdirectory_arrow_right_rounded,
+                                                color: Colors.grey,
+                                                size: 12,
+                                              ),
                                               const SizedBox(width: 6),
                                               Expanded(
                                                 child: Text(
                                                   subSub,
-                                                  style: TextStyle(color: textThemeColor, fontSize: 11),
+                                                  style: TextStyle(
+                                                    color: textThemeColor,
+                                                    fontSize: 11,
+                                                  ),
                                                 ),
                                               ),
                                               IconButton(
-                                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 14),
+                                                icon: const Icon(
+                                                  Icons.delete_outline_rounded,
+                                                  color: Colors.redAccent,
+                                                  size: 14,
+                                                ),
                                                 onPressed: () {
                                                   _showDeleteConfirmDialog(
                                                     context,
                                                     subSub,
                                                     () {
                                                       setDialogState(() {
-                                                        manager.deleteSubSubcategory(category, subName, subSub);
+                                                        manager
+                                                            .deleteSubSubcategory(
+                                                              category,
+                                                              subName,
+                                                              subSub,
+                                                            );
                                                       });
                                                       setState(() {});
                                                     },
@@ -2231,17 +2810,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                                     silverText,
                                                   );
                                                 },
-                                                constraints: const BoxConstraints(),
-                                                padding: const EdgeInsets.all(4),
+                                                constraints:
+                                                    const BoxConstraints(),
+                                                padding: const EdgeInsets.all(
+                                                  4,
+                                                ),
                                               ),
                                             ],
                                           ),
                                         );
-                                      })
+                                      }),
                                   ],
                                 ),
                               );
-                            })
+                            }),
                         ],
                       ),
                     );
@@ -2251,7 +2833,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('CLOSE', style: TextStyle(color: silverText, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'CLOSE',
+                    style: TextStyle(
+                      color: silverText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -2270,11 +2859,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     final manager = PersonnelDataManager();
-    String addType = 'Main Category'; 
+    String addType = 'Main Category';
     final nameController = TextEditingController();
     String? selectedMainCat;
     String? selectedSubCat;
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -2295,7 +2884,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: Text(
                 'ADD NEW CATEGORY',
@@ -2313,26 +2905,49 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   children: [
                     Text(
                       'ADDITION TYPE',
-                      style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: silverText,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+                        color: isDark
+                            ? const Color(0xFF03140A)
+                            : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: goldAccent.withValues(alpha: 0.2)),
+                        border: Border.all(
+                          color: goldAccent.withValues(alpha: 0.2),
+                        ),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: addType,
-                          dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                          style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                          dropdownColor: isDark
+                              ? const Color(0xFF0A2214)
+                              : Colors.white,
+                          style: TextStyle(
+                            color: textThemeColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                           isExpanded: true,
                           items: const [
-                            DropdownMenuItem(value: 'Main Category', child: Text('Add Main Category')),
-                            DropdownMenuItem(value: 'Subcategory', child: Text('Add Subcategory')),
-                            DropdownMenuItem(value: 'Sub-subcategory', child: Text('Add Sub-subcategory Detail')),
+                            DropdownMenuItem(
+                              value: 'Main Category',
+                              child: Text('Add Main Category'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Subcategory',
+                              child: Text('Add Subcategory'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'Sub-subcategory',
+                              child: Text('Add Sub-subcategory Detail'),
+                            ),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -2349,28 +2964,49 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                     const SizedBox(height: 14),
 
-                    if (addType == 'Subcategory' || addType == 'Sub-subcategory') ...[
+                    if (addType == 'Subcategory' ||
+                        addType == 'Sub-subcategory') ...[
                       Text(
                         'SELECT MAIN CATEGORY',
-                        style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.2),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: selectedMainCat,
-                            hint: Text('Choose category', style: TextStyle(color: silverText, fontSize: 11)),
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                            hint: Text(
+                              'Choose category',
+                              style: TextStyle(color: silverText, fontSize: 11),
+                            ),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             isExpanded: true,
                             items: mainCategories.map((cat) {
-                              return DropdownMenuItem(value: cat, child: Text(cat));
+                              return DropdownMenuItem(
+                                value: cat,
+                                child: Text(cat),
+                              );
                             }).toList(),
                             onChanged: (val) {
                               setDialogState(() {
@@ -2387,25 +3023,45 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     if (addType == 'Sub-subcategory') ...[
                       Text(
                         'SELECT SUBCATEGORY',
-                        style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.2),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: selectedSubCat,
-                            hint: Text('Choose subcategory', style: TextStyle(color: silverText, fontSize: 11)),
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                            hint: Text(
+                              'Choose subcategory',
+                              style: TextStyle(color: silverText, fontSize: 11),
+                            ),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             isExpanded: true,
                             items: subCategories.map((sub) {
-                              return DropdownMenuItem(value: sub, child: Text(sub));
+                              return DropdownMenuItem(
+                                value: sub,
+                                child: Text(sub),
+                              );
                             }).toList(),
                             onChanged: (val) {
                               setDialogState(() {
@@ -2422,9 +3078,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       addType == 'Main Category'
                           ? 'MAIN CATEGORY NAME'
                           : addType == 'Subcategory'
-                              ? 'SUBCATEGORY NAME'
-                              : 'SUB-SUBCATEGORY NAME',
-                      style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold),
+                          ? 'SUBCATEGORY NAME'
+                          : 'SUB-SUBCATEGORY NAME',
+                      style: TextStyle(
+                        color: silverText,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     TextField(
@@ -2432,13 +3092,23 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       style: TextStyle(color: textThemeColor, fontSize: 13),
                       decoration: InputDecoration(
                         hintText: 'Enter name...',
-                        hintStyle: TextStyle(color: silverText.withValues(alpha: 0.5), fontSize: 12),
+                        hintStyle: TextStyle(
+                          color: silverText.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        fillColor: isDark
+                            ? const Color(0xFF03140A)
+                            : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.2)),
+                          borderSide: BorderSide(
+                            color: goldAccent.withValues(alpha: 0.2),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -2452,7 +3122,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('CANCEL', style: TextStyle(color: silverText, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'CANCEL',
+                    style: TextStyle(
+                      color: silverText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -2465,8 +3142,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       if (selectedMainCat == null) return;
                       manager.addSubcategory(selectedMainCat!, name);
                     } else if (addType == 'Sub-subcategory') {
-                      if (selectedMainCat == null || selectedSubCat == null) return;
-                      manager.addSubSubcategory(selectedMainCat!, selectedSubCat!, name);
+                      if (selectedMainCat == null || selectedSubCat == null)
+                        return;
+                      manager.addSubSubcategory(
+                        selectedMainCat!,
+                        selectedSubCat!,
+                        name,
+                      );
                     }
 
                     setState(() {});
@@ -2486,9 +3168,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0C5A32),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: const Text('ADD', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: const Text(
+                    'ADD',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
                 ),
               ],
             );
@@ -2498,10 +3185,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  void _showDeletePersonConfirmDialog(BuildContext context, Map<String, String> person, bool isDark, Color goldAccent, Color silverText) {
+  void _showDeletePersonConfirmDialog(
+    BuildContext context,
+    Map<String, String> person,
+    bool isDark,
+    Color goldAccent,
+    Color silverText,
+  ) {
     final name = person['name'] ?? '';
     final armyNo = person['armyNo'] ?? '';
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -2513,16 +3206,26 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           ),
           title: const Text(
             'CONFIRM DELETE PERSONNEL',
-            style: TextStyle(color: Colors.redAccent, fontSize: 13, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           content: Text(
             'Are you sure you want to delete $name ($armyNo) from Nominal Roll?',
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black87, fontSize: 12),
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black87,
+              fontSize: 12,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 11)),
+              child: Text(
+                'CANCEL',
+                style: TextStyle(color: silverText, fontSize: 11),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -2537,15 +3240,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   ),
                 );
               },
-              child: const Text('DELETE', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 11)),
+              child: const Text(
+                'DELETE',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
             ),
           ],
         );
       },
     );
   }
-
-
 
   void _showManageAdminsDialog(
     BuildContext pageContext,
@@ -2564,12 +3272,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               future: MockDataManager().getCommandGroup(),
               builder: (context, snapshot) {
                 final group = snapshot.data ?? [];
-                
+
                 return AlertDialog(
-                  backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                  backgroundColor: isDark
+                      ? const Color(0xFF0A2214)
+                      : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                    side: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.3),
+                      width: 1.2,
+                    ),
                   ),
                   title: Text(
                     'MANAGE COMMAND GROUP (12 MEMBERS)',
@@ -2588,7 +3301,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       children: [
                         Text(
                           '1 SUPER ADMIN • 4 ADMINS • 7 USERS',
-                          style: TextStyle(color: silverText, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                          style: TextStyle(
+                            color: silverText,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Expanded(
@@ -2600,16 +3318,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               final slotId = slot['slotId'] as int;
                               final slotRole = slot['role'] as String;
                               final armyNo = slot['armyNo'] as String?;
-                              final username = slot['username'] as String? ?? '';
-                              
+                              final username =
+                                  slot['username'] as String? ?? '';
+
                               String roleLabel = 'USER';
-                              if (slotRole == 'superadmin') roleLabel = 'SUPER ADMIN';
+                              if (slotRole == 'superadmin')
+                                roleLabel = 'SUPER ADMIN';
                               if (slotRole == 'admin') roleLabel = 'ADMIN';
 
                               String details = 'Empty Slot';
                               if (armyNo != null) {
                                 final person = nominalRollList.firstWhere(
-                                  (p) => (p['armyNo'] ?? '').toLowerCase() == armyNo.toLowerCase(),
+                                  (p) =>
+                                      (p['armyNo'] ?? '').toLowerCase() ==
+                                      armyNo.toLowerCase(),
                                   orElse: () => <String, String>{},
                                 );
                                 details = person.isNotEmpty
@@ -2618,33 +3340,56 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               }
 
                               return Card(
-                                color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.4),
+                                color: isDark
+                                    ? const Color(0xFF03140A)
+                                    : const Color(
+                                        0xFFE8F5EE,
+                                      ).withValues(alpha: 0.4),
                                 margin: const EdgeInsets.symmetric(vertical: 4),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
-                                  side: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                                  side: BorderSide(
+                                    color: goldAccent.withValues(alpha: 0.15),
+                                  ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               'SLOT $slotId - $roleLabel',
-                                              style: TextStyle(color: goldAccent, fontSize: 10, fontWeight: FontWeight.bold),
+                                              style: TextStyle(
+                                                color: goldAccent,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               details,
                                               style: TextStyle(
-                                                color: armyNo != null ? textThemeColor : silverText.withValues(alpha: 0.6),
+                                                color: armyNo != null
+                                                    ? textThemeColor
+                                                    : silverText.withValues(
+                                                        alpha: 0.6,
+                                                      ),
                                                 fontSize: 11,
-                                                fontWeight: armyNo != null ? FontWeight.bold : FontWeight.normal,
-                                                fontStyle: armyNo != null ? FontStyle.normal : FontStyle.italic,
+                                                fontWeight: armyNo != null
+                                                    ? FontWeight.bold
+                                                    : FontWeight.normal,
+                                                fontStyle: armyNo != null
+                                                    ? FontStyle.normal
+                                                    : FontStyle.italic,
                                               ),
                                             ),
                                           ],
@@ -2655,41 +3400,77 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         children: [
                                           if (armyNo == null)
                                             IconButton(
-                                              icon: Icon(Icons.add_circle_outline_rounded, color: valueGreenColor, size: 20),
+                                              icon: Icon(
+                                                Icons
+                                                    .add_circle_outline_rounded,
+                                                color: valueGreenColor,
+                                                size: 20,
+                                              ),
                                               onPressed: () {
                                                 Navigator.pop(statefulContext);
                                                 Future.delayed(Duration.zero, () {
                                                   if (pageContext.mounted) {
-                                                    _showSelectSoldierAdminDialog(pageContext, slotId, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                                                    _showSelectSoldierAdminDialog(
+                                                      pageContext,
+                                                      slotId,
+                                                      isDark,
+                                                      textThemeColor,
+                                                      silverText,
+                                                      goldAccent,
+                                                      valueGreenColor,
+                                                    );
                                                   }
                                                 });
                                               },
-                                              constraints: const BoxConstraints(),
+                                              constraints:
+                                                  const BoxConstraints(),
                                               padding: const EdgeInsets.all(4),
                                             )
                                           else ...[
                                             IconButton(
-                                              icon: Icon(Icons.edit_outlined, color: goldAccent, size: 18),
+                                              icon: Icon(
+                                                Icons.edit_outlined,
+                                                color: goldAccent,
+                                                size: 18,
+                                              ),
                                               onPressed: () {
                                                 Navigator.pop(statefulContext);
                                                 Future.delayed(Duration.zero, () {
                                                   if (pageContext.mounted) {
-                                                    _showEditSlotCredentialsDialog(pageContext, statefulContext, slotId, details, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                                                    _showEditSlotCredentialsDialog(
+                                                      pageContext,
+                                                      statefulContext,
+                                                      slotId,
+                                                      details,
+                                                      isDark,
+                                                      textThemeColor,
+                                                      silverText,
+                                                      goldAccent,
+                                                      valueGreenColor,
+                                                    );
                                                   }
                                                 });
                                               },
-                                              constraints: const BoxConstraints(),
+                                              constraints:
+                                                  const BoxConstraints(),
                                               padding: const EdgeInsets.all(4),
                                             ),
                                             const SizedBox(width: 4),
                                             IconButton(
-                                              icon: const Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent, size: 18),
+                                              icon: const Icon(
+                                                Icons
+                                                    .remove_circle_outline_rounded,
+                                                color: Colors.redAccent,
+                                                size: 18,
+                                              ),
                                               onPressed: () async {
-                                                await MockDataManager().clearSlot(slotId);
+                                                await MockDataManager()
+                                                    .clearSlot(slotId);
                                                 setDialogState(() {});
                                                 setState(() {});
                                               },
-                                              constraints: const BoxConstraints(),
+                                              constraints:
+                                                  const BoxConstraints(),
                                               padding: const EdgeInsets.all(4),
                                             ),
                                           ],
@@ -2708,7 +3489,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(statefulContext),
-                      child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: Text(
+                        'CLOSE',
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 );
@@ -2742,15 +3530,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             final armyNo = slot['armyNo'] as String? ?? '';
             final currentUsername = slot['username'] as String? ?? '';
             final currentPassword = slot['password'] as String? ?? '123456';
-            
+
             final userController = TextEditingController(text: currentUsername);
             final passController = TextEditingController(text: currentPassword);
-            
+
             return AlertDialog(
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: Text(
                 'EDIT SLOT CREDENTIALS',
@@ -2777,11 +3568,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       labelText: 'Username',
                       labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      fillColor: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                        borderSide: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -2797,11 +3595,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       labelText: 'Password',
                       labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      fillColor: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                        borderSide: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -2815,26 +3620,42 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                    _showManageAdminsDialog(
+                      pageContext,
+                      isDark,
+                      textThemeColor,
+                      silverText,
+                      goldAccent,
+                      valueGreenColor,
+                    );
                   },
-                  child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+                  child: Text(
+                    'CANCEL',
+                    style: TextStyle(color: silverText, fontSize: 12),
+                  ),
                 ),
                 TextButton(
                   onPressed: () async {
                     final newUsername = userController.text.trim();
                     final newPassword = passController.text;
-                    
+
                     if (newUsername.isEmpty || newPassword.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Fields cannot be empty.')),
+                        const SnackBar(
+                          content: Text('Fields cannot be empty.'),
+                        ),
                       );
                       return;
                     }
 
                     final textLower = newUsername.toLowerCase();
-                    if (textLower == 'superadmin' || textLower == 'admin' || textLower == 'user') {
+                    if (textLower == 'superadmin' ||
+                        textLower == 'admin' ||
+                        textLower == 'user') {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cannot overwrite system accounts.')),
+                        const SnackBar(
+                          content: Text('Cannot overwrite system accounts.'),
+                        ),
                       );
                       return;
                     }
@@ -2842,24 +3663,39 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     // Check duplicate usernames in command group
                     var duplicate = false;
                     for (var s in group) {
-                      if (s['slotId'] != slotId && s['username'].toString().toLowerCase() == textLower) {
+                      if (s['slotId'] != slotId &&
+                          s['username'].toString().toLowerCase() == textLower) {
                         duplicate = true;
                         break;
                       }
                     }
                     if (duplicate) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Username already taken.')),
+                        const SnackBar(
+                          content: Text('Username already taken.'),
+                        ),
                       );
                       return;
                     }
 
-                    await MockDataManager().assignSlot(slotId, armyNo, newUsername, newPassword);
-                    
+                    await MockDataManager().assignSlot(
+                      slotId,
+                      armyNo,
+                      newUsername,
+                      newPassword,
+                    );
+
                     if (!context.mounted) return;
                     Navigator.pop(context);
-                    _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                    
+                    _showManageAdminsDialog(
+                      pageContext,
+                      isDark,
+                      textThemeColor,
+                      silverText,
+                      goldAccent,
+                      valueGreenColor,
+                    );
+
                     ScaffoldMessenger.of(pageContext).showSnackBar(
                       const SnackBar(
                         content: Text('Slot credentials updated successfully!'),
@@ -2867,7 +3703,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                     );
                   },
-                  child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'SAVE',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -2885,7 +3728,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color goldAccent,
   ) {
     final armyNo = MockDataManager().adminArmyNo ?? '';
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -2894,17 +3737,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           builder: (context, snapshot) {
             final accounts = snapshot.data ?? {};
             final accountData = accounts[armyNo] as Map? ?? {};
-            final currentUsername = accountData['username'] as String? ?? armyNo;
-            final currentPassword = accountData['password'] as String? ?? '123456';
-            
+            final currentUsername =
+                accountData['username'] as String? ?? armyNo;
+            final currentPassword =
+                accountData['password'] as String? ?? '123456';
+
             final userController = TextEditingController(text: currentUsername);
             final passController = TextEditingController(text: currentPassword);
-            
+
             return AlertDialog(
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: Text(
                 'UPDATE MY CREDENTIALS',
@@ -2925,11 +3773,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       labelText: 'Username',
                       labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      fillColor: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                        borderSide: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -2946,11 +3801,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       labelText: 'Password',
                       labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                       filled: true,
-                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      fillColor: isDark
+                          ? const Color(0xFF03140A)
+                          : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                        borderSide: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.15),
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -2963,49 +3825,72 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+                  child: Text(
+                    'CANCEL',
+                    style: TextStyle(color: silverText, fontSize: 12),
+                  ),
                 ),
                 TextButton(
                   onPressed: () async {
                     final newUsername = userController.text.trim();
                     final newPassword = passController.text;
-                    
+
                     if (newUsername.isEmpty || newPassword.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Fields cannot be empty.')),
+                        const SnackBar(
+                          content: Text('Fields cannot be empty.'),
+                        ),
                       );
                       return;
                     }
-                    
+
                     final textLower = newUsername.toLowerCase();
-                    if (textLower == 'superadmin' || textLower == 'admin' || textLower == 'user') {
+                    if (textLower == 'superadmin' ||
+                        textLower == 'admin' ||
+                        textLower == 'user') {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Cannot overwrite system accounts.')),
+                        const SnackBar(
+                          content: Text('Cannot overwrite system accounts.'),
+                        ),
                       );
                       return;
                     }
 
                     var duplicate = false;
                     for (var entry in accounts.entries) {
-                      if (entry.key != armyNo && (entry.value as Map)['username'].toString().toLowerCase() == textLower) {
+                      if (entry.key != armyNo &&
+                          (entry.value as Map)['username']
+                                  .toString()
+                                  .toLowerCase() ==
+                              textLower) {
                         duplicate = true;
                         break;
                       }
                     }
                     if (duplicate) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Username already taken.')),
+                        const SnackBar(
+                          content: Text('Username already taken.'),
+                        ),
                       );
                       return;
                     }
 
-                    await MockDataManager().updateCredentials(armyNo, newUsername, newPassword);
-                    MockDataManager().login(newUsername, 'Data Entry', adminArmyNo: armyNo);
-                    
+                    await MockDataManager().updateCredentials(
+                      armyNo,
+                      newUsername,
+                      newPassword,
+                    );
+                    MockDataManager().login(
+                      newUsername,
+                      'Data Entry',
+                      adminArmyNo: armyNo,
+                    );
+
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     setState(() {});
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Credentials updated successfully!'),
@@ -3013,7 +3898,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                     );
                   },
-                  child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'SAVE',
+                    style: TextStyle(
+                      color: goldAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -3033,7 +3925,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     String query = '';
-    
+
     showDialog(
       context: pageContext,
       builder: (dialogContext) {
@@ -3044,25 +3936,35 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               builder: (context, snapshot) {
                 final group = snapshot.data ?? [];
                 // Exclude soldiers already assigned to any slot
-                final assignedArmyNos = group.where((s) => s['armyNo'] != null).map((s) => s['armyNo'] as String).toList();
-                
+                final assignedArmyNos = group
+                    .where((s) => s['armyNo'] != null)
+                    .map((s) => s['armyNo'] as String)
+                    .toList();
+
                 final filtered = nominalRollList.where((p) {
                   final armyNo = p['armyNo'] ?? '';
                   if (assignedArmyNos.contains(armyNo)) return false;
-                  
+
                   if (query.isEmpty) return true;
-                  
+
                   final name = (p['name'] ?? '').toLowerCase();
                   final rank = (p['rank'] ?? '').toLowerCase();
                   final no = armyNo.toLowerCase();
-                  return name.contains(query) || rank.contains(query) || no.contains(query);
+                  return name.contains(query) ||
+                      rank.contains(query) ||
+                      no.contains(query);
                 }).toList();
-                
+
                 return AlertDialog(
-                  backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                  backgroundColor: isDark
+                      ? const Color(0xFF0A2214)
+                      : Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                    side: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.3),
+                      width: 1.2,
+                    ),
                   ),
                   title: Text(
                     'ASSIGN SOLDIER TO SLOT $slotId',
@@ -3081,15 +3983,30 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         TextFormField(
                           style: TextStyle(color: textThemeColor, fontSize: 13),
                           decoration: InputDecoration(
-                            prefixIcon: Icon(Icons.search, color: goldAccent, size: 16),
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: goldAccent,
+                              size: 16,
+                            ),
                             hintText: 'Search by Name, Rank, or Army No...',
-                            hintStyle: TextStyle(color: silverText.withValues(alpha: 0.45), fontSize: 12),
+                            hintStyle: TextStyle(
+                              color: silverText.withValues(alpha: 0.45),
+                              fontSize: 12,
+                            ),
                             filled: true,
-                            fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                            fillColor: isDark
+                                ? const Color(0xFF03140A)
+                                : const Color(
+                                    0xFFE8F5EE,
+                                  ).withValues(alpha: 0.3),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                            ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                              borderSide: BorderSide(
+                                color: goldAccent.withValues(alpha: 0.15),
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -3108,7 +4025,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                               ? Center(
                                   child: Text(
                                     'No matching soldiers found.',
-                                    style: TextStyle(color: silverText, fontSize: 12, fontStyle: FontStyle.italic),
+                                    style: TextStyle(
+                                      color: silverText,
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                    ),
                                   ),
                                 )
                               : ListView.builder(
@@ -3119,26 +4040,45 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                     final armyNo = person['armyNo'] ?? '';
                                     final name = person['name'] ?? '';
                                     final rank = person['rank'] ?? '';
-                                    
+
                                     return Card(
-                                      color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                                      margin: const EdgeInsets.symmetric(vertical: 4),
+                                      color: isDark
+                                          ? const Color(0xFF03140A)
+                                          : const Color(
+                                              0xFFE8F5EE,
+                                            ).withValues(alpha: 0.3),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
-                                        side: BorderSide(color: goldAccent.withValues(alpha: 0.1)),
+                                        side: BorderSide(
+                                          color: goldAccent.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                        ),
                                       ),
                                       child: ListTile(
                                         title: Text(
                                           '$rank $name',
-                                          style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: textThemeColor,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         subtitle: Text(
                                           'Army No: $armyNo',
-                                          style: TextStyle(color: valueGreenColor, fontSize: 10, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: valueGreenColor,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         trailing: ElevatedButton(
                                           onPressed: () async {
-                                            if (!statefulContext.mounted) return;
+                                            if (!statefulContext.mounted)
+                                              return;
                                             Navigator.pop(statefulContext);
                                             Future.delayed(Duration.zero, () {
                                               if (pageContext.mounted) {
@@ -3159,13 +4099,27 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             });
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF0C5A32),
+                                            backgroundColor: const Color(
+                                              0xFF0C5A32,
+                                            ),
                                             foregroundColor: Colors.white,
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
                                             elevation: 0,
                                           ),
-                                          child: const Text('SELECT', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                                          child: const Text(
+                                            'SELECT',
+                                            style: TextStyle(
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -3181,11 +4135,25 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         Navigator.pop(statefulContext);
                         Future.delayed(Duration.zero, () {
                           if (pageContext.mounted) {
-                            _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                            _showManageAdminsDialog(
+                              pageContext,
+                              isDark,
+                              textThemeColor,
+                              silverText,
+                              goldAccent,
+                              valueGreenColor,
+                            );
                           }
                         });
                       },
-                      child: Text('BACK', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                      child: Text(
+                        'BACK',
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   ],
                 );
@@ -3212,7 +4180,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   ) {
     final userController = TextEditingController(text: armyNo);
     final passController = TextEditingController(text: '123456');
-    
+
     showDialog(
       context: pageContext,
       builder: (context) {
@@ -3220,7 +4188,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+            side: BorderSide(
+              color: goldAccent.withValues(alpha: 0.3),
+              width: 1.2,
+            ),
           ),
           title: Text(
             'SET ADMIN CREDENTIALS',
@@ -3246,11 +4217,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   labelText: 'Username',
                   labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  fillColor: isDark
+                      ? const Color(0xFF03140A)
+                      : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                    borderSide: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.15),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -3266,11 +4244,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   labelText: 'Password',
                   labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  fillColor: isDark
+                      ? const Color(0xFF03140A)
+                      : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                    borderSide: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.15),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -3284,15 +4269,26 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                _showSelectSoldierAdminDialog(pageContext, slotId, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                _showSelectSoldierAdminDialog(
+                  pageContext,
+                  slotId,
+                  isDark,
+                  textThemeColor,
+                  silverText,
+                  goldAccent,
+                  valueGreenColor,
+                );
               },
-              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+              child: Text(
+                'CANCEL',
+                style: TextStyle(color: silverText, fontSize: 12),
+              ),
             ),
             TextButton(
               onPressed: () async {
                 final username = userController.text.trim();
                 final password = passController.text;
-                
+
                 if (username.isEmpty || password.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Fields cannot be empty.')),
@@ -3301,9 +4297,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 }
 
                 final textLower = username.toLowerCase();
-                if (textLower == 'superadmin' || textLower == 'admin' || textLower == 'user') {
+                if (textLower == 'superadmin' ||
+                    textLower == 'admin' ||
+                    textLower == 'user') {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Cannot overwrite system accounts.')),
+                    const SnackBar(
+                      content: Text('Cannot overwrite system accounts.'),
+                    ),
                   );
                   return;
                 }
@@ -3324,21 +4324,42 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   return;
                 }
 
-                await MockDataManager().assignSlot(slotId, armyNo, username, password);
+                await MockDataManager().assignSlot(
+                  slotId,
+                  armyNo,
+                  username,
+                  password,
+                );
                 setState(() {});
-                
+
                 if (!context.mounted) return;
                 Navigator.pop(context);
-                _showManageAdminsDialog(pageContext, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
-                
+                _showManageAdminsDialog(
+                  pageContext,
+                  isDark,
+                  textThemeColor,
+                  silverText,
+                  goldAccent,
+                  valueGreenColor,
+                );
+
                 ScaffoldMessenger.of(pageContext).showSnackBar(
                   SnackBar(
-                    content: Text('$rank $name is now assigned to Slot $slotId!'),
+                    content: Text(
+                      '$rank $name is now assigned to Slot $slotId!',
+                    ),
                     backgroundColor: const Color(0xFF0C5A32),
                   ),
                 );
               },
-              child: Text('CREATE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+              child: Text(
+                'CREATE',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         );
@@ -3362,7 +4383,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+            side: BorderSide(
+              color: goldAccent.withValues(alpha: 0.3),
+              width: 1.2,
+            ),
           ),
           title: Text(
             'SYSTEM CONSOLE PROFILE',
@@ -3380,36 +4404,73 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               Center(
                 child: CircleAvatar(
                   radius: 36,
-                  backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
-                  child: Icon(Icons.shield_rounded, color: goldAccent, size: 36),
+                  backgroundColor: isDark
+                      ? const Color(0xFF03140A)
+                      : const Color(0xFFE8F5EE),
+                  child: Icon(
+                    Icons.shield_rounded,
+                    color: goldAccent,
+                    size: 36,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               Center(
                 child: Text(
                   displayName,
-                  style: TextStyle(color: textThemeColor, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 4),
               Center(
                 child: Text(
                   'ROLE: $roleLabel',
-                  style: TextStyle(color: goldAccent, fontSize: 11, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: goldAccent,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
               const Divider(color: Colors.grey, height: 1),
               const SizedBox(height: 12),
-              _buildProfileDetailRow('System Level:', 'Regimental HQ Core Console', isDark ? Colors.white : Colors.black),
-              _buildProfileDetailRow('Authentication:', 'Hardcoded System Bypass', isDark ? Colors.white : Colors.black),
-              _buildProfileDetailRow('Operation Privileges:', roleLabel == 'SUPER ADMIN' ? 'Full Read/Write/Admin Access' : (roleLabel == 'ADMIN' ? 'Read/Write Status updates' : 'Read-only view access'), isDark ? Colors.white : Colors.black),
+              _buildProfileDetailRow(
+                'System Level:',
+                'Regimental HQ Core Console',
+                isDark ? Colors.white : Colors.black,
+              ),
+              _buildProfileDetailRow(
+                'Authentication:',
+                'Hardcoded System Bypass',
+                isDark ? Colors.white : Colors.black,
+              ),
+              _buildProfileDetailRow(
+                'Operation Privileges:',
+                roleLabel == 'SUPER ADMIN'
+                    ? 'Full Read/Write/Admin Access'
+                    : (roleLabel == 'ADMIN'
+                          ? 'Read/Write Status updates'
+                          : 'Read-only view access'),
+                isDark ? Colors.white : Colors.black,
+              ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CLOSE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+              child: Text(
+                'CLOSE',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         );
@@ -3424,7 +4485,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-          Text(value, style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.bold)),
+          Text(
+            value,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -3440,7 +4508,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final currentUsername = MockDataManager().username ?? '';
     final newPassController = TextEditingController();
     final confirmPassController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) {
@@ -3448,7 +4516,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+            side: BorderSide(
+              color: goldAccent.withValues(alpha: 0.3),
+              width: 1.2,
+            ),
           ),
           title: Text(
             'CHANGE PASSWORD',
@@ -3470,11 +4541,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   labelText: 'New Password',
                   labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  fillColor: isDark
+                      ? const Color(0xFF03140A)
+                      : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                    borderSide: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.15),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -3491,11 +4569,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   labelText: 'Confirm Password',
                   labelStyle: TextStyle(color: goldAccent, fontSize: 11),
                   filled: true,
-                  fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  fillColor: isDark
+                      ? const Color(0xFF03140A)
+                      : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                    borderSide: BorderSide(
+                      color: goldAccent.withValues(alpha: 0.15),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -3508,31 +4593,39 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+              child: Text(
+                'CANCEL',
+                style: TextStyle(color: silverText, fontSize: 12),
+              ),
             ),
             TextButton(
               onPressed: () async {
                 final newPass = newPassController.text;
                 final confirmPass = confirmPassController.text;
-                
+
                 if (newPass.isEmpty || confirmPass.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Password fields cannot be empty.')),
+                    const SnackBar(
+                      content: Text('Password fields cannot be empty.'),
+                    ),
                   );
                   return;
                 }
-                
+
                 if (newPass != confirmPass) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Passwords do not match.')),
                   );
                   return;
                 }
-                
-                await MockDataManager().changePassword(currentUsername, newPass);
+
+                await MockDataManager().changePassword(
+                  currentUsername,
+                  newPass,
+                );
                 if (!context.mounted) return;
                 Navigator.pop(context);
-                
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Password updated successfully!'),
@@ -3540,7 +4633,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   ),
                 );
               },
-              child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+              child: Text(
+                'SAVE',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
             ),
           ],
         );
@@ -3562,7 +4662,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     String displayName = currentUsername.toUpperCase();
     String subDetails = 'System Account';
-    
+
     if (armyNo != null) {
       final person = nominalRollList.firstWhere(
         (p) => (p['armyNo'] ?? '').toLowerCase() == armyNo.toLowerCase(),
@@ -3586,7 +4686,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     if (role == 'Administrator') roleLabel = 'SUPER ADMIN';
     if (role == 'Data Entry') roleLabel = 'ADMIN';
 
-        return GestureDetector(
+    return GestureDetector(
       onTap: () {
         if (armyNo != null) {
           final person = nominalRollList.firstWhere(
@@ -3609,79 +4709,102 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             );
           }
         } else {
-          _showSystemProfileDialog(context, displayName, roleLabel, isDark, textThemeColor, silverText, goldAccent);
+          _showSystemProfileDialog(
+            context,
+            displayName,
+            roleLabel,
+            isDark,
+            textThemeColor,
+            silverText,
+            goldAccent,
+          );
         }
       },
       child: Container(
         padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
-          width: 1.0,
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF0C5A32).withValues(alpha: 0.12)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? goldAccent.withValues(alpha: 0.25)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 28,
+              backgroundImage: const AssetImage(
+                'assets/images/profile_avatar.jpg',
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    displayName,
+                    style: TextStyle(
+                      color: textThemeColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subDetails,
+                    style: TextStyle(
+                      color: silverText.withValues(alpha: 0.8),
+                      fontSize: 11,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: role == 'Administrator'
+                          ? goldAccent.withValues(alpha: 0.15)
+                          : (role == 'Data Entry'
+                                ? valueGreenColor.withValues(alpha: 0.15)
+                                : Colors.blue.withValues(alpha: 0.15)),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: role == 'Administrator'
+                            ? goldAccent
+                            : (role == 'Data Entry'
+                                  ? valueGreenColor
+                                  : Colors.blue),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      roleLabel,
+                      style: TextStyle(
+                        color: role == 'Administrator'
+                            ? goldAccent
+                            : (role == 'Data Entry'
+                                  ? valueGreenColor
+                                  : Colors.blue),
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundImage: const AssetImage('assets/images/profile_avatar.jpg'),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  displayName,
-                  style: TextStyle(
-                    color: textThemeColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subDetails,
-                  style: TextStyle(
-                    color: silverText.withValues(alpha: 0.8),
-                    fontSize: 11,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: role == 'Administrator' 
-                        ? goldAccent.withValues(alpha: 0.15)
-                        : (role == 'Data Entry' ? valueGreenColor.withValues(alpha: 0.15) : Colors.blue.withValues(alpha: 0.15)),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: role == 'Administrator' 
-                          ? goldAccent 
-                          : (role == 'Data Entry' ? valueGreenColor : Colors.blue),
-                      width: 0.8,
-                    ),
-                  ),
-                  child: Text(
-                    roleLabel,
-                    style: TextStyle(
-                      color: role == 'Administrator' 
-                          ? goldAccent 
-                          : (role == 'Data Entry' ? valueGreenColor : Colors.blue),
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
     );
   }
 
@@ -3722,7 +4845,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               padding: const EdgeInsets.only(bottom: 24),
               children: [
                 // 1. Profile Header
-                _buildProfileHeader(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor),
+                _buildProfileHeader(
+                  context,
+                  isDark,
+                  textThemeColor,
+                  silverText,
+                  goldAccent,
+                  valueGreenColor,
+                ),
                 const SizedBox(height: 16),
 
                 // Change Password Tile
@@ -3730,18 +4860,36 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   isDark,
                   goldAccent,
                   child: ListTile(
-                    leading: Icon(Icons.vpn_key_rounded, color: goldAccent, size: 20),
+                    leading: Icon(
+                      Icons.vpn_key_rounded,
+                      color: goldAccent,
+                      size: 20,
+                    ),
                     title: Text(
                       'Change My Password',
-                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        color: textThemeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     subtitle: Text(
                       'Change your login password credential',
                       style: TextStyle(color: silverText, fontSize: 11),
                     ),
-                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: goldAccent,
+                      size: 18,
+                    ),
                     onTap: () {
-                      _showChangePasswordDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                      _showChangePasswordDialog(
+                        context,
+                        isDark,
+                        textThemeColor,
+                        silverText,
+                        goldAccent,
+                      );
                     },
                   ),
                 ),
@@ -3752,10 +4900,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   isDark,
                   goldAccent,
                   child: SwitchListTile(
-                    secondary: Icon(Icons.palette_outlined, color: goldAccent, size: 20),
+                    secondary: Icon(
+                      Icons.palette_outlined,
+                      color: goldAccent,
+                      size: 20,
+                    ),
                     title: Text(
                       'App Theme Mode',
-                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        color: textThemeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     subtitle: Text(
                       isDark ? 'Dark Mode Active' : 'Light Theme Active',
@@ -3779,18 +4935,37 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     isDark,
                     goldAccent,
                     child: ListTile(
-                      leading: Icon(Icons.admin_panel_settings_rounded, color: goldAccent, size: 20),
+                      leading: Icon(
+                        Icons.admin_panel_settings_rounded,
+                        color: goldAccent,
+                        size: 20,
+                      ),
                       title: Text(
                         'Manage Command Group',
-                        style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          color: textThemeColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                       subtitle: Text(
                         'Configure the 12 security console accounts',
                         style: TextStyle(color: silverText, fontSize: 11),
                       ),
-                      trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                      trailing: Icon(
+                        Icons.chevron_right_rounded,
+                        color: goldAccent,
+                        size: 18,
+                      ),
                       onTap: () {
-                        _showManageAdminsDialog(context, isDark, textThemeColor, silverText, goldAccent, valueGreenColor);
+                        _showManageAdminsDialog(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                          valueGreenColor,
+                        );
                       },
                     ),
                   ),
@@ -3801,16 +4976,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       isDark,
                       goldAccent,
                       child: ListTile(
-                        leading: Icon(Icons.list_alt_rounded, color: goldAccent, size: 20),
+                        leading: Icon(
+                          Icons.list_alt_rounded,
+                          color: goldAccent,
+                          size: 20,
+                        ),
                         title: Text(
                           'Manage App Attributes',
-                          style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: TextStyle(
+                            color: textThemeColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                         subtitle: Text(
                           'Configure Trades, Ranks, and Batteries',
                           style: TextStyle(color: silverText, fontSize: 11),
                         ),
-                        trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                        trailing: Icon(
+                          Icons.chevron_right_rounded,
+                          color: goldAccent,
+                          size: 18,
+                        ),
                         onTap: () async {
                           await Navigator.push(
                             context,
@@ -3837,16 +5024,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   isDark,
                   goldAccent,
                   child: ListTile(
-                    leading: Icon(Icons.group_rounded, color: goldAccent, size: 20),
+                    leading: Icon(
+                      Icons.group_rounded,
+                      color: goldAccent,
+                      size: 20,
+                    ),
                     title: Text(
                       'View All Groups',
-                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        color: textThemeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     subtitle: Text(
                       'View all Admins, Users and Superadmin',
                       style: TextStyle(color: silverText, fontSize: 11),
                     ),
-                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: goldAccent,
+                      size: 18,
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,
@@ -3866,23 +5065,42 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 const SizedBox(height: 12),
 
                 // 4. Change My Credentials (Admin Only)
-                if (MockDataManager().role == 'Data Entry' && MockDataManager().adminArmyNo != null) ...[
+                if (MockDataManager().role == 'Data Entry' &&
+                    MockDataManager().adminArmyNo != null) ...[
                   _buildSettingsModuleCard(
                     isDark,
                     goldAccent,
                     child: ListTile(
-                      leading: Icon(Icons.manage_accounts_rounded, color: goldAccent, size: 20),
+                      leading: Icon(
+                        Icons.manage_accounts_rounded,
+                        color: goldAccent,
+                        size: 20,
+                      ),
                       title: Text(
                         'Change My Credentials',
-                        style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                        style: TextStyle(
+                          color: textThemeColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                       subtitle: const Text(
                         'Update username and password credentials',
                         style: TextStyle(color: Colors.grey, fontSize: 11),
                       ),
-                      trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                      trailing: Icon(
+                        Icons.chevron_right_rounded,
+                        color: goldAccent,
+                        size: 18,
+                      ),
                       onTap: () {
-                        _showChangeCredentialsDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                        _showChangeCredentialsDialog(
+                          context,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                        );
                       },
                     ),
                   ),
@@ -3894,10 +5112,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   isDark,
                   goldAccent,
                   child: ListTile(
-                    leading: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 20),
+                    leading: const Icon(
+                      Icons.logout_rounded,
+                      color: Colors.redAccent,
+                      size: 20,
+                    ),
                     title: const Text(
                       'Logout Session',
-                      style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                     subtitle: Text(
                       'Securely exit your console session',
@@ -3917,14 +5143,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildSettingsModuleCard(bool isDark, Color goldAccent, {required Widget child}) {
+  Widget _buildSettingsModuleCard(
+    bool isDark,
+    Color goldAccent, {
+    required Widget child,
+  }) {
     return Card(
       margin: EdgeInsets.zero,
-      color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+      color: isDark
+          ? const Color(0xFF0C5A32).withValues(alpha: 0.12)
+          : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1),
+          color: isDark
+              ? goldAccent.withValues(alpha: 0.15)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.1),
         ),
       ),
       child: child,
@@ -3941,13 +5175,23 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     required Color valueGreenColor,
   }) {
     final manager = PersonnelDataManager();
-    
-    final armyNoController = TextEditingController(text: personToEdit?['armyNo'] ?? '');
-    final nameController = TextEditingController(text: personToEdit?['name'] ?? '');
-    final phoneController = TextEditingController(text: personToEdit?['phone'] ?? '');
-    final cityController = TextEditingController(text: personToEdit?['city'] ?? '');
-    final remarksController = TextEditingController(text: personToEdit?['remarks'] ?? '');
-    
+
+    final armyNoController = TextEditingController(
+      text: personToEdit?['armyNo'] ?? '',
+    );
+    final nameController = TextEditingController(
+      text: personToEdit?['name'] ?? '',
+    );
+    final phoneController = TextEditingController(
+      text: personToEdit?['phone'] ?? '',
+    );
+    final cityController = TextEditingController(
+      text: personToEdit?['city'] ?? '',
+    );
+    final remarksController = TextEditingController(
+      text: personToEdit?['remarks'] ?? '',
+    );
+
     bool isFighting = true;
     if (personToEdit != null) {
       isFighting = _isFighting(personToEdit);
@@ -3955,14 +5199,59 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     String fightingSelection = isFighting ? 'Fighting' : 'Non Fighting';
 
     // Build lists dynamically to handle any custom values safely
-    String tradeSelection = personToEdit?['trade'] ?? personToEdit?['category'] ?? 'Gnr';
-    final List<String> trades = ['Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Civ', 'NCB', 'SW', 'Clk', 'Ck', 'Engr', 'LAD', 'N/A'];
+    String tradeSelection =
+        personToEdit?['trade'] ?? personToEdit?['category'] ?? 'Gnr';
+    final List<String> trades = [
+      'Gnr',
+      'TA',
+      'OCU',
+      'DMT',
+      'DSV',
+      'Svy',
+      'Civ',
+      'NCB',
+      'SW',
+      'Clk',
+      'Ck',
+      'Engr',
+      'LAD',
+      'N/A',
+    ];
     if (!trades.contains(tradeSelection)) {
       trades.add(tradeSelection);
     }
 
     String rankSelection = personToEdit?['rank'] ?? 'Gnr';
-    final List<String> ranks = ['Lt Col', 'Maj', 'Capt', 'Lt', '2/Lt', 'SM', 'Sub', 'N/Sub', 'BQMH', 'RQMH', 'RHM Hav', 'BHM Hav', 'Hav', 'Lhav', 'Nk', 'Lnk', 'Gnr', 'Clk', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Civ', 'NCB', 'SW', 'Ck', 'Engr'];
+    final List<String> ranks = [
+      'Lt Col',
+      'Maj',
+      'Capt',
+      'Lt',
+      '2/Lt',
+      'SM',
+      'Sub',
+      'N/Sub',
+      'BQMH',
+      'RQMH',
+      'RHM Hav',
+      'BHM Hav',
+      'Hav',
+      'Lhav',
+      'Nk',
+      'Lnk',
+      'Gnr',
+      'Clk',
+      'TA',
+      'OCU',
+      'DMT',
+      'DSV',
+      'Svy',
+      'Civ',
+      'NCB',
+      'SW',
+      'Ck',
+      'Engr',
+    ];
     if (!ranks.contains(rankSelection)) {
       ranks.add(rankSelection);
     }
@@ -3971,6 +5260,27 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final List<String> classes = ['Pb', 'Ptn', 'Sdh', 'Blh', 'AJK', 'GB'];
     if (!classes.contains(clSelection)) {
       classes.add(clSelection);
+    }
+
+    String categorySelection = personToEdit?['category'] ?? 'Gnrs';
+    final List<String> categories = [
+      'Officers',
+      'JCOs',
+      'Clks',
+      'Svys',
+      'TAs',
+      'OCsU',
+      'DSVs',
+      'DMTs',
+      'Gnrs',
+      'C/Us',
+      'SWs',
+      'NCBs',
+      'Civs',
+      'LADs',
+    ];
+    if (!categories.contains(categorySelection)) {
+      categories.add(categorySelection);
     }
 
     showDialog(
@@ -3982,7 +5292,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+                side: BorderSide(
+                  color: goldAccent.withValues(alpha: 0.3),
+                  width: 1.2,
+                ),
               ),
               title: Text(
                 personToEdit == null ? 'ADD NEW PERSONNEL' : 'EDIT PERSONNEL',
@@ -4002,24 +5315,47 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Fighting dropdown
-                      Text('FIGHTING / NON FIGHTING *', style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(
+                        'FIGHTING / NON FIGHTING *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.2)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.2),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: fightingSelection,
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                             isExpanded: true,
                             items: const [
-                              DropdownMenuItem(value: 'Fighting', child: Text('Fighting')),
-                              DropdownMenuItem(value: 'Non Fighting', child: Text('Non Fighting')),
+                              DropdownMenuItem(
+                                value: 'Fighting',
+                                child: Text('Fighting'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Non Fighting',
+                                child: Text('Non Fighting'),
+                              ),
                             ],
                             onChanged: (val) {
                               if (val != null) {
@@ -4033,28 +5369,68 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       const SizedBox(height: 12),
 
-                      _buildFormTextField('ARMY NUMBER *', armyNoController, 'e.g. 1234567...', silverText, textThemeColor, isDark, goldAccent, enabled: personToEdit == null),
+                      _buildFormTextField(
+                        'ARMY NUMBER *',
+                        armyNoController,
+                        'e.g. 1234567...',
+                        silverText,
+                        textThemeColor,
+                        isDark,
+                        goldAccent,
+                        enabled: personToEdit == null,
+                      ),
                       const SizedBox(height: 12),
-                      _buildFormTextField('FULL NAME *', nameController, 'Enter full name...', silverText, textThemeColor, isDark, goldAccent),
+                      _buildFormTextField(
+                        'FULL NAME *',
+                        nameController,
+                        'Enter full name...',
+                        silverText,
+                        textThemeColor,
+                        isDark,
+                        goldAccent,
+                      ),
                       const SizedBox(height: 12),
 
                       // Trade dropdown
-                      Text('TRADE *', style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(
+                        'TRADE *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.15)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.15),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: tradeSelection,
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                            ),
                             isExpanded: true,
-                            items: trades.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                            items: trades
+                                .map(
+                                  (t) => DropdownMenuItem(
+                                    value: t,
+                                    child: Text(t),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setDialogState(() {
@@ -4068,22 +5444,45 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       const SizedBox(height: 12),
 
                       // Rank dropdown
-                      Text('RANK *', style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold)),
+                      Text(
+                        'RANK *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.15)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.15),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: rankSelection,
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                            ),
                             isExpanded: true,
-                            items: ranks.map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
+                            items: ranks
+                                .map(
+                                  (r) => DropdownMenuItem(
+                                    value: r,
+                                    child: Text(r),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setDialogState(() {
@@ -4096,23 +5495,98 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       const SizedBox(height: 12),
 
-                      // Class dropdown
-                      Text('CLASS *', style: TextStyle(color: silverText, fontSize: 10, fontWeight: FontWeight.bold)),
+                      // Category dropdown
+                      Text(
+                        'CATEGORY *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: goldAccent.withValues(alpha: 0.15)),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: categorySelection,
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                            ),
+                            isExpanded: true,
+                            items: categories
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() {
+                                  categorySelection = val;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Class dropdown
+                      Text(
+                        'CLASS *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.15),
+                          ),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: clSelection,
-                            dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                            style: TextStyle(color: textThemeColor, fontSize: 12),
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                            ),
                             isExpanded: true,
-                            items: classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                            items: classes
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c),
+                                  ),
+                                )
+                                .toList(),
                             onChanged: (val) {
                               if (val != null) {
                                 setDialogState(() {
@@ -4125,11 +5599,37 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       ),
                       const SizedBox(height: 12),
 
-                      _buildFormTextField('PHONE NUMBER', phoneController, 'Enter phone number...', silverText, textThemeColor, isDark, goldAccent, isPhone: true),
+                      _buildFormTextField(
+                        'PHONE NUMBER',
+                        phoneController,
+                        'Enter phone number...',
+                        silverText,
+                        textThemeColor,
+                        isDark,
+                        goldAccent,
+                        isPhone: true,
+                      ),
                       const SizedBox(height: 12),
-                      _buildFormTextField('CITY', cityController, 'Enter city name...', silverText, textThemeColor, isDark, goldAccent),
+                      _buildFormTextField(
+                        'CITY',
+                        cityController,
+                        'Enter city name...',
+                        silverText,
+                        textThemeColor,
+                        isDark,
+                        goldAccent,
+                      ),
                       const SizedBox(height: 12),
-                      _buildFormTextField('REMARKS / OBSERVATIONS', remarksController, 'Enter remarks...', silverText, textThemeColor, isDark, goldAccent, maxLines: 2),
+                      _buildFormTextField(
+                        'REMARKS / OBSERVATIONS',
+                        remarksController,
+                        'Enter remarks...',
+                        silverText,
+                        textThemeColor,
+                        isDark,
+                        goldAccent,
+                        maxLines: 2,
+                      ),
                     ],
                   ),
                 ),
@@ -4137,16 +5637,25 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('CANCEL', style: TextStyle(color: silverText, fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    'CANCEL',
+                    style: TextStyle(
+                      color: silverText,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     final armyNo = armyNoController.text.trim();
                     final name = nameController.text.trim();
-                    
+
                     if (armyNo.isEmpty || name.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill all required fields (*)')),
+                        const SnackBar(
+                          content: Text('Please fill all required fields (*)'),
+                        ),
                       );
                       return;
                     }
@@ -4155,13 +5664,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       'armyNo': armyNo,
                       'name': name,
                       'trade': tradeSelection,
-                      'category': tradeSelection,
+                      'category': categorySelection,
                       'rank': rankSelection,
                       'cl': clSelection,
                       'phone': phoneController.text.trim(),
                       'city': cityController.text.trim(),
                       'remarks': remarksController.text.trim(),
-                      'isFighting': fightingSelection == 'Fighting' ? 'true' : 'false',
+                      'isFighting': fightingSelection == 'Fighting'
+                          ? 'true'
+                          : 'false',
                     };
 
                     if (personToEdit == null) {
@@ -4176,7 +5687,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          personToEdit == null ? 'Successfully added $name!' : 'Successfully updated $name!',
+                          personToEdit == null
+                              ? 'Successfully added $name!'
+                              : 'Successfully updated $name!',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         backgroundColor: const Color(0xFF0C5A32),
@@ -4187,9 +5700,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0C5A32),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                  child: Text(personToEdit == null ? 'ADD PERSONNEL' : 'SAVE CHANGES', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  child: Text(
+                    personToEdit == null ? 'ADD PERSONNEL' : 'SAVE CHANGES',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -4214,7 +5735,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: labelColor, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: TextStyle(
+            color: labelColor,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
@@ -4224,10 +5752,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           style: TextStyle(color: textColor, fontSize: 12),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: labelColor.withValues(alpha: 0.4), fontSize: 11),
+            hintStyle: TextStyle(
+              color: labelColor.withValues(alpha: 0.4),
+              fontSize: 11,
+            ),
             filled: true,
-            fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            fillColor: isDark
+                ? const Color(0xFF03140A)
+                : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 8,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
@@ -4283,7 +5819,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return Container(
       width: 1,
       height: 25,
-      color: isDark ? color.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+      color: isDark
+          ? color.withValues(alpha: 0.25)
+          : const Color(0xFF0C5A32).withValues(alpha: 0.2),
     );
   }
 
@@ -4302,15 +5840,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+        color: isDark
+            ? const Color(0xFF0C5A32).withValues(alpha: 0.12)
+            : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? goldAccent.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.25),
+          color: isDark
+              ? goldAccent.withValues(alpha: 0.35)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.25),
           width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark ? Colors.black.withValues(alpha: 0.1) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.1)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.04),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -4336,12 +5880,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               children: [
                 // Green Title Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.8) : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                    color: isDark
+                        ? const Color(0xFF03140A).withValues(alpha: 0.8)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: isDark ? goldAccent.withValues(alpha: 0.5) : const Color(0xFF0C5A32).withValues(alpha: 0.2),
+                      color: isDark
+                          ? goldAccent.withValues(alpha: 0.5)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -4357,14 +5908,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
                 // Expanded indicator icon (chevron up/down)
                 Icon(
-                  isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  isExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: goldAccent,
                   size: 24,
                 ),
               ],
             ),
           ),
-          
+
           // Animate the expansion container smoothly
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
@@ -4382,7 +5935,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
               ],
             ),
-            crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 250),
           ),
         ],
@@ -4411,7 +5966,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.5) : const Color(0xFF0C5A32).withValues(alpha: 0.05),
+              color: isDark
+                  ? const Color(0xFF03140A).withValues(alpha: 0.5)
+                  : const Color(0xFF0C5A32).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
@@ -4430,7 +5987,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ...items.map((item) {
           return GestureDetector(
             onTap: () {
-              if (context != null && mainCategory != null && silverText != null && valueGreenColor != null) {
+              if (context != null &&
+                  mainCategory != null &&
+                  silverText != null &&
+                  valueGreenColor != null) {
                 final targetName = item['name']!;
                 Navigator.push(
                   context,
@@ -4443,9 +6003,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       goldAccent: goldAccent,
                       valueGreenColor: valueGreenColor,
                       getPersonStatus: (p) {
-                        final status = PersonnelDataManager().getStatus(p['armyNo'] ?? '');
+                        final status = PersonnelDataManager().getStatus(
+                          p['armyNo'] ?? '',
+                        );
                         if (subCategory != null) {
-                          if (status.category == mainCategory && status.subcategory == subCategory) {
+                          if (status.category == mainCategory &&
+                              status.subcategory == subCategory) {
                             return status.subSubcategory ?? '';
                           }
                           return '';
@@ -4463,7 +6026,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 6.0),
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+                vertical: 8.0,
+              ),
               decoration: BoxDecoration(
                 color: isDark
                     ? const Color(0xFF03140A).withValues(alpha: 0.45)
@@ -4505,7 +6071,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0,
+                      vertical: 4.0,
+                    ),
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF0C5A32).withValues(alpha: 0.3)
@@ -4539,11 +6108,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color valueGreenColor,
   ) {
     final filteredList = nominalRollList.where((person) {
-      // 1. Division Filter (FIGHTING / NON FIGHTING)
+      // 1. Division Filter (FIGHTING / NON FIGHTING / Subcategories)
       if (_selectedDivision != 'All') {
+        final selectedDiv = _selectedDivision.trim().toUpperCase();
         final isFighting = _isFighting(person);
-        if (_selectedDivision == 'FIGHTING' && !isFighting) return false;
-        if (_selectedDivision == 'NON FIGHTING' && isFighting) return false;
+
+        if (selectedDiv == 'FIGHTING') {
+          if (!isFighting) return false;
+        } else if (selectedDiv == 'NON FIGHTING') {
+          if (isFighting) return false;
+        } else {
+          final trade = _getTrade(person);
+          if (trade.toUpperCase() != selectedDiv) return false;
+          if (isFighting) return false;
+        }
       }
 
       // 2. Battery Filter
@@ -4552,10 +6130,29 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         if (bty != _selectedBattery) return false;
       }
 
-      // 3. Rank Category Filter (OFFICERS / JCOs / SLDRS)
+      // 3. Rank Filter (Hierarchical support)
       if (_selectedRankCategory != 'All') {
-        final rankCat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
-        if (rankCat != _selectedRankCategory) return false;
+        final selectedRank = _selectedRankCategory.trim();
+        final subcat = _getRankSubcategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+        final cat = _getRankCategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+
+        if (selectedRank == 'Officers') {
+          if (cat != 'OFFICERS') return false;
+        } else if (selectedRank == 'JCOs') {
+          if (cat != 'JCOs') return false;
+        } else if (selectedRank == 'Soldiers' ||
+            selectedRank == 'Sldrs' ||
+            selectedRank == 'SLDRS') {
+          if (cat != 'SLDRS') return false;
+        } else {
+          if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
+        }
       }
 
       // 4. Trade Filter
@@ -4573,16 +6170,24 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       final remarks = (person['remarks'] ?? '').toLowerCase();
 
       return name.contains(_rollSearchQuery) ||
-             armyNo.contains(_rollSearchQuery) ||
-             rank.contains(_rollSearchQuery) ||
-             cl.contains(_rollSearchQuery) ||
-             remarks.contains(_rollSearchQuery);
+          armyNo.contains(_rollSearchQuery) ||
+          rank.contains(_rollSearchQuery) ||
+          cl.contains(_rollSearchQuery) ||
+          remarks.contains(_rollSearchQuery);
     }).toList();
 
-    final List<String> divisions = ['All', 'FIGHTING', 'NON FIGHTING'];
-    final List<String> rankCategories = ['All', 'OFFICERS', 'JCOs', 'SLDRS'];
-    final List<String> trades = [
-      'All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Civ', 'NCB', 'SW', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD'
+    final List<String> divisions = [
+      'All',
+      'FIGHTING',
+      'NON FIGHTING',
+      '  Clk',
+      '  Ck',
+      '  Civ',
+      '  LAD',
+      '  NCB',
+      '  S/W',
+      '  Engr',
+      '  N/A',
     ];
 
     return Column(
@@ -4595,7 +6200,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.15)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.04),
                   blurRadius: 8,
                 ),
               ],
@@ -4615,16 +6222,22 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     : null,
                 hintText: 'Search by Army No, Rank, or Name...',
                 hintStyle: TextStyle(
-                  color: isDark ? Colors.white.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.45),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.35)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.45),
                   fontSize: 14,
                 ),
                 filled: true,
-                fillColor: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.05) : Colors.white,
+                fillColor: isDark
+                    ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
+                    : Colors.white,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                    color: isDark
+                        ? goldAccent.withValues(alpha: 0.25)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.15),
                     width: 1.0,
                   ),
                 ),
@@ -4727,7 +6340,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              if (_selectedDivision != 'All' || _selectedBattery != 'All' || _selectedRankCategory != 'All' || _selectedTrade != 'All' || _rollSearchQuery.isNotEmpty)
+              if (_selectedDivision != 'All' ||
+                  _selectedBattery != 'All' ||
+                  _selectedRankCategory != 'All' ||
+                  _selectedTrade != 'All' ||
+                  _rollSearchQuery.isNotEmpty)
                 GestureDetector(
                   onTap: () {
                     setState(() {
@@ -4757,18 +6374,30 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.people_outline_rounded, size: 48, color: silverText.withValues(alpha: 0.4)),
+                      Icon(
+                        Icons.people_outline_rounded,
+                        size: 48,
+                        color: silverText.withValues(alpha: 0.4),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         'No Personnel Found',
-                        style: TextStyle(color: silverText, fontSize: 14, fontWeight: FontWeight.w500),
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 )
               : ListView.builder(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+                  padding: const EdgeInsets.only(
+                    left: 20.0,
+                    right: 20.0,
+                    bottom: 20.0,
+                  ),
                   itemCount: filteredList.length,
                   itemBuilder: (context, index) {
                     final person = filteredList[index];
@@ -4781,11 +6410,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
                     final status = _getPersonStatus(person);
                     final isFighting = _isFighting(person);
-                    final statusColor = (status == 'Present' || status == 'Working' || status == 'Aval')
+                    final statusColor =
+                        (status == 'Present' ||
+                            status == 'Working' ||
+                            status == 'Aval')
                         ? valueGreenColor
-                        : (status == 'Leave' || status == 'OSL/Pris' || status.toLowerCase().contains('sick') || status.toLowerCase().contains('cmh'))
-                            ? Colors.redAccent
-                            : goldAccent;
+                        : (status == 'Leave' ||
+                              status == 'OSL/Pris' ||
+                              status.toLowerCase().contains('sick') ||
+                              status.toLowerCase().contains('cmh'))
+                        ? Colors.redAccent
+                        : goldAccent;
 
                     return GestureDetector(
                       onTap: () {
@@ -4807,15 +6442,25 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+                          color: isDark
+                              ? const Color(0xFF0C5A32).withValues(alpha: 0.12)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                            color: isDark
+                                ? goldAccent.withValues(alpha: 0.25)
+                                : const Color(
+                                    0xFF0C5A32,
+                                  ).withValues(alpha: 0.15),
                             width: 1.0,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: isDark ? Colors.black.withValues(alpha: 0.12) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                              color: isDark
+                                  ? Colors.black.withValues(alpha: 0.12)
+                                  : const Color(
+                                      0xFF0C5A32,
+                                    ).withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -4834,14 +6479,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                       width: 44,
                                       height: 44,
                                       decoration: BoxDecoration(
-                                        color: goldAccent.withValues(alpha: 0.1),
+                                        color: goldAccent.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: goldAccent.withValues(alpha: 0.35),
+                                          color: goldAccent.withValues(
+                                            alpha: 0.35,
+                                          ),
                                           width: 1.2,
                                         ),
                                         image: const DecorationImage(
-                                          image: AssetImage('assets/images/profile_avatar.jpg'),
+                                          image: AssetImage(
+                                            'assets/images/profile_avatar.jpg',
+                                          ),
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -4856,7 +6507,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           color: statusColor,
                                           shape: BoxShape.circle,
                                           border: Border.all(
-                                            color: isDark ? const Color(0xFF03140A) : Colors.white,
+                                            color: isDark
+                                                ? const Color(0xFF03140A)
+                                                : Colors.white,
                                             width: 2.0,
                                           ),
                                         ),
@@ -4868,7 +6521,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 // Middle details (Name, Army No, Bty)
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '$rank $name',
@@ -4883,13 +6537,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                       Wrap(
                                         spacing: 8,
                                         runSpacing: 4,
-                                        crossAxisAlignment: WrapCrossAlignment.center,
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 1.5,
+                                            ),
                                             decoration: BoxDecoration(
-                                              color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
-                                              borderRadius: BorderRadius.circular(4),
+                                              color: isDark
+                                                  ? const Color(0xFF03140A)
+                                                  : const Color(0xFFE8F5EE),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               armyNo,
@@ -4901,26 +6562,42 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                             ),
                                           ),
                                           // Battery color chip
-                                          Builder(builder: (context) {
-                                            final bty = _getBattery(person);
-                                            final btyColor = _getBatteryColor(bty);
-                                            return Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                              decoration: BoxDecoration(
-                                                color: btyColor.withValues(alpha: 0.13),
-                                                borderRadius: BorderRadius.circular(5),
-                                                border: Border.all(color: btyColor.withValues(alpha: 0.5), width: 0.8),
-                                              ),
-                                              child: Text(
+                                          Builder(
+                                            builder: (context) {
+                                              final bty = _getBattery(person);
+                                              final btyColor = _getBatteryColor(
                                                 bty,
-                                                style: TextStyle(
-                                                  color: btyColor,
-                                                  fontSize: 10.5,
-                                                  fontWeight: FontWeight.w800,
+                                              );
+                                              return Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 7,
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: btyColor.withValues(
+                                                    alpha: 0.13,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(5),
+                                                  border: Border.all(
+                                                    color: btyColor.withValues(
+                                                      alpha: 0.5,
+                                                    ),
+                                                    width: 0.8,
+                                                  ),
                                                 ),
-                                              ),
-                                            );
-                                          }),
+                                                child: Text(
+                                                  bty,
+                                                  style: TextStyle(
+                                                    color: btyColor,
+                                                    fontSize: 10.5,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ),
                                           Text(
                                             'Cl: $cl',
                                             style: TextStyle(
@@ -4941,7 +6618,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                   children: [
                                     if (_isRollEditMode)
                                       IconButton(
-                                        icon: Icon(Icons.edit_note_rounded, color: goldAccent, size: 20),
+                                        icon: Icon(
+                                          Icons.edit_note_rounded,
+                                          color: goldAccent,
+                                          size: 20,
+                                        ),
                                         onPressed: () {
                                           _showPersonFormDialog(
                                             context,
@@ -4954,24 +6635,45 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           );
                                         },
                                         constraints: const BoxConstraints(),
-                                        padding: const EdgeInsets.only(bottom: 6),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 6,
+                                        ),
                                       ),
                                     if (_isRollDeleteMode)
                                       IconButton(
-                                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                        icon: const Icon(
+                                          Icons.delete_outline_rounded,
+                                          color: Colors.redAccent,
+                                          size: 20,
+                                        ),
                                         onPressed: () {
-                                          _showDeletePersonConfirmDialog(context, person, isDark, goldAccent, silverText);
+                                          _showDeletePersonConfirmDialog(
+                                            context,
+                                            person,
+                                            isDark,
+                                            goldAccent,
+                                            silverText,
+                                          );
                                         },
                                         constraints: const BoxConstraints(),
-                                        padding: const EdgeInsets.only(bottom: 6),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 6,
+                                        ),
                                       ),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: statusColor.withValues(alpha: 0.12),
+                                        color: statusColor.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         borderRadius: BorderRadius.circular(6),
                                         border: Border.all(
-                                          color: statusColor.withValues(alpha: 0.3),
+                                          color: statusColor.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           width: 0.8,
                                         ),
                                       ),
@@ -4986,23 +6688,36 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                     ),
                                     const SizedBox(height: 6),
                                     Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: isDark
-                                            ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
-                                            : const Color(0xFF0C5A32).withValues(alpha: 0.03),
+                                            ? const Color(
+                                                0xFF0C5A32,
+                                              ).withValues(alpha: 0.05)
+                                            : const Color(
+                                                0xFF0C5A32,
+                                              ).withValues(alpha: 0.03),
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
                                           color: isFighting
-                                              ? valueGreenColor.withValues(alpha: 0.3)
-                                              : Colors.orange.withValues(alpha: 0.3),
+                                              ? valueGreenColor.withValues(
+                                                  alpha: 0.3,
+                                                )
+                                              : Colors.orange.withValues(
+                                                  alpha: 0.3,
+                                                ),
                                           width: 0.6,
                                         ),
                                       ),
                                       child: Text(
                                         category,
                                         style: TextStyle(
-                                          color: isFighting ? valueGreenColor : Colors.orange,
+                                          color: isFighting
+                                              ? valueGreenColor
+                                              : Colors.orange,
                                           fontSize: 9,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -5018,7 +6733,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 padding: const EdgeInsets.all(10),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.4) : const Color(0xFF0C5A32).withValues(alpha: 0.02),
+                                  color: isDark
+                                      ? const Color(
+                                          0xFF03140A,
+                                        ).withValues(alpha: 0.4)
+                                      : const Color(
+                                          0xFF0C5A32,
+                                        ).withValues(alpha: 0.02),
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: goldAccent.withValues(alpha: 0.15),
@@ -5038,7 +6759,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                       child: Text(
                                         remarks,
                                         style: TextStyle(
-                                          color: isDark ? const Color(0xFFD0D0D0) : const Color(0xFF3B4D41),
+                                          color: isDark
+                                              ? const Color(0xFFD0D0D0)
+                                              : const Color(0xFF3B4D41),
                                           fontSize: 11,
                                           fontWeight: FontWeight.w500,
                                           fontStyle: FontStyle.italic,
@@ -5068,10 +6791,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final rank = (person['rank'] ?? '').toLowerCase();
     final combined = '$rank $name'.toLowerCase();
 
-    if (category == 'clks' || category == 'c/us' || category == 'sws' || category == 'ncbs') {
+    if (category == 'clks' ||
+        category == 'c/us' ||
+        category == 'sws' ||
+        category == 's/ws' ||
+        category == 'ncbs' ||
+        category == 'civs' ||
+        category == 'lads') {
       return false;
     }
-    
+
     if (combined.contains('clk') ||
         combined.contains('ck ') ||
         combined.contains('ck(') ||
@@ -5082,22 +6811,70 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         combined.contains('lad') ||
         combined.contains('civ') ||
         combined.contains('ncb') ||
-        combined.contains('sw')) {
+        combined.contains('sw') ||
+        combined.contains('s/w')) {
       return false;
     }
 
     return true;
   }
 
-  String _getRankCategory(String rank, String name) {
-    final r = rank.toLowerCase();
-    final n = name.toLowerCase();
-    final combined = '$r $n';
+  String _getRankSubcategory(String rank, String name) {
+    final r = rank.trim().toLowerCase();
 
-    if (combined.contains('lt col') || combined.contains('maj') || combined.contains('capt') || combined.contains('lt ') || combined.contains('2/lt')) {
+    // 1. Officers
+    if (r == 'lt col' || r.startsWith('lt col') || r.contains('lt col'))
+      return 'Lt Col';
+    if (r == 'maj' || r.startsWith('maj') || r.contains('maj')) return 'Maj';
+    if (r == 'capt' || r.startsWith('capt') || r.contains('capt'))
+      return 'Capt';
+    if (r == '2/lt' || r == '2-lt' || r == '2/ lt' || r.contains('2/lt'))
+      return '2/Lt';
+    if (r == 'lt' || r == 'lieutenant') return 'Lt';
+
+    // 2. JCOs
+    if (r == 'sm' || r == 'subedar major') return 'SM';
+    if (r == 'n/sub' ||
+        r == 'n-sub' ||
+        r == 'naib subedar' ||
+        r.contains('n/sub'))
+      return 'N/Sub';
+    if (r == 'sub' || r == 'subedar') return 'Sub';
+
+    // 3. Soldiers
+    if (r.contains('hav') ||
+        r.contains('bqmh') ||
+        r.contains('rqmh') ||
+        r == 'havildar') {
+      return 'Hav';
+    }
+    if (r == 'lhav' ||
+        r == 'lhv' ||
+        r == 'lance havildar' ||
+        r.contains('lhav') ||
+        r.contains('lhv')) {
+      return 'Lhav';
+    }
+    if (r == 'lnk' ||
+        r == 'l/nk' ||
+        r == 'lance naik' ||
+        r.contains('lnk') ||
+        r.contains('l/nk')) {
+      return 'Lnk';
+    }
+    if (r == 'nk' || r == 'naik' || r == 'nco' || r.contains('nk')) {
+      return 'Nk';
+    }
+
+    return 'Sep';
+  }
+
+  String _getRankCategory(String rank, String name) {
+    final sub = _getRankSubcategory(rank, name);
+    if (['Lt Col', 'Maj', 'Capt', 'Lt', '2/Lt'].contains(sub)) {
       return 'OFFICERS';
     }
-    if (combined.contains('sm') || combined.contains('sub') || combined.contains('n/sub')) {
+    if (['SM', 'Sub', 'N/Sub'].contains(sub)) {
       return 'JCOs';
     }
     return 'SLDRS';
@@ -5111,8 +6888,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     if (category == 'clks' || combined.contains('clk')) return 'Clk';
     if (category == 'ncbs' || combined.contains('ncb')) return 'NCB';
-    if (category == 'sws' || combined.contains('sw') || combined.contains('s/w')) return 'SW';
-    if (category == 'c/us' || combined.contains('ck') || combined.contains('c/u') || combined.contains('c/m')) return 'Ck';
+    if (category == 'sws' ||
+        combined.contains('sw') ||
+        combined.contains('s/w'))
+      return 'S/W';
+    if (category == 'c/us' ||
+        combined.contains('ck') ||
+        combined.contains('c/u') ||
+        combined.contains('c/m'))
+      return 'Ck';
+    if (category == 'civs' || combined.contains('civ')) return 'Civ';
+    if (category == 'lads' || combined.contains('lad')) return 'LAD';
 
     if (category == 'jcos') {
       if (combined.contains('gnr')) return 'Gnr';
@@ -5122,7 +6908,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       if (combined.contains('dsv')) return 'DSV';
       if (combined.contains('svy') || combined.contains('sry')) return 'Svy';
     }
-    if (category == 'svys' || combined.contains('svy') || combined.contains('sry')) return 'Svy';
+    if (category == 'svys' ||
+        combined.contains('svy') ||
+        combined.contains('sry'))
+      return 'Svy';
     if (category == 'tas' || combined.contains('ta')) return 'TA';
     if (category == 'ocsu' || combined.contains('ocu')) return 'OCU';
     if (category == 'dsvs' || combined.contains('dsv')) return 'DSV';
@@ -5149,11 +6938,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   /// Returns the distinct color for each battery.
   Color _getBatteryColor(String bty) {
     switch (bty) {
-      case 'HQ Bty': return const Color(0xFFE53935); // Red - Headquarter Battery
-      case 'P Bty':  return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
-      case 'Q Bty':  return const Color(0xFFFF9800); // Light Orange - Quebec Battery
-      case 'R Bty':  return const Color(0xFF4CAF50); // Light Green - Romeo Battery
-      default:       return const Color(0xFFE53935);
+      case 'HQ Bty':
+        return const Color(0xFFE53935); // Red - Headquarter Battery
+      case 'P Bty':
+        return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
+      case 'Q Bty':
+        return const Color(0xFFFF9800); // Light Orange - Quebec Battery
+      case 'R Bty':
+        return const Color(0xFF4CAF50); // Light Green - Romeo Battery
+      default:
+        return const Color(0xFFE53935);
     }
   }
 
@@ -5170,16 +6964,29 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       value: value,
       isExpanded: true,
       dropdownColor: isDark ? const Color(0xFF03140A) : Colors.white,
-      style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.w600),
+      style: TextStyle(
+        color: textThemeColor,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
       icon: Icon(Icons.unfold_more_rounded, color: goldAccent, size: 14),
       decoration: InputDecoration(
         filled: true,
-        fillColor: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.05) : Colors.white,
-        contentPadding: const EdgeInsets.only(left: 6, right: 0, top: 10, bottom: 10),
+        fillColor: isDark
+            ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
+            : Colors.white,
+        contentPadding: const EdgeInsets.only(
+          left: 6,
+          right: 0,
+          top: 10,
+          bottom: 10,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide(
-            color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+            color: isDark
+                ? goldAccent.withValues(alpha: 0.25)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.15),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -5236,10 +7043,27 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         if (_getTrade(person) != _analysisFilterTrade) return false;
       }
       if (_analysisMode == 'Rank' && _analysisFilterRank != 'All') {
-        final rankCatFilter = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
-        if (_analysisFilterRank == 'Officers' && rankCatFilter != 'OFFICERS') return false;
-        if (_analysisFilterRank == 'JCOs' && rankCatFilter != 'JCOs') return false;
-        if (_analysisFilterRank == 'Soldiers' && rankCatFilter != 'SLDRS') return false;
+        final selectedRank = _analysisFilterRank.trim();
+        final subcat = _getRankSubcategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+        final cat = _getRankCategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+
+        if (selectedRank == 'Officers') {
+          if (cat != 'OFFICERS') return false;
+        } else if (selectedRank == 'JCOs') {
+          if (cat != 'JCOs') return false;
+        } else if (selectedRank == 'Soldiers' ||
+            selectedRank == 'Sldrs' ||
+            selectedRank == 'SLDRS') {
+          if (cat != 'SLDRS') return false;
+        } else {
+          if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
+        }
       }
       return true;
     }).toList();
@@ -5248,17 +7072,31 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     int totalStrength = filteredPersonnel.length;
     int fightingStrength = 0;
     int nonFightingStrength = 0;
-    
+
     Map<String, int> officerRanks = {};
     Map<String, int> jcoTrades = {};
     Map<String, int> sldrTrades = {};
-    
+
     Map<String, int> nonFightingTrades = {
-      'Clk': 0, 'Ck': 0, 'Engr': 0, 'N/A': 0, 'LAD': 0, 'NCB': 0, 'SW': 0
+      'Clk': 0,
+      'Ck': 0,
+      'Engr': 0,
+      'N/A': 0,
+      'LAD': 0,
+      'NCB': 0,
+      'S/W': 0,
+      'Civ': 0,
     };
-    
+
     Map<String, Map<String, int>> nonFightingTradeRanks = {
-      'Clk': {}, 'Ck': {}, 'Engr': {}, 'N/A': {}, 'LAD': {}, 'NCB': {}, 'SW': {}
+      'Clk': {},
+      'Ck': {},
+      'Engr': {},
+      'N/A': {},
+      'LAD': {},
+      'NCB': {},
+      'S/W': {},
+      'Civ': {},
     };
 
     Map<String, int> fightingJcoRanks = {};
@@ -5266,24 +7104,53 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
     // Battery Stats mapping
     Map<String, Map<String, int>> batteryStats = {
-      'HQ Bty': {'total': 0, 'officers': 0, 'jcos': 0, 'sldrs': 0, 'nonFighting': 0},
-      'P Bty': {'total': 0, 'officers': 0, 'jcos': 0, 'sldrs': 0, 'nonFighting': 0},
-      'Q Bty': {'total': 0, 'officers': 0, 'jcos': 0, 'sldrs': 0, 'nonFighting': 0},
-      'R Bty': {'total': 0, 'officers': 0, 'jcos': 0, 'sldrs': 0, 'nonFighting': 0},
+      'HQ Bty': {
+        'total': 0,
+        'officers': 0,
+        'jcos': 0,
+        'sldrs': 0,
+        'nonFighting': 0,
+      },
+      'P Bty': {
+        'total': 0,
+        'officers': 0,
+        'jcos': 0,
+        'sldrs': 0,
+        'nonFighting': 0,
+      },
+      'Q Bty': {
+        'total': 0,
+        'officers': 0,
+        'jcos': 0,
+        'sldrs': 0,
+        'nonFighting': 0,
+      },
+      'R Bty': {
+        'total': 0,
+        'officers': 0,
+        'jcos': 0,
+        'sldrs': 0,
+        'nonFighting': 0,
+      },
     };
 
     for (var person in filteredPersonnel) {
       final isFighting = _isFighting(person);
       final bty = _getBattery(person);
-      final rankCat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
+      final rankCat = _getRankCategory(
+        person['rank'] ?? '',
+        person['name'] ?? '',
+      );
 
       if (batteryStats.containsKey(bty)) {
         batteryStats[bty]!['total'] = batteryStats[bty]!['total']! + 1;
         if (!isFighting) {
-          batteryStats[bty]!['nonFighting'] = batteryStats[bty]!['nonFighting']! + 1;
+          batteryStats[bty]!['nonFighting'] =
+              batteryStats[bty]!['nonFighting']! + 1;
         } else {
           if (rankCat == 'OFFICERS') {
-            batteryStats[bty]!['officers'] = batteryStats[bty]!['officers']! + 1;
+            batteryStats[bty]!['officers'] =
+                batteryStats[bty]!['officers']! + 1;
           } else if (rankCat == 'JCOs') {
             batteryStats[bty]!['jcos'] = batteryStats[bty]!['jcos']! + 1;
           } else {
@@ -5296,7 +7163,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         fightingStrength++;
         final trade = _getTrade(person);
         final rank = person['rank'] ?? 'Gnr';
-        
+
         if (rankCat == 'OFFICERS') {
           officerRanks[rank] = (officerRanks[rank] ?? 0) + 1;
         } else if (rankCat == 'JCOs') {
@@ -5312,70 +7179,148 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         final rank = person['rank'] ?? 'Sep';
         if (nonFightingTrades.containsKey(trade)) {
           nonFightingTrades[trade] = nonFightingTrades[trade]! + 1;
-          nonFightingTradeRanks[trade]![rank] = (nonFightingTradeRanks[trade]![rank] ?? 0) + 1;
+          nonFightingTradeRanks[trade]![rank] =
+              (nonFightingTradeRanks[trade]![rank] ?? 0) + 1;
         }
       }
     }
 
     Map<String, int> fightingStatusCounts = {};
     Map<String, int> nonFightingStatusCounts = {};
-    
+
     for (var person in filteredPersonnel) {
       final isFighting = _isFighting(person);
       final status = _getPersonStatus(person);
       if (isFighting) {
         fightingStatusCounts[status] = (fightingStatusCounts[status] ?? 0) + 1;
       } else {
-        nonFightingStatusCounts[status] = (nonFightingStatusCounts[status] ?? 0) + 1;
+        nonFightingStatusCounts[status] =
+            (nonFightingStatusCounts[status] ?? 0) + 1;
       }
     }
 
     final List<String> paradeCategories = [
-      'Present', 'Leave', 'Att', 'Aval', 'Courses', 'OSL/Pris',
-      'Sta Gds', 'Unit Gds', 'CMH/Sick', 'Regt Emp', 'Trg', 'Sports',
-      'Aslt Course', 'DIDO', 'Working', 'Prot', 'Ex/Cl', 'U/D'
+      'Present',
+      'Leave',
+      'Att',
+      'Aval',
+      'Courses',
+      'OSL/Pris',
+      'Sta Gds',
+      'Unit Gds',
+      'CMH/Sick',
+      'Regt Emp',
+      'Trg',
+      'Sports',
+      'Aslt Course',
+      'DIDO',
+      'Working',
+      'Prot',
+      'Ex/Cl',
+      'U/D',
     ];
 
     // Dropdown option lists
-    final List<String> batteryOptions = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
-    final List<String> tradeOptions = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'NCB', 'SW', 'Engr', 'N/A', 'LAD'];
-    final List<String> rankOptions = ['All', 'Officers', 'JCOs', 'Soldiers'];
+    final List<String> batteryOptions = [
+      'All',
+      'HQ Bty',
+      'P Bty',
+      'Q Bty',
+      'R Bty',
+    ];
+    final List<String> tradeOptions = [
+      'All',
+      'Gnr',
+      'TA',
+      'OCU',
+      'DMT',
+      'DSV',
+      'Svy',
+      'Clk',
+      'Ck',
+      'NCB',
+      'S/W',
+      'Engr',
+      'N/A',
+      'LAD',
+      'Civ',
+    ];
+    final List<String> rankOptions = [
+      'All',
+      'Officers',
+      '  Lt Col',
+      '  Maj',
+      '  Capt',
+      '  Lt',
+      '  2/Lt',
+      'JCOs',
+      '  SM',
+      '  Sub',
+      '  N/Sub',
+      'Soldiers',
+      '  Hav',
+      '  Lhav',
+      '  Nk',
+      '  Lnk',
+      '  Sep',
+    ];
 
     // Active filter value for current mode only
     final String currentFilterValue = _analysisMode == 'Battery'
         ? _analysisFilterBattery
         : _analysisMode == 'Trade'
-            ? _analysisFilterTrade
-            : _analysisFilterRank;
+        ? _analysisFilterTrade
+        : _analysisFilterRank;
     final bool isFiltered = currentFilterValue != 'All';
-    final String filterLabel = isFiltered ? currentFilterValue : 'All ${_analysisMode}s';
+    final String filterLabel = isFiltered
+        ? currentFilterValue
+        : 'All ${_analysisMode}s';
 
     return Column(
       children: [
         SizedBox(height: MediaQuery.of(context).padding.top + 80.0),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.8) : const Color(0xFF0C5A32).withValues(alpha: 0.05),
+              color: isDark
+                  ? const Color(0xFF03140A).withValues(alpha: 0.8)
+                  : const Color(0xFF0C5A32).withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.3) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                color: isDark
+                    ? goldAccent.withValues(alpha: 0.3)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.15),
                 width: 1,
               ),
             ),
-             child: Row(
+            child: Row(
               children: [
                 Expanded(
-                  child: _buildAnalysisModeTab('Rank', textThemeColor, goldAccent, isDark),
+                  child: _buildAnalysisModeTab(
+                    'Rank',
+                    textThemeColor,
+                    goldAccent,
+                    isDark,
+                  ),
                 ),
                 Expanded(
-                  child: _buildAnalysisModeTab('Trade', textThemeColor, goldAccent, isDark),
+                  child: _buildAnalysisModeTab(
+                    'Trade',
+                    textThemeColor,
+                    goldAccent,
+                    isDark,
+                  ),
                 ),
                 Expanded(
-                  child: _buildAnalysisModeTab('Battery', textThemeColor, goldAccent, isDark),
+                  child: _buildAnalysisModeTab(
+                    'Battery',
+                    textThemeColor,
+                    goldAccent,
+                    isDark,
+                  ),
                 ),
               ],
             ),
@@ -5390,10 +7335,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0A2214).withValues(alpha: 0.6) : const Color(0xFFF0F8F4),
+              color: isDark
+                  ? const Color(0xFF0A2214).withValues(alpha: 0.6)
+                  : const Color(0xFFF0F8F4),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.18) : const Color(0xFF0C5A32).withValues(alpha: 0.12),
+                color: isDark
+                    ? goldAccent.withValues(alpha: 0.18)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.12),
                 width: 1,
               ),
             ),
@@ -5402,7 +7351,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               children: [
                 Row(
                   children: [
-                    Icon(Icons.filter_list_rounded, size: 13, color: goldAccent.withValues(alpha: 0.8)),
+                    Icon(
+                      Icons.filter_list_rounded,
+                      size: 13,
+                      color: goldAccent.withValues(alpha: 0.8),
+                    ),
                     const SizedBox(width: 5),
                     Text(
                       'FILTER: $filterLabel',
@@ -5417,9 +7370,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     if (isFiltered)
                       GestureDetector(
                         onTap: () => setState(() {
-                          if (_analysisMode == 'Battery') _analysisFilterBattery = 'All';
-                          if (_analysisMode == 'Trade')   _analysisFilterTrade = 'All';
-                          if (_analysisMode == 'Rank')    _analysisFilterRank = 'All';
+                          if (_analysisMode == 'Battery')
+                            _analysisFilterBattery = 'All';
+                          if (_analysisMode == 'Trade')
+                            _analysisFilterTrade = 'All';
+                          if (_analysisMode == 'Rank')
+                            _analysisFilterRank = 'All';
                         }),
                         child: Text(
                           'Reset',
@@ -5442,7 +7398,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
-                    onChanged: (v) => setState(() => _analysisFilterBattery = v ?? 'All'),
+                    onChanged: (v) =>
+                        setState(() => _analysisFilterBattery = v ?? 'All'),
                   )
                 else if (_analysisMode == 'Trade')
                   _buildAnalysisDropdown(
@@ -5452,7 +7409,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
-                    onChanged: (v) => setState(() => _analysisFilterTrade = v ?? 'All'),
+                    onChanged: (v) =>
+                        setState(() => _analysisFilterTrade = v ?? 'All'),
                   )
                 else
                   _buildAnalysisDropdown(
@@ -5462,14 +7420,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
-                    onChanged: (v) => setState(() => _analysisFilterRank = v ?? 'All'),
+                    onChanged: (v) =>
+                        setState(() => _analysisFilterRank = v ?? 'All'),
                   ),
               ],
             ),
           ),
         ),
-        // ──────────────────────────────────────────────────────────────────
 
+        // ──────────────────────────────────────────────────────────────────
         const SizedBox(height: 10),
 
         Padding(
@@ -5477,15 +7436,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.08) : Colors.white,
+              color: isDark
+                  ? const Color(0xFF0C5A32).withValues(alpha: 0.08)
+                  : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isDark ? goldAccent.withValues(alpha: 0.35) : const Color(0xFF0C5A32).withValues(alpha: 0.25),
+                color: isDark
+                    ? goldAccent.withValues(alpha: 0.35)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.25),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? Colors.black.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                  color: isDark
+                      ? Colors.black.withValues(alpha: 0.15)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.04),
                   blurRadius: 8,
                 ),
               ],
@@ -5494,7 +7459,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildAnalysisSummaryItem(
-                  label: _analysisMode == 'Trade' ? 'Trade Total' : (_analysisMode == 'Rank' ? 'Rank Total' : 'Bty Total'),
+                  label: _analysisMode == 'Trade'
+                      ? 'Trade Total'
+                      : (_analysisMode == 'Rank' ? 'Rank Total' : 'Bty Total'),
                   value: '$totalStrength',
                   isDark: isDark,
                   goldAccent: goldAccent,
@@ -5583,9 +7550,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     SizedBox(
                       width: double.infinity,
                       child: _buildBatteryAnalysisCard(
-                        name: _analysisFilterBattery == 'HQ Bty' ? 'HQ Battery'
-                            : _analysisFilterBattery == 'P Bty'  ? 'P Battery'
-                            : _analysisFilterBattery == 'Q Bty'  ? 'Q Battery'
+                        name: _analysisFilterBattery == 'HQ Bty'
+                            ? 'HQ Battery'
+                            : _analysisFilterBattery == 'P Bty'
+                            ? 'P Battery'
+                            : _analysisFilterBattery == 'Q Bty'
+                            ? 'Q Battery'
                             : 'R Battery',
                         stats: batteryStats[_analysisFilterBattery] ?? {},
                         isDark: isDark,
@@ -5602,10 +7572,18 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.04) : Colors.white,
+                            color: isDark
+                                ? const Color(
+                                    0xFF0C5A32,
+                                  ).withValues(alpha: 0.04)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1),
+                              color: isDark
+                                  ? goldAccent.withValues(alpha: 0.15)
+                                  : const Color(
+                                      0xFF0C5A32,
+                                    ).withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -5622,46 +7600,92 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 ),
                               ),
                               const Divider(height: 12, thickness: 0.5),
-                              
+
                               _buildSectionHeader('Officers'),
                               if (_analysisMode == 'Trade') ...[
-                                _buildBulletItem('Lt Col, Maj, Capt, Lt, 2/Lt', isDark),
+                                _buildBulletItem(
+                                  'Lt Col, Maj, Capt, Lt, 2/Lt',
+                                  isDark,
+                                ),
                               ] else ...[
-                                ...officerRanks.entries.where((e) => e.value > 0).map((e) => _buildBulletItem('${e.key} - ${e.value}', isDark)),
+                                ...officerRanks.entries
+                                    .where((e) => e.value > 0)
+                                    .map(
+                                      (e) => _buildBulletItem(
+                                        '${e.key} - ${e.value}',
+                                        isDark,
+                                      ),
+                                    ),
                               ],
-                              
+
                               const SizedBox(height: 10),
-                              
+
                               _buildSectionHeader('JCOs'),
                               if (_analysisMode == 'Trade') ...[
-                                ...jcoTrades.entries.where((e) => e.value > 0).map((e) => _buildBulletItem('${e.key} - ${e.value}', isDark)),
+                                ...jcoTrades.entries
+                                    .where((e) => e.value > 0)
+                                    .map(
+                                      (e) => _buildBulletItem(
+                                        '${e.key} - ${e.value}',
+                                        isDark,
+                                      ),
+                                    ),
                               ] else ...[
-                                ...fightingJcoRanks.entries.where((e) => e.value > 0).map((e) => _buildBulletItem('${e.key} - ${e.value}', isDark)),
+                                ...fightingJcoRanks.entries
+                                    .where((e) => e.value > 0)
+                                    .map(
+                                      (e) => _buildBulletItem(
+                                        '${e.key} - ${e.value}',
+                                        isDark,
+                                      ),
+                                    ),
                               ],
-                              
+
                               const SizedBox(height: 10),
-                              
+
                               _buildSectionHeader('Sldrs'),
                               if (_analysisMode == 'Trade') ...[
-                                ...sldrTrades.entries.where((e) => e.value > 0).map((e) => _buildBulletItem('${e.key} - ${e.value}', isDark)),
+                                ...sldrTrades.entries
+                                    .where((e) => e.value > 0)
+                                    .map(
+                                      (e) => _buildBulletItem(
+                                        '${e.key} - ${e.value}',
+                                        isDark,
+                                      ),
+                                    ),
                               ] else ...[
-                                ...fightingSldrRanks.entries.where((e) => e.value > 0).map((e) => _buildBulletItem('${e.key} - ${e.value}', isDark)),
+                                ...fightingSldrRanks.entries
+                                    .where((e) => e.value > 0)
+                                    .map(
+                                      (e) => _buildBulletItem(
+                                        '${e.key} - ${e.value}',
+                                        isDark,
+                                      ),
+                                    ),
                               ],
                             ],
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 12),
-                      
+
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.04) : Colors.white,
+                            color: isDark
+                                ? const Color(
+                                    0xFF0C5A32,
+                                  ).withValues(alpha: 0.04)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1),
+                              color: isDark
+                                  ? goldAccent.withValues(alpha: 0.15)
+                                  : const Color(
+                                      0xFF0C5A32,
+                                    ).withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -5678,33 +7702,55 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                 ),
                               ),
                               const Divider(height: 12, thickness: 0.5),
-                              
-                              ...nonFightingTrades.entries.where((e) => e.value > 0).map((e) {
-                                final trade = e.key;
-                                final count = e.value;
-                                final subRanks = nonFightingTradeRanks[trade] ?? {};
-                                
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 10.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildSectionHeader('$trade - $count'),
-                                      if (_analysisMode == 'Rank' && count > 0)
-                                        ...subRanks.entries.where((r) => r.value > 0).map((r) => Padding(
-                                          padding: const EdgeInsets.only(left: 6.0),
-                                          child: Text(
-                                            '• ${r.key} - ${r.value}',
-                                            style: TextStyle(
-                                              color: isDark ? const Color(0xFFB0B0B0) : const Color(0xFF4A4A4A),
-                                              fontSize: 10.5,
-                                            ),
+
+                              ...nonFightingTrades.entries
+                                  .where((e) => e.value > 0)
+                                  .map((e) {
+                                    final trade = e.key;
+                                    final count = e.value;
+                                    final subRanks =
+                                        nonFightingTradeRanks[trade] ?? {};
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 10.0,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          _buildSectionHeader(
+                                            '$trade - $count',
                                           ),
-                                        )),
-                                    ],
-                                  ),
-                                );
-                              }),
+                                          if (_analysisMode == 'Rank' &&
+                                              count > 0)
+                                            ...subRanks.entries
+                                                .where((r) => r.value > 0)
+                                                .map(
+                                                  (r) => Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          left: 6.0,
+                                                        ),
+                                                    child: Text(
+                                                      '• ${r.key} - ${r.value}',
+                                                      style: TextStyle(
+                                                        color: isDark
+                                                            ? const Color(
+                                                                0xFFB0B0B0,
+                                                              )
+                                                            : const Color(
+                                                                0xFF4A4A4A,
+                                                              ),
+                                                        fontSize: 10.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
                             ],
                           ),
                         ),
@@ -5712,9 +7758,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ],
                   ),
                 ],
-                
+
                 const SizedBox(height: 16),
-                
+
                 _buildParadeStatePanel(
                   title: 'Offrs/JCOs/Sldrs',
                   categories: paradeCategories,
@@ -5723,13 +7769,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   goldAccent: goldAccent,
                   isFightingGroup: true,
                   baseList: filteredPersonnel,
-                  initialBattery: _analysisMode == 'Battery' ? _analysisFilterBattery : 'All',
-                  initialTrade:   _analysisMode == 'Trade'   ? _analysisFilterTrade   : 'All',
-                  initialRank:    _analysisMode == 'Rank'    ? _analysisFilterRank    : 'All',
+                  initialBattery: _analysisMode == 'Battery'
+                      ? _analysisFilterBattery
+                      : 'All',
+                  initialTrade: _analysisMode == 'Trade'
+                      ? _analysisFilterTrade
+                      : 'All',
+                  initialRank: _analysisMode == 'Rank'
+                      ? _analysisFilterRank
+                      : 'All',
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 _buildParadeStatePanel(
                   title: 'Clk/Ck/NCBs/Engrs, etc.',
                   categories: paradeCategories,
@@ -5738,11 +7790,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   goldAccent: goldAccent,
                   isFightingGroup: false,
                   baseList: filteredPersonnel,
-                  initialBattery: _analysisMode == 'Battery' ? _analysisFilterBattery : 'All',
-                  initialTrade:   _analysisMode == 'Trade'   ? _analysisFilterTrade   : 'All',
-                  initialRank:    _analysisMode == 'Rank'    ? _analysisFilterRank    : 'All',
+                  initialBattery: _analysisMode == 'Battery'
+                      ? _analysisFilterBattery
+                      : 'All',
+                  initialTrade: _analysisMode == 'Trade'
+                      ? _analysisFilterTrade
+                      : 'All',
+                  initialRank: _analysisMode == 'Rank'
+                      ? _analysisFilterRank
+                      : 'All',
                 ),
-                
+
                 const SizedBox(height: 32),
               ],
             ),
@@ -5764,7 +7822,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         Text(
           label.toUpperCase(),
           style: TextStyle(
-            color: isDark ? Colors.white.withValues(alpha: 0.5) : const Color(0xFF0C5A32).withValues(alpha: 0.6),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.5)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.6),
             fontSize: 10,
             fontWeight: FontWeight.w900,
             letterSpacing: 0.8,
@@ -5816,7 +7876,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  Widget _buildAnalysisModeTab(String mode, Color textThemeColor, Color goldAccent, bool isDark) {
+  Widget _buildAnalysisModeTab(
+    String mode,
+    Color textThemeColor,
+    Color goldAccent,
+    bool isDark,
+  ) {
     final isSelected = _analysisMode == mode;
     return GestureDetector(
       onTap: () {
@@ -5842,7 +7907,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     color: goldAccent.withValues(alpha: 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -5875,22 +7940,37 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       value: value,
       isExpanded: true,
       dropdownColor: isDark ? const Color(0xFF03140A) : Colors.white,
-      style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.w600),
+      style: TextStyle(
+        color: textThemeColor,
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+      ),
       icon: Icon(Icons.arrow_drop_down_rounded, color: goldAccent, size: 18),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: isDark ? goldAccent.withValues(alpha: 0.7) : const Color(0xFF0C5A32).withValues(alpha: 0.7),
+          color: isDark
+              ? goldAccent.withValues(alpha: 0.7)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.7),
           fontSize: 10,
           fontWeight: FontWeight.w700,
         ),
         filled: true,
-        fillColor: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.06) : Colors.white,
-        contentPadding: const EdgeInsets.only(left: 8, right: 4, top: 8, bottom: 8),
+        fillColor: isDark
+            ? const Color(0xFF0C5A32).withValues(alpha: 0.06)
+            : Colors.white,
+        contentPadding: const EdgeInsets.only(
+          left: 8,
+          right: 4,
+          top: 8,
+          bottom: 8,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-            color: isDark ? goldAccent.withValues(alpha: 0.2) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+            color: isDark
+                ? goldAccent.withValues(alpha: 0.2)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.15),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -5905,7 +7985,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           child: Text(
             item,
             style: TextStyle(
-              color: isActive ? textThemeColor : (isDark ? Colors.white54 : Colors.black38),
+              color: isActive
+                  ? textThemeColor
+                  : (isDark ? Colors.white54 : Colors.black38),
               fontSize: 11,
               fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
             ),
@@ -5919,7 +8001,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           return Text(
             displayText,
             style: TextStyle(
-              color: isFiltered ? goldAccent : (isDark ? Colors.white54 : Colors.black38),
+              color: isFiltered
+                  ? goldAccent
+                  : (isDark ? Colors.white54 : Colors.black38),
               fontSize: 11,
               fontWeight: isFiltered ? FontWeight.w800 : FontWeight.w400,
             ),
@@ -5935,11 +8019,16 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   // Maps display name (e.g. 'HQ Battery') -> battery key (e.g. 'HQ Bty')
   String _batteryKeyFromName(String displayName) {
     switch (displayName) {
-      case 'HQ Battery': return 'HQ Bty';
-      case 'P Battery':  return 'P Bty';
-      case 'Q Battery':  return 'Q Bty';
-      case 'R Battery':  return 'R Bty';
-      default:           return 'HQ Bty';
+      case 'HQ Battery':
+        return 'HQ Bty';
+      case 'P Battery':
+        return 'P Bty';
+      case 'Q Battery':
+        return 'Q Bty';
+      case 'R Battery':
+        return 'R Bty';
+      default:
+        return 'HQ Bty';
     }
   }
 
@@ -5964,153 +8053,193 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) =>
                 BatteryDetailScreen(
-              batteryKey: _batteryKeyFromName(name),
-              batteryName: name,
-              batteryColor: batteryColor,
-              isDarkMode: widget.isDarkMode,
-              onToggleTheme: widget.onToggleTheme,
-            ),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0);
-              const end = Offset.zero;
-              final tween = Tween(begin: begin, end: end)
-                  .chain(CurveTween(curve: Curves.easeInOutCubic));
-              return SlideTransition(position: animation.drive(tween), child: child);
-            },
+                  batteryKey: _batteryKeyFromName(name),
+                  batteryName: name,
+                  batteryColor: batteryColor,
+                  isDarkMode: widget.isDarkMode,
+                  onToggleTheme: widget.onToggleTheme,
+                ),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  const begin = Offset(1.0, 0.0);
+                  const end = Offset.zero;
+                  final tween = Tween(
+                    begin: begin,
+                    end: end,
+                  ).chain(CurveTween(curve: Curves.easeInOutCubic));
+                  return SlideTransition(
+                    position: animation.drive(tween),
+                    child: child,
+                  );
+                },
             transitionDuration: const Duration(milliseconds: 350),
           ),
         );
       },
       child: Container(
-      decoration: BoxDecoration(
-        color: isDark
-            ? batteryColor.withValues(alpha: 0.07)
-            : batteryColor.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: batteryColor.withValues(alpha: 0.45),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: batteryColor.withValues(alpha: isDark ? 0.15 : 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+        decoration: BoxDecoration(
+          color: isDark
+              ? batteryColor.withValues(alpha: 0.07)
+              : batteryColor.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: batteryColor.withValues(alpha: 0.45),
+            width: 1.2,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(13),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Left battery color accent strip
-              Container(
-                width: 5,
-                decoration: BoxDecoration(
-                  color: batteryColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(13),
-                    bottomLeft: Radius.circular(13),
+          boxShadow: [
+            BoxShadow(
+              color: batteryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left battery color accent strip
+                Container(
+                  width: 5,
+                  decoration: BoxDecoration(
+                    color: batteryColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(13),
+                      bottomLeft: Radius.circular(13),
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header row: battery name + strength badge
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            name.toUpperCase(),
-                            style: TextStyle(
-                              color: batteryColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                            decoration: BoxDecoration(
-                              color: batteryColor.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: batteryColor.withValues(alpha: 0.4),
-                                width: 0.8,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header row: battery name + strength badge
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              name.toUpperCase(),
+                              style: TextStyle(
+                                color: batteryColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.6,
                               ),
                             ),
-                            child: Text(
-                              'Str: $total',
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 2.5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: batteryColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                  color: batteryColor.withValues(alpha: 0.4),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                'Str: $total',
+                                style: TextStyle(
+                                  color: batteryColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Divider(
+                          height: 14,
+                          thickness: 0.5,
+                          color: batteryColor.withValues(alpha: 0.3),
+                        ),
+                        if (officers > 0)
+                          _buildCardDetailRow(
+                            'Officers',
+                            '$officers',
+                            isDark,
+                            batteryColor,
+                          ),
+                        if (jcos > 0)
+                          _buildCardDetailRow(
+                            'JCOs',
+                            '$jcos',
+                            isDark,
+                            batteryColor,
+                          ),
+                        if (sldrs > 0)
+                          _buildCardDetailRow(
+                            'Sldrs',
+                            '$sldrs',
+                            isDark,
+                            batteryColor,
+                          ),
+                        if (nonFighting > 0)
+                          _buildCardDetailRow(
+                            'Non-Fighting',
+                            '$nonFighting',
+                            isDark,
+                            batteryColor,
+                          ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Fighting Ratio',
+                              style: TextStyle(
+                                color: textThemeColor.withValues(alpha: 0.5),
+                                fontSize: 9.5,
+                              ),
+                            ),
+                            Text(
+                              '${(fightingRatio * 100).toStringAsFixed(0)}%',
                               style: TextStyle(
                                 color: batteryColor,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        height: 14,
-                        thickness: 0.5,
-                        color: batteryColor.withValues(alpha: 0.3),
-                      ),
-                      if (officers > 0) _buildCardDetailRow('Officers', '$officers', isDark, batteryColor),
-                      if (jcos > 0) _buildCardDetailRow('JCOs', '$jcos', isDark, batteryColor),
-                      if (sldrs > 0) _buildCardDetailRow('Sldrs', '$sldrs', isDark, batteryColor),
-                      if (nonFighting > 0) _buildCardDetailRow('Non-Fighting', '$nonFighting', isDark, batteryColor),
-                      const SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Fighting Ratio',
-                            style: TextStyle(
-                              color: textThemeColor.withValues(alpha: 0.5),
-                              fontSize: 9.5,
-                            ),
-                          ),
-                          Text(
-                            '${(fightingRatio * 100).toStringAsFixed(0)}%',
-                            style: TextStyle(
-                              color: batteryColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: fightingRatio,
-                          backgroundColor: isDark
-                              ? Colors.white.withValues(alpha: 0.07)
-                              : Colors.black.withValues(alpha: 0.06),
-                          valueColor: AlwaysStoppedAnimation<Color>(batteryColor),
-                          minHeight: 5,
+                          ],
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: fightingRatio,
+                            backgroundColor: isDark
+                                ? Colors.white.withValues(alpha: 0.07)
+                                : Colors.black.withValues(alpha: 0.06),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              batteryColor,
+                            ),
+                            minHeight: 5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
-      ),
-    ), // GestureDetector
+      ), // GestureDetector
     );
   }
 
-  Widget _buildCardDetailRow(String label, String value, bool isDark, [Color? accentColor]) {
+  Widget _buildCardDetailRow(
+    String label,
+    String value,
+    bool isDark, [
+    Color? accentColor,
+  ]) {
     final color = accentColor ?? const Color(0xFFCD9B2D);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.0),
@@ -6122,16 +8251,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               Container(
                 width: 5,
                 height: 5,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
               ),
               const SizedBox(width: 6),
               Text(
                 label,
                 style: TextStyle(
-                  color: isDark ? const Color(0xFFB0B0B0) : const Color(0xFF4C5E53),
+                  color: isDark
+                      ? const Color(0xFFB0B0B0)
+                      : const Color(0xFF4C5E53),
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -6143,7 +8271,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: color.withValues(alpha: 0.3), width: 0.6),
+              border: Border.all(
+                color: color.withValues(alpha: 0.3),
+                width: 0.6,
+              ),
             ),
             child: Text(
               value,
@@ -6168,17 +8299,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     required bool isFightingGroup,
     required List<Map<String, String>> baseList,
     String initialBattery = 'All',
-    String initialTrade   = 'All',
-    String initialRank    = 'All',
+    String initialTrade = 'All',
+    String initialRank = 'All',
   }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.04) : Colors.white,
+        color: isDark
+            ? const Color(0xFF0C5A32).withValues(alpha: 0.04)
+            : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? goldAccent.withValues(alpha: 0.2) : const Color(0xFF0C5A32).withValues(alpha: 0.12),
+          color: isDark
+              ? goldAccent.withValues(alpha: 0.2)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.12),
           width: 1,
         ),
       ),
@@ -6198,7 +8333,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: categories.where((cat) => (counts[cat] ?? 0) > 0).map((cat) {
+            children: categories.where((cat) => (counts[cat] ?? 0) > 0).map((
+              cat,
+            ) {
               final count = counts[cat] ?? 0;
               return GestureDetector(
                 onTap: () {
@@ -6208,24 +8345,35 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       builder: (context) => CategoryPersonnelListScreen(
                         categoryName: cat,
                         isDark: isDark,
-                        textThemeColor: isDark ? Colors.white : const Color(0xFF042011),
-                        silverText: isDark ? const Color(0xFFE5E5E5) : const Color(0xFF4A5D52),
+                        textThemeColor: isDark
+                            ? Colors.white
+                            : const Color(0xFF042011),
+                        silverText: isDark
+                            ? const Color(0xFFE5E5E5)
+                            : const Color(0xFF4A5D52),
                         goldAccent: goldAccent,
-                        valueGreenColor: isDark ? const Color(0xFF00FF66) : const Color(0xFF0C5A32),
+                        valueGreenColor: isDark
+                            ? const Color(0xFF00FF66)
+                            : const Color(0xFF0C5A32),
                         getPersonStatus: _getPersonStatus,
                         filterIsFighting: isFightingGroup,
                         baseList: baseList,
                         initialBattery: initialBattery,
-                        initialTrade:   initialTrade,
-                        initialRank:    initialRank,
+                        initialTrade: initialTrade,
+                        initialRank: initialRank,
                       ),
                     ),
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF03140A).withValues(alpha: 0.8) : const Color(0xFF0C5A32).withValues(alpha: 0.03),
+                    color: isDark
+                        ? const Color(0xFF03140A).withValues(alpha: 0.8)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.03),
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
                       color: goldAccent.withValues(alpha: 0.15),
@@ -6238,7 +8386,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       Text(
                         '• $cat: ',
                         style: TextStyle(
-                          color: isDark ? const Color(0xFFB0B0B0) : const Color(0xFF3B4D41),
+                          color: isDark
+                              ? const Color(0xFFB0B0B0)
+                              : const Color(0xFF3B4D41),
                           fontSize: 10.5,
                           fontWeight: FontWeight.w600,
                         ),
@@ -6263,7 +8413,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   }
 }
 
-
 class CategoryPersonnelListScreen extends StatefulWidget {
   final String categoryName;
   final bool isDark;
@@ -6272,12 +8421,15 @@ class CategoryPersonnelListScreen extends StatefulWidget {
   final Color goldAccent;
   final Color valueGreenColor;
   final String Function(Map<String, String>) getPersonStatus;
+
   /// If non-null, restricts list to fighting (true) or non-fighting (false) personnel.
   final bool? filterIsFighting;
+
   /// If provided, used as the source list instead of the full nominalRollList.
   /// Pass the already-filtered personnel from the analysis tab so that
   /// tapping a chip (e.g. "Present: 4") shows only those 4 specific people.
   final List<Map<String, String>>? baseList;
+
   /// Pre-selected filter values (from analysis screen).
   final String initialBattery;
   final String initialTrade;
@@ -6295,34 +8447,71 @@ class CategoryPersonnelListScreen extends StatefulWidget {
     this.filterIsFighting,
     this.baseList,
     this.initialBattery = 'All',
-    this.initialTrade   = 'All',
-    this.initialRank    = 'All',
+    this.initialTrade = 'All',
+    this.initialRank = 'All',
   });
 
   @override
-  State<CategoryPersonnelListScreen> createState() => _CategoryPersonnelListScreenState();
+  State<CategoryPersonnelListScreen> createState() =>
+      _CategoryPersonnelListScreenState();
 }
 
-class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScreen> {
+class _CategoryPersonnelListScreenState
+    extends State<CategoryPersonnelListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  
+
   String _selectedDivision = 'All';
   String _selectedBattery = 'All';
   String _selectedRankCategory = 'All';
   String _selectedTrade = 'All';
 
-  List<String> _tradesList = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
-  List<String> _ranksList = ['All', 'Officers', 'JCOs', 'Soldiers'];
+  List<String> _tradesList = [
+    'All',
+    'Gnr',
+    'TA',
+    'OCU',
+    'DMT',
+    'DSV',
+    'Svy',
+    'Clk',
+    'Ck',
+    'Engr',
+    'N/A',
+    'LAD',
+    'NCB',
+    'S/W',
+    'Civ',
+  ];
+  List<String> _ranksList = [
+    'All',
+    'Officers',
+    '  Lt Col',
+    '  Maj',
+    '  Capt',
+    '  Lt',
+    '  2/Lt',
+    'JCOs',
+    '  SM',
+    '  Sub',
+    '  N/Sub',
+    'Soldiers',
+    '  Hav',
+    '  Lhav',
+    '  Nk',
+    '  Lnk',
+    '  Sep',
+  ];
   List<String> _batteriesList = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
 
   @override
   void initState() {
     super.initState();
     // Pre-apply filters passed from the analysis screen
-    _selectedBattery      = widget.initialBattery;
-    _selectedRankCategory = widget.initialRank; // 'All', 'Officers', 'JCOs', or 'Soldiers' — matches _ranksList exactly
-    _selectedTrade        = widget.initialTrade;
+    _selectedBattery = widget.initialBattery;
+    _selectedRankCategory = widget
+        .initialRank; // 'All', 'Officers', 'JCOs', or 'Soldiers' — matches _ranksList exactly
+    _selectedTrade = widget.initialTrade;
     _loadDynamicAttributes();
     _searchController.addListener(() {
       setState(() {
@@ -6354,18 +8543,75 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     if (person['isFighting'] == 'false') return false;
     if (person['isFighting'] == 'true') return true;
     final cat = person['category'] ?? '';
-    if (cat == 'Officers' || cat == 'JCOs' || cat == 'Svys' || cat == 'TAs' || cat == 'OCsU' || cat == 'DSVs' || cat == 'DMTs' || cat == 'Gnrs') {
+    if (cat == 'Officers' ||
+        cat == 'JCOs' ||
+        cat == 'Svys' ||
+        cat == 'TAs' ||
+        cat == 'OCsU' ||
+        cat == 'DSVs' ||
+        cat == 'DMTs' ||
+        cat == 'Gnrs') {
       return true;
     }
     return false;
   }
 
+  String _getRankSubcategory(String rank, String name) {
+    final r = rank.trim().toLowerCase();
+
+    // 1. Officers
+    if (r == 'lt col' || r.startsWith('lt col') || r.contains('lt col'))
+      return 'Lt Col';
+    if (r == 'maj' || r.startsWith('maj') || r.contains('maj')) return 'Maj';
+    if (r == 'capt' || r.startsWith('capt') || r.contains('capt'))
+      return 'Capt';
+    if (r == '2/lt' || r == '2-lt' || r == '2/ lt' || r.contains('2/lt'))
+      return '2/Lt';
+    if (r == 'lt' || r == 'lieutenant') return 'Lt';
+
+    // 2. JCOs
+    if (r == 'sm' || r == 'subedar major') return 'SM';
+    if (r == 'n/sub' ||
+        r == 'n-sub' ||
+        r == 'naib subedar' ||
+        r.contains('n/sub'))
+      return 'N/Sub';
+    if (r == 'sub' || r == 'subedar') return 'Sub';
+
+    // 3. Soldiers
+    if (r.contains('hav') ||
+        r.contains('bqmh') ||
+        r.contains('rqmh') ||
+        r == 'havildar') {
+      return 'Hav';
+    }
+    if (r == 'lhav' ||
+        r == 'lhv' ||
+        r == 'lance havildar' ||
+        r.contains('lhav') ||
+        r.contains('lhv')) {
+      return 'Lhav';
+    }
+    if (r == 'lnk' ||
+        r == 'l/nk' ||
+        r == 'lance naik' ||
+        r.contains('lnk') ||
+        r.contains('l/nk')) {
+      return 'Lnk';
+    }
+    if (r == 'nk' || r == 'naik' || r == 'nco' || r.contains('nk')) {
+      return 'Nk';
+    }
+
+    return 'Sep';
+  }
+
   String _getRankCategory(String rank, String name) {
-    final upperRank = rank.toUpperCase();
-    if (upperRank.contains('LT COL') || upperRank.contains('MAJ') || upperRank.contains('CAPT') || upperRank.contains('LT') || upperRank.contains('2/LT')) {
+    final sub = _getRankSubcategory(rank, name);
+    if (['Lt Col', 'Maj', 'Capt', 'Lt', '2/Lt'].contains(sub)) {
       return 'OFFICERS';
     }
-    if (upperRank.contains('SM') || upperRank.contains('SUB') || upperRank.contains('N/SUB')) {
+    if (['SM', 'Sub', 'N/Sub'].contains(sub)) {
       return 'JCOs';
     }
     return 'SOLDIERS';
@@ -6374,7 +8620,7 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
   String _getTrade(Map<String, String> person) {
     final cat = person['category'] ?? '';
     final name = person['name'] ?? '';
-    
+
     if (cat == 'Officers') return 'Officer';
     if (cat == 'JCOs') {
       if (name.toLowerCase().contains('clk')) return 'Clk';
@@ -6385,7 +8631,7 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
       if (name.toLowerCase().contains('svy')) return 'Svy';
       return 'Gnr';
     }
-    
+
     if (cat == 'Clks') return 'Clk';
     if (cat == 'Svys') return 'Svy';
     if (cat == 'TAs') return 'TA';
@@ -6394,8 +8640,10 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     if (cat == 'DMTs') return 'DMT';
     if (cat == 'Gnrs') return 'Gnr';
     if (cat == 'C/Us') return 'Ck';
-    if (cat == 'SWs') return 'SW';
+    if (cat == 'SWs') return 'S/W';
     if (cat == 'NCBs') return 'NCB';
+    if (cat == 'Civs' || cat.toLowerCase().contains('civ')) return 'Civ';
+    if (cat == 'LADs' || cat.toLowerCase().contains('lad')) return 'LAD';
     return 'Gnr';
   }
 
@@ -6404,7 +8652,7 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
     if (cleanNo.isEmpty) return 'HQ Bty';
     final id = int.tryParse(cleanNo) ?? 0;
-    
+
     final btys = ['HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
     return btys[id % 4];
   }
@@ -6412,11 +8660,16 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
   /// Returns the color associated with a battery name.
   Color _getBatteryColor(String bty) {
     switch (bty) {
-      case 'HQ Bty': return const Color(0xFFE53935); // Red - Headquarter Battery
-      case 'P Bty':  return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
-      case 'Q Bty':  return const Color(0xFFFF9800); // Light Orange - Quebec Battery
-      case 'R Bty':  return const Color(0xFF4CAF50); // Light Green - Romeo Battery
-      default:       return const Color(0xFFE53935);
+      case 'HQ Bty':
+        return const Color(0xFFE53935); // Red - Headquarter Battery
+      case 'P Bty':
+        return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
+      case 'Q Bty':
+        return const Color(0xFFFF9800); // Light Orange - Quebec Battery
+      case 'R Bty':
+        return const Color(0xFF4CAF50); // Light Green - Romeo Battery
+      default:
+        return const Color(0xFFE53935);
     }
   }
 
@@ -6438,24 +8691,41 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
 
     // Compute which values are actually present in rawList (for disabling irrelevant dropdown items)
     final availableBatteries = rawList.map((p) => _getBattery(p)).toSet();
-    final availableTrades    = rawList.map((p) => _getTrade(p)).toSet();
-    final availableRanks     = rawList.map((p) {
-      final rc = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
-      if (rc == 'OFFICERS') return 'Officers';
-      if (rc == 'JCOs')     return 'JCOs';
-      return 'Soldiers';
-    }).toSet();
+    final availableTrades = rawList.map((p) => _getTrade(p)).toSet();
+    final availableRanks = <String>{};
+    for (final p in rawList) {
+      final subcat = _getRankSubcategory(p['rank'] ?? '', p['name'] ?? '');
+      final cat = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
+      availableRanks.add('  $subcat');
+      if (cat == 'OFFICERS') {
+        availableRanks.add('Officers');
+      } else if (cat == 'JCOs') {
+        availableRanks.add('JCOs');
+      } else {
+        availableRanks.add('Soldiers');
+      }
+    }
 
     final filteredList = rawList.where((person) {
       final name = (person['name'] ?? '').toLowerCase();
       final armyNo = (person['armyNo'] ?? '').toLowerCase();
-      final matchesSearch = name.contains(_searchQuery) || armyNo.contains(_searchQuery);
+      final matchesSearch =
+          name.contains(_searchQuery) || armyNo.contains(_searchQuery);
       if (!matchesSearch) return false;
 
       if (_selectedDivision != 'All') {
+        final selectedDiv = _selectedDivision.trim().toLowerCase();
         final isFighting = _isFighting(person);
-        if (_selectedDivision == 'Fighting' && !isFighting) return false;
-        if (_selectedDivision == 'Non Fighting' && isFighting) return false;
+
+        if (selectedDiv == 'fighting') {
+          if (!isFighting) return false;
+        } else if (selectedDiv == 'non fighting') {
+          if (isFighting) return false;
+        } else {
+          final trade = _getTrade(person);
+          if (trade.toLowerCase() != selectedDiv) return false;
+          if (isFighting) return false;
+        }
       }
 
       if (_selectedBattery != 'All') {
@@ -6464,14 +8734,27 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
       }
 
       if (_selectedRankCategory != 'All') {
-        final rankCat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
-        // Map dropdown label to the value _getRankCategory returns
-        final expectedCat = _selectedRankCategory == 'Officers'
-            ? 'OFFICERS'
-            : _selectedRankCategory == 'JCOs'
-                ? 'JCOs'
-                : 'SOLDIERS';
-        if (rankCat != expectedCat) return false;
+        final selectedRank = _selectedRankCategory.trim();
+        final subcat = _getRankSubcategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+        final cat = _getRankCategory(
+          person['rank'] ?? '',
+          person['name'] ?? '',
+        );
+
+        if (selectedRank == 'Officers') {
+          if (cat != 'OFFICERS') return false;
+        } else if (selectedRank == 'JCOs') {
+          if (cat != 'JCOs') return false;
+        } else if (selectedRank == 'Soldiers' ||
+            selectedRank == 'Sldrs' ||
+            selectedRank == 'SLDRS') {
+          if (cat != 'SOLDIERS') return false;
+        } else {
+          if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
+        }
       }
 
       if (_selectedTrade != 'All') {
@@ -6485,9 +8768,13 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     return Theme(
       data: widget.isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
-        backgroundColor: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+        backgroundColor: widget.isDark
+            ? const Color(0xFF03140A)
+            : const Color(0xFFE8F5EE),
         appBar: AppBar(
-          backgroundColor: widget.isDark ? const Color(0xFF03140A).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.85),
+          backgroundColor: widget.isDark
+              ? const Color(0xFF03140A).withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.85),
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: widget.goldAccent),
@@ -6497,8 +8784,8 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
             widget.filterIsFighting == null
                 ? '${widget.categoryName} · ${rawList.length} Pers'
                 : widget.filterIsFighting!
-                    ? 'Fighting · ${widget.categoryName} · ${rawList.length} Pers'
-                    : 'Non-Fighting · ${widget.categoryName} · ${rawList.length} Pers',
+                ? 'Fighting · ${widget.categoryName} · ${rawList.length} Pers'
+                : 'Non-Fighting · ${widget.categoryName} · ${rawList.length} Pers',
             style: TextStyle(
               color: widget.textThemeColor,
               fontWeight: FontWeight.bold,
@@ -6514,10 +8801,14 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.05) : Colors.white,
+                  color: widget.isDark
+                      ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: widget.isDark ? widget.goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                    color: widget.isDark
+                        ? widget.goldAccent.withValues(alpha: 0.25)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.15),
                     width: 1.0,
                   ),
                 ),
@@ -6525,23 +8816,43 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                   children: [
                     TextField(
                       controller: _searchController,
-                      style: TextStyle(color: widget.textThemeColor, fontSize: 13.5),
+                      style: TextStyle(
+                        color: widget.textThemeColor,
+                        fontSize: 13.5,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Search Name or Army No...',
-                        hintStyle: TextStyle(color: widget.textThemeColor.withValues(alpha: 0.5), fontSize: 13.5),
-                        prefixIcon: Icon(Icons.search, color: widget.goldAccent, size: 18),
+                        hintStyle: TextStyle(
+                          color: widget.textThemeColor.withValues(alpha: 0.5),
+                          fontSize: 13.5,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: widget.goldAccent,
+                          size: 18,
+                        ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: Icon(Icons.clear, color: widget.silverText, size: 18),
+                                icon: Icon(
+                                  Icons.clear,
+                                  color: widget.silverText,
+                                  size: 18,
+                                ),
                                 onPressed: () => _searchController.clear(),
                               )
                             : null,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
                         filled: true,
-                        fillColor: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+                        fillColor: widget.isDark
+                            ? const Color(0xFF03140A)
+                            : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: widget.goldAccent.withValues(alpha: 0.15)),
+                          borderSide: BorderSide(
+                            color: widget.goldAccent.withValues(alpha: 0.15),
+                          ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -6558,7 +8869,19 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           _buildFilterDropdown(
                             label: 'Div',
                             value: _selectedDivision,
-                            items: ['All', 'Fighting', 'Non Fighting'],
+                            items: const [
+                              'All',
+                              'Fighting',
+                              'Non Fighting',
+                              '  Clk',
+                              '  Ck',
+                              '  Civ',
+                              '  LAD',
+                              '  NCB',
+                              '  S/W',
+                              '  Engr',
+                              '  N/A',
+                            ],
                             onChanged: (val) {
                               setState(() {
                                 _selectedDivision = val ?? 'All';
@@ -6613,7 +8936,10 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                   ? Center(
                       child: Text(
                         'No Personnel Found',
-                        style: TextStyle(color: widget.silverText, fontSize: 13),
+                        style: TextStyle(
+                          color: widget.silverText,
+                          fontSize: 13,
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -6633,11 +8959,17 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                         final category = person['category'] ?? '';
 
                         final status = widget.getPersonStatus(person);
-                        final statusColor = (status == 'Present' || status == 'Working' || status == 'Aval')
+                        final statusColor =
+                            (status == 'Present' ||
+                                status == 'Working' ||
+                                status == 'Aval')
                             ? widget.valueGreenColor
-                            : (status == 'Leave' || status == 'OSL/Pris' || status.toLowerCase().contains('sick') || status.toLowerCase().contains('cmh'))
-                                ? Colors.redAccent
-                                : widget.goldAccent;
+                            : (status == 'Leave' ||
+                                  status == 'OSL/Pris' ||
+                                  status.toLowerCase().contains('sick') ||
+                                  status.toLowerCase().contains('cmh'))
+                            ? Colors.redAccent
+                            : widget.goldAccent;
 
                         return GestureDetector(
                           onTap: () {
@@ -6658,7 +8990,11 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
                             decoration: BoxDecoration(
-                              color: widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
+                              color: widget.isDark
+                                  ? const Color(
+                                      0xFF0C5A32,
+                                    ).withValues(alpha: 0.12)
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: btyColor.withValues(alpha: 0.45),
@@ -6666,7 +9002,11 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: widget.isDark ? Colors.black.withValues(alpha: 0.12) : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                                  color: widget.isDark
+                                      ? Colors.black.withValues(alpha: 0.12)
+                                      : const Color(
+                                          0xFF0C5A32,
+                                        ).withValues(alpha: 0.04),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),
@@ -6676,7 +9016,8 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                               borderRadius: BorderRadius.circular(15),
                               child: IntrinsicHeight(
                                 child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     // Battery color indicator strip
                                     Container(
@@ -6692,220 +9033,348 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                                     Expanded(
                                       child: Padding(
                                         padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    // Avatar circle with rank initials and status dot indicator
-                                    Stack(
-                                      children: [
-                                        Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: BoxDecoration(
-                                            color: widget.goldAccent.withValues(alpha: 0.1),
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: widget.goldAccent.withValues(alpha: 0.35),
-                                              width: 1.2,
-                                            ),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              rank,
-                                              style: TextStyle(
-                                                color: widget.goldAccent,
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          right: 1,
-                                          bottom: 1,
-                                          child: Container(
-                                            width: 11,
-                                            height: 11,
-                                            decoration: BoxDecoration(
-                                              color: statusColor,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: widget.isDark ? const Color(0xFF03140A) : Colors.white,
-                                                width: 2.0,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(width: 12),
-                                    // Middle details (Name, Army No, Bty)
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            name,
-                                            style: TextStyle(
-                                              color: widget.textThemeColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              letterSpacing: 0.2,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Wrap(
-                                            spacing: 8,
-                                            runSpacing: 4,
-                                            crossAxisAlignment: WrapCrossAlignment.center,
-                                            children: [
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                                decoration: BoxDecoration(
-                                                  color: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
-                                                  borderRadius: BorderRadius.circular(4),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              children: [
+                                                // Avatar circle with rank initials and status dot indicator
+                                                Stack(
+                                                  children: [
+                                                    Container(
+                                                      width: 44,
+                                                      height: 44,
+                                                      decoration: BoxDecoration(
+                                                        color: widget.goldAccent
+                                                            .withValues(
+                                                              alpha: 0.1,
+                                                            ),
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          color: widget
+                                                              .goldAccent
+                                                              .withValues(
+                                                                alpha: 0.35,
+                                                              ),
+                                                          width: 1.2,
+                                                        ),
+                                                      ),
+                                                      child: Center(
+                                                        child: Text(
+                                                          rank,
+                                                          style: TextStyle(
+                                                            color: widget
+                                                                .goldAccent,
+                                                            fontSize: 10.5,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Positioned(
+                                                      right: 1,
+                                                      bottom: 1,
+                                                      child: Container(
+                                                        width: 11,
+                                                        height: 11,
+                                                        decoration: BoxDecoration(
+                                                          color: statusColor,
+                                                          shape:
+                                                              BoxShape.circle,
+                                                          border: Border.all(
+                                                            color: widget.isDark
+                                                                ? const Color(
+                                                                    0xFF03140A,
+                                                                  )
+                                                                : Colors.white,
+                                                            width: 2.0,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                child: Text(
-                                                  armyNo,
-                                                  style: TextStyle(
-                                                    color: widget.valueGreenColor,
-                                                    fontSize: 10.5,
-                                                    fontWeight: FontWeight.bold,
+                                                const SizedBox(width: 12),
+                                                // Middle details (Name, Army No, Bty)
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        name,
+                                                        style: TextStyle(
+                                                          color: widget
+                                                              .textThemeColor,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 14,
+                                                          letterSpacing: 0.2,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Wrap(
+                                                        spacing: 8,
+                                                        runSpacing: 4,
+                                                        crossAxisAlignment:
+                                                            WrapCrossAlignment
+                                                                .center,
+                                                        children: [
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 6,
+                                                                  vertical: 1.5,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color:
+                                                                  widget.isDark
+                                                                  ? const Color(
+                                                                      0xFF03140A,
+                                                                    )
+                                                                  : const Color(
+                                                                      0xFFE8F5EE,
+                                                                    ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    4,
+                                                                  ),
+                                                            ),
+                                                            child: Text(
+                                                              armyNo,
+                                                              style: TextStyle(
+                                                                color: widget
+                                                                    .valueGreenColor,
+                                                                fontSize: 10.5,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          // Battery color chip
+                                                          Container(
+                                                            padding:
+                                                                const EdgeInsets.symmetric(
+                                                                  horizontal: 7,
+                                                                  vertical: 2,
+                                                                ),
+                                                            decoration: BoxDecoration(
+                                                              color: btyColor
+                                                                  .withValues(
+                                                                    alpha: 0.13,
+                                                                  ),
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    5,
+                                                                  ),
+                                                              border: Border.all(
+                                                                color: btyColor
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.5,
+                                                                    ),
+                                                                width: 0.8,
+                                                              ),
+                                                            ),
+                                                            child: Text(
+                                                              bty,
+                                                              style: TextStyle(
+                                                                color: btyColor,
+                                                                fontSize: 10.5,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            'Cl: $cl',
+                                                            style: TextStyle(
+                                                              color: widget
+                                                                  .silverText,
+                                                              fontSize: 11,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
                                                   ),
                                                 ),
-                                              ),
-                                              // Battery color chip
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                decoration: BoxDecoration(
-                                                  color: btyColor.withValues(alpha: 0.13),
-                                                  borderRadius: BorderRadius.circular(5),
-                                                  border: Border.all(color: btyColor.withValues(alpha: 0.5), width: 0.8),
+                                                const SizedBox(width: 8),
+                                                // Right Side metadata (Status badge and category indicator)
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 3,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: statusColor
+                                                            .withValues(
+                                                              alpha: 0.12,
+                                                            ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              6,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: statusColor
+                                                              .withValues(
+                                                                alpha: 0.3,
+                                                              ),
+                                                          width: 0.8,
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        status,
+                                                        style: TextStyle(
+                                                          color: statusColor,
+                                                          fontSize: 10,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 6,
+                                                            vertical: 2,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: widget.isDark
+                                                            ? const Color(
+                                                                0xFF0C5A32,
+                                                              ).withValues(
+                                                                alpha: 0.05,
+                                                              )
+                                                            : const Color(
+                                                                0xFF0C5A32,
+                                                              ).withValues(
+                                                                alpha: 0.03,
+                                                              ),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              4,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: isFighting
+                                                              ? widget
+                                                                    .valueGreenColor
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    )
+                                                              : Colors.orange
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.3,
+                                                                    ),
+                                                          width: 0.6,
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        category,
+                                                        style: TextStyle(
+                                                          color: isFighting
+                                                              ? widget
+                                                                    .valueGreenColor
+                                                              : Colors.orange,
+                                                          fontSize: 9,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
-                                                child: Text(
-                                                  bty,
-                                                  style: TextStyle(
-                                                    color: btyColor,
-                                                    fontSize: 10.5,
-                                                    fontWeight: FontWeight.w800,
+                                              ],
+                                            ),
+                                            if (remarks.isNotEmpty) ...[
+                                              const SizedBox(height: 10),
+                                              Container(
+                                                padding: const EdgeInsets.all(
+                                                  10,
+                                                ),
+                                                width: double.infinity,
+                                                decoration: BoxDecoration(
+                                                  color: widget.isDark
+                                                      ? const Color(
+                                                          0xFF03140A,
+                                                        ).withValues(alpha: 0.4)
+                                                      : const Color(
+                                                          0xFF0C5A32,
+                                                        ).withValues(
+                                                          alpha: 0.02,
+                                                        ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: widget.goldAccent
+                                                        .withValues(
+                                                          alpha: 0.15,
+                                                        ),
+                                                    width: 0.8,
                                                   ),
                                                 ),
-                                              ),
-                                              Text(
-                                                'Cl: $cl',
-                                                style: TextStyle(
-                                                  color: widget.silverText,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w500,
+                                                child: Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Icon(
+                                                      Icons
+                                                          .assignment_ind_rounded,
+                                                      color: widget.goldAccent,
+                                                      size: 14,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: Text(
+                                                        remarks,
+                                                        style: TextStyle(
+                                                          color: widget.isDark
+                                                              ? const Color(
+                                                                  0xFFD0D0D0,
+                                                                )
+                                                              : const Color(
+                                                                  0xFF3B4D41,
+                                                                ),
+                                                          fontSize: 11,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontStyle:
+                                                              FontStyle.italic,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    // Right Side metadata (Status badge and category indicator)
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                          decoration: BoxDecoration(
-                                            color: statusColor.withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(6),
-                                            border: Border.all(
-                                              color: statusColor.withValues(alpha: 0.3),
-                                              width: 0.8,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            status,
-                                            style: TextStyle(
-                                              color: statusColor,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                          decoration: BoxDecoration(
-                                            color: widget.isDark
-                                                ? const Color(0xFF0C5A32).withValues(alpha: 0.05)
-                                                : const Color(0xFF0C5A32).withValues(alpha: 0.03),
-                                            borderRadius: BorderRadius.circular(4),
-                                            border: Border.all(
-                                              color: isFighting
-                                                  ? widget.valueGreenColor.withValues(alpha: 0.3)
-                                                  : Colors.orange.withValues(alpha: 0.3),
-                                              width: 0.6,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            category,
-                                            style: TextStyle(
-                                              color: isFighting ? widget.valueGreenColor : Colors.orange,
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
                                     ),
                                   ],
                                 ),
-                                if (remarks.isNotEmpty) ...[
-                                  const SizedBox(height: 10),
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: widget.isDark ? const Color(0xFF03140A).withValues(alpha: 0.4) : const Color(0xFF0C5A32).withValues(alpha: 0.02),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: widget.goldAccent.withValues(alpha: 0.15),
-                                        width: 0.8,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Icon(
-                                          Icons.assignment_ind_rounded,
-                                          color: widget.goldAccent,
-                                          size: 14,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                          child: Text(
-                                            remarks,
-                                            style: TextStyle(
-                                              color: widget.isDark ? const Color(0xFFD0D0D0) : const Color(0xFF3B4D41),
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w500,
-                                              fontStyle: FontStyle.italic,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
+                        );
                       },
                     ),
             ),
@@ -6926,7 +9395,9 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
       padding: const EdgeInsets.symmetric(horizontal: 8),
       height: 38,
       decoration: BoxDecoration(
-        color: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
+        color: widget.isDark
+            ? const Color(0xFF03140A)
+            : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: widget.goldAccent.withValues(alpha: 0.2),
@@ -6939,9 +9410,16 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
           onChanged: onChanged,
           dropdownColor: widget.isDark ? const Color(0xFF0A2214) : Colors.white,
           icon: Icon(Icons.arrow_drop_down, color: widget.goldAccent, size: 18),
-          style: TextStyle(color: widget.textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: widget.textThemeColor,
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+          ),
           items: items.map<DropdownMenuItem<String>>((String val) {
-            final isAvailable = availableValues == null || val == 'All' || availableValues.contains(val);
+            final isAvailable =
+                availableValues == null ||
+                val == 'All' ||
+                availableValues.contains(val);
             return DropdownMenuItem<String>(
               value: val,
               enabled: isAvailable,
@@ -6950,10 +9428,12 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                 style: TextStyle(
                   color: isAvailable
                       ? (val == value
-                          ? widget.goldAccent
-                          : widget.textThemeColor)
+                            ? widget.goldAccent
+                            : widget.textThemeColor)
                       : (widget.isDark ? Colors.white24 : Colors.black26),
-                  fontWeight: val == value ? FontWeight.w800 : FontWeight.normal,
+                  fontWeight: val == value
+                      ? FontWeight.w800
+                      : FontWeight.normal,
                 ),
               ),
             );
@@ -6986,7 +9466,14 @@ class PersonnelIdCardScreen extends StatelessWidget {
     if (person['isFighting'] == 'false') return false;
     if (person['isFighting'] == 'true') return true;
     final cat = person['category'] ?? '';
-    if (cat == 'Officers' || cat == 'JCOs' || cat == 'Svys' || cat == 'TAs' || cat == 'OCsU' || cat == 'DSVs' || cat == 'DMTs' || cat == 'Gnrs') {
+    if (cat == 'Officers' ||
+        cat == 'JCOs' ||
+        cat == 'Svys' ||
+        cat == 'TAs' ||
+        cat == 'OCsU' ||
+        cat == 'DSVs' ||
+        cat == 'DMTs' ||
+        cat == 'Gnrs') {
       return true;
     }
     return false;
@@ -6995,7 +9482,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
   String _getTrade(Map<String, String> person) {
     final cat = person['category'] ?? '';
     final name = person['name'] ?? '';
-    
+
     if (cat == 'Officers') return 'Officer';
     if (cat == 'JCOs') {
       if (name.toLowerCase().contains('clk')) return 'Clk';
@@ -7006,7 +9493,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
       if (name.toLowerCase().contains('svy')) return 'Svy';
       return 'Gnr';
     }
-    
+
     if (cat == 'Clks') return 'Clk';
     if (cat == 'Svys') return 'Svy';
     if (cat == 'TAs') return 'TA';
@@ -7032,18 +9519,37 @@ class PersonnelIdCardScreen extends StatelessWidget {
     final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
     final id = int.tryParse(cleanNo) ?? 0;
     final cities = [
-      'Rawalpindi', 'Lahore', 'Karachi', 'Peshawar', 'Quetta', 
-      'Multan', 'Faisalabad', 'Islamabad', 'Gujranwala', 'Sialkot'
+      'Rawalpindi',
+      'Lahore',
+      'Karachi',
+      'Peshawar',
+      'Quetta',
+      'Multan',
+      'Faisalabad',
+      'Islamabad',
+      'Gujranwala',
+      'Sialkot',
     ];
     return cities[id % cities.length];
   }
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+    final shortYear = (date.year % 100).toString().padLeft(2, '0');
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} $shortYear';
   }
 
   @override
@@ -7061,9 +9567,13 @@ class PersonnelIdCardScreen extends StatelessWidget {
     return Theme(
       data: isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
-        backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+        backgroundColor: isDark
+            ? const Color(0xFF03140A)
+            : const Color(0xFFE8F5EE),
         appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF03140A).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.85),
+          backgroundColor: isDark
+              ? const Color(0xFF03140A).withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.85),
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: goldAccent),
@@ -7128,7 +9638,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      
+
                       Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -7162,11 +9672,17 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                   ],
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: goldAccent.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: goldAccent.withValues(alpha: 0.3), width: 0.8),
+                                    border: Border.all(
+                                      color: goldAccent.withValues(alpha: 0.3),
+                                      width: 0.8,
+                                    ),
                                   ),
                                   child: const Text(
                                     'OFFICIAL ID',
@@ -7180,9 +9696,13 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            
-                            const Divider(height: 16, thickness: 1.0, color: Color(0xFFCD9B2D)),
-                            
+
+                            const Divider(
+                              height: 16,
+                              thickness: 1.0,
+                              color: Color(0xFFCD9B2D),
+                            ),
+
                             // Middle Info section: Avatar & Quick Info
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -7198,17 +9718,20 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                       width: 1.2,
                                     ),
                                     image: const DecorationImage(
-                                      image: AssetImage('assets/images/profile_avatar.jpg'),
+                                      image: AssetImage(
+                                        'assets/images/profile_avatar.jpg',
+                                      ),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 14),
-                                
+
                                 // Right Slot: Primary Metadata fields
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         name.toUpperCase(),
@@ -7220,14 +9743,26 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 6),
-                                      
+
                                       // Army Number banner
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
                                         decoration: BoxDecoration(
-                                          color: valueGreenColor.withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(4),
-                                          border: Border.all(color: valueGreenColor.withValues(alpha: 0.3), width: 0.8),
+                                          color: valueGreenColor.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          border: Border.all(
+                                            color: valueGreenColor.withValues(
+                                              alpha: 0.3,
+                                            ),
+                                            width: 0.8,
+                                          ),
                                         ),
                                         child: Text(
                                           armyNo,
@@ -7240,13 +9775,21 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                         ),
                                       ),
                                       const SizedBox(height: 8),
-                                      
+
                                       // Rank and Trade side-by-side
                                       Row(
                                         children: [
-                                          _buildCardShortField('RANK', rank, goldAccent),
+                                          _buildCardShortField(
+                                            'RANK',
+                                            rank,
+                                            goldAccent,
+                                          ),
                                           const SizedBox(width: 16),
-                                          _buildCardShortField('TRADE', trade, goldAccent),
+                                          _buildCardShortField(
+                                            'TRADE',
+                                            trade,
+                                            goldAccent,
+                                          ),
                                         ],
                                       ),
                                     ],
@@ -7254,9 +9797,9 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            
+
                             const SizedBox(height: 14),
-                            
+
                             // Chip Graphic & Barcode simulation
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -7267,21 +9810,42 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                   height: 24,
                                   decoration: BoxDecoration(
                                     gradient: const LinearGradient(
-                                      colors: [Color(0xFFE9C54F), Color(0xFFCD9B2D)],
+                                      colors: [
+                                        Color(0xFFE9C54F),
+                                        Color(0xFFCD9B2D),
+                                      ],
                                     ),
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: Colors.black26, width: 0.5),
+                                    border: Border.all(
+                                      color: Colors.black26,
+                                      width: 0.5,
+                                    ),
                                   ),
                                 ),
-                                
+
                                 // Barcode graphic lines
                                 Row(
                                   children: List.generate(12, (index) {
-                                    final widths = [2.0, 4.0, 1.0, 5.0, 2.0, 3.0, 1.0, 4.0, 2.0, 6.0, 1.0, 3.0];
+                                    final widths = [
+                                      2.0,
+                                      4.0,
+                                      1.0,
+                                      5.0,
+                                      2.0,
+                                      3.0,
+                                      1.0,
+                                      4.0,
+                                      2.0,
+                                      6.0,
+                                      1.0,
+                                      3.0,
+                                    ];
                                     return Container(
                                       width: widths[index],
                                       height: 24,
-                                      color: isDark ? Colors.white60 : Colors.black45,
+                                      color: isDark
+                                          ? Colors.white60
+                                          : Colors.black45,
                                       margin: const EdgeInsets.only(right: 2),
                                     );
                                   }),
@@ -7295,23 +9859,29 @@ class PersonnelIdCardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // DETAILS LIST PANEL (Data Entry Information Fields)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.08) : Colors.white,
+                  color: isDark
+                      ? const Color(0xFF0C5A32).withValues(alpha: 0.08)
+                      : Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isDark ? goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                    color: isDark
+                        ? goldAccent.withValues(alpha: 0.25)
+                        : const Color(0xFF0C5A32).withValues(alpha: 0.15),
                     width: 1.0,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: isDark ? Colors.black.withValues(alpha: 0.1) : const Color(0xFF0C5A32).withValues(alpha: 0.03),
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.1)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.03),
                       blurRadius: 10,
                       offset: const Offset(0, 2),
                     ),
@@ -7330,17 +9900,21 @@ class PersonnelIdCardScreen extends StatelessWidget {
                       ),
                     ),
                     const Divider(height: 20, thickness: 0.5),
-                    
+
                     _buildInfoDetailRow(
                       icon: Icons.shield_outlined,
                       label: 'Combat Classification',
-                      value: isFighting ? 'Fighting Division' : 'Support / Non-Fighting Division',
+                      value: isFighting
+                          ? 'Fighting Division'
+                          : 'Support / Non-Fighting Division',
                       valueColor: isFighting ? valueGreenColor : Colors.orange,
                     ),
                     _buildInfoDetailRow(
                       icon: Icons.location_on_rounded,
                       label: 'Current Assignment / Location',
-                      value: PersonnelDataManager().getStatus(armyNo).displayPath,
+                      value: PersonnelDataManager()
+                          .getStatus(armyNo)
+                          .displayPath,
                       valueColor: goldAccent,
                     ),
                     _buildInfoDetailRow(
@@ -7349,7 +9923,9 @@ class PersonnelIdCardScreen extends StatelessWidget {
                       value: () {
                         final status = PersonnelDataManager().getStatus(armyNo);
                         final startStr = _formatDate(status.startDate);
-                        final endStr = status.endDate != null ? _formatDate(status.endDate!) : 'Infinite';
+                        final endStr = status.endDate != null
+                            ? _formatDate(status.endDate!)
+                            : 'Infinite';
                         return '$startStr to $endStr';
                       }(),
                     ),
@@ -7391,10 +9967,44 @@ class PersonnelIdCardScreen extends StatelessWidget {
                     _buildInfoDetailRow(
                       icon: Icons.assignment_rounded,
                       label: 'Remarks / Observations',
-                      value: remarks.isNotEmpty ? remarks : 'No active remarks or observations recorded.',
+                      value: remarks.isNotEmpty
+                          ? remarks
+                          : 'No active remarks or observations recorded.',
                       isItalic: remarks.isEmpty,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // SEE HISTORY BUTTON
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    _showHistoryDialog(context, name, armyNo);
+                  },
+                  icon: Icon(
+                    Icons.history_rounded,
+                    color: isDark ? Colors.black : Colors.white,
+                  ),
+                  label: Text(
+                    'SEE MOVEMENT HISTORY',
+                    style: TextStyle(
+                      color: isDark ? Colors.black : Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: goldAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                  ),
                 ),
               ),
             ],
@@ -7472,6 +10082,296 @@ class PersonnelIdCardScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Color _getHistoryDotColor(PersonStatus record) {
+    final locationText = record.displayPath.toLowerCase();
+    final isPresent =
+        locationText.contains('present') ||
+        locationText.contains('sta gds') ||
+        locationText.contains('unit gds') ||
+        locationText.contains('regt emp') ||
+        locationText.contains('trg') ||
+        locationText.contains('sports') ||
+        locationText.contains('aslt course') ||
+        locationText.contains('working') ||
+        locationText.contains('prot');
+    return isPresent ? valueGreenColor : Colors.orange;
+  }
+
+  void _showHistoryDialog(BuildContext context, String name, String armyNo) {
+    final DateTime threeMonthsAgo = DateTime.now().subtract(
+      const Duration(days: 90),
+    );
+    final historyList =
+        List<PersonStatus>.from(PersonnelDataManager().getHistory(armyNo))
+            .where(
+              (status) =>
+                  status.startDate.isAfter(threeMonthsAgo) ||
+                  (status.endDate == null ||
+                      status.endDate!.isAfter(threeMonthsAgo)),
+            )
+            .toList();
+    historyList.sort((a, b) => a.startDate.compareTo(b.startDate));
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 24,
+          ),
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: double.maxFinite,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.72,
+            ),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF051C0F) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: goldAccent.withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: (isDark ? Colors.black : const Color(0xFF0C5A32))
+                      .withValues(alpha: 0.18),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                  decoration: BoxDecoration(
+                    color: goldAccent.withValues(alpha: isDark ? 0.14 : 0.10),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: goldAccent.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: goldAccent.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.history_rounded,
+                              color: goldAccent,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MOVEMENT HISTORY',
+                                  style: TextStyle(
+                                    color: goldAccent,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${person['rank'] ?? 'Gnr'} $name ($armyNo) • Trade: ${_getTrade(person)}',
+                                  style: TextStyle(
+                                    color: silverText,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: goldAccent.withValues(
+                            alpha: isDark ? 0.12 : 0.08,
+                          ),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.timeline_rounded,
+                              color: goldAccent,
+                              size: 13,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'LAST 90 DAYS',
+                              style: TextStyle(
+                                color: goldAccent,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                    child: historyList.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No history records found for this month.',
+                              style: TextStyle(color: silverText, fontSize: 12),
+                            ),
+                          )
+                        : ListView.separated(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: historyList.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final record = historyList[index];
+                              final DateTime start = record.startDate;
+                              final DateTime? end = record.endDate;
+
+                              final String dateStr = end != null
+                                  ? '${_formatDate(start)} to ${_formatDate(end)}'
+                                  : '${_formatDate(start)} to Ongoing';
+
+                              final dotColor = _getHistoryDotColor(record);
+
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Column(
+                                    children: [
+                                      Container(
+                                        width: 10,
+                                        height: 10,
+                                        decoration: BoxDecoration(
+                                          color: dotColor,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: goldAccent,
+                                            width: 1.2,
+                                          ),
+                                        ),
+                                      ),
+                                      if (index < historyList.length - 1)
+                                        Container(
+                                          width: 1.2,
+                                          height: 38,
+                                          color: goldAccent.withValues(
+                                            alpha: 0.25,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? const Color(
+                                                0xFF0C3D21,
+                                              ).withValues(alpha: 0.2)
+                                            : const Color(
+                                                0xFFE8F5EE,
+                                              ).withValues(alpha: 0.3),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: goldAccent.withValues(
+                                            alpha: 0.14,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        '$dateStr → ${record.displayPath}',
+                                        style: TextStyle(
+                                          color: textThemeColor,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: goldAccent.withValues(alpha: 0.35),
+                          width: 1.2,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: Text(
+                        'CLOSE',
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

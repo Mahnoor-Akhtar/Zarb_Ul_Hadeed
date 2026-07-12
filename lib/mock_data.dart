@@ -165,10 +165,15 @@ class MockDataManager {
     final str = prefs.getString('trades_list');
     if (str != null) {
       try {
-        return List<String>.from(jsonDecode(str));
+        final list = List<String>.from(jsonDecode(str));
+        if (list.length > 14) {
+          return list;
+        }
       } catch (_) {}
     }
-    return ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
+    final defaultTrades = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'S/W', 'Civ'];
+    await prefs.setString('trades_list', jsonEncode(defaultTrades));
+    return defaultTrades;
   }
 
   Future<void> saveTrades(List<String> trades) async {
@@ -181,10 +186,33 @@ class MockDataManager {
     final str = prefs.getString('ranks_list');
     if (str != null) {
       try {
-        return List<String>.from(jsonDecode(str));
+        final list = List<String>.from(jsonDecode(str));
+        if (list.length > 4) {
+          return list;
+        }
       } catch (_) {}
     }
-    return ['All', 'Officers', 'JCOs', 'Soldiers'];
+    final defaultRanks = [
+      'All',
+      'Officers',
+      '  Lt Col',
+      '  Maj',
+      '  Capt',
+      '  Lt',
+      '  2/Lt',
+      'JCOs',
+      '  SM',
+      '  Sub',
+      '  N/Sub',
+      'Soldiers',
+      '  Hav',
+      '  Lhav',
+      '  Nk',
+      '  Lnk',
+      '  Sep',
+    ];
+    await prefs.setString('ranks_list', jsonEncode(defaultRanks));
+    return defaultRanks;
   }
 
   Future<void> saveRanks(List<String> ranks) async {

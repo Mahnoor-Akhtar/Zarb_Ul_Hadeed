@@ -52,6 +52,7 @@ class PersonnelDataManager {
 
   late SharedPreferences _prefs;
   final Map<String, PersonStatus> _statuses = {};
+  final Map<String, List<PersonStatus>> _history = {};
   bool _isInitialized = false;
 
   void init(SharedPreferences prefs) {
@@ -86,8 +87,10 @@ class PersonnelDataManager {
       }
     }
 
-    // 3. load _statuses
+    // 3. load _statuses and _history
     final statusesStr = _prefs.getString('personnelStatuses');
+    final historyStr = _prefs.getString('personnelHistory');
+    
     if (statusesStr != null) {
       try {
         final decoded = jsonDecode(statusesStr) as Map;
@@ -101,16 +104,38 @@ class PersonnelDataManager {
     } else {
       _initializeStatuses();
     }
+
+    if (historyStr != null) {
+      try {
+        final decoded = jsonDecode(historyStr) as Map;
+        _history.clear();
+        decoded.forEach((key, value) {
+          final list = value as List;
+          _history[key as String] = list.map((item) => PersonStatus.fromJson(Map<String, dynamic>.from(item as Map))).toList();
+        });
+      } catch (e) {
+        _initializeHistory();
+      }
+    } else {
+      _initializeHistory();
+    }
   }
 
   void saveToPrefs() {
     _prefs.setString('categoryHierarchy', jsonEncode(categoryHierarchy));
     _prefs.setString('nominalRollList', jsonEncode(nominalRollList));
+    
     final Map<String, dynamic> jsonStatuses = {};
     _statuses.forEach((key, value) {
       jsonStatuses[key] = value.toJson();
     });
     _prefs.setString('personnelStatuses', jsonEncode(jsonStatuses));
+
+    final Map<String, dynamic> jsonHistory = {};
+    _history.forEach((key, value) {
+      jsonHistory[key] = value.map((status) => status.toJson()).toList();
+    });
+    _prefs.setString('personnelHistory', jsonEncode(jsonHistory));
   }
 
   void _useDefaultCategories() {
@@ -142,7 +167,6 @@ class PersonnelDataManager {
   Map<String, dynamic> categoryHierarchy = {};
 
   void _initializeStatuses() {
-    final now = DateTime.now();
     for (var person in nominalRollList) {
       final armyNo = person['armyNo'] ?? '';
       final category = _getInitialCategory(armyNo);
@@ -216,14 +240,86 @@ class PersonnelDataManager {
         subcategory = subs[id % subs.length];
       }
 
-      _statuses[armyNo] = PersonStatus(
-        category: category,
-        subcategory: subcategory,
-        subSubcategory: subSubcategory,
-        startDate: now,
-        endDate: null,
-      );
+      final initStatuses = _generateThreeMonthHistory(armyNo, category, subcategory, subSubcategory);
+      _statuses[armyNo] = initStatuses.last;
+      _history[armyNo] = initStatuses;
     }
+  }
+
+  List<PersonStatus> _generateThreeMonthHistory(
+    String armyNo, 
+    String currentCategory, 
+    String? currentSub, 
+    String? currentSubSub
+  ) {
+    final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
+    final seed = int.tryParse(cleanNo) ?? 123;
+    
+    int pseudoRandom(int max, int step) {
+      return (seed * step + 7) % max;
+    }
+    
+    final now = DateTime.now();
+    final List<PersonStatus> list = [];
+    
+    final statusOptions = [
+      {'category': 'Present', 'sub': 'Duty'},
+      {'category': 'Leave', 'sub': 'C/Lve'},
+      {'category': 'Present', 'sub': 'Office'},
+      {'category': 'Courses', 'sub': 'JNAC'},
+      {'category': 'Sta Gds', 'sub': 'COM Gd'},
+      {'category': 'CMH/Sick', 'sub': 'SIQ'},
+      {'category': 'Regt Emp', 'sub': 'RP'},
+    ];
+    
+    final state1Idx = pseudoRandom(statusOptions.length, 1);
+    final state1 = statusOptions[state1Idx];
+    list.add(PersonStatus(
+      category: state1['category']!,
+      subcategory: state1['sub'],
+      startDate: now.subtract(const Duration(days: 90)),
+      endDate: now.subtract(const Duration(days: 60)),
+    ));
+    
+    final state2Idx = (state1Idx + 2) % statusOptions.length;
+    final state2 = statusOptions[state2Idx];
+    list.add(PersonStatus(
+      category: state2['category']!,
+      subcategory: state2['sub'],
+      startDate: now.subtract(const Duration(days: 60)),
+      endDate: now.subtract(const Duration(days: 30)),
+    ));
+    
+    final state3Idx = (state2Idx + 3) % statusOptions.length;
+    final state3 = statusOptions[state3Idx];
+    list.add(PersonStatus(
+      category: state3['category']!,
+      subcategory: state3['sub'],
+      startDate: now.subtract(const Duration(days: 30)),
+      endDate: now.subtract(const Duration(days: 10)),
+    ));
+    
+    list.add(PersonStatus(
+      category: currentCategory,
+      subcategory: currentSub,
+      subSubcategory: currentSubSub,
+      startDate: now.subtract(const Duration(days: 10)),
+      endDate: null,
+    ));
+    
+    return list;
+  }
+
+  void _initializeHistory() {
+    _history.clear();
+    _statuses.forEach((armyNo, status) {
+      _history[armyNo] = _generateThreeMonthHistory(
+        armyNo, 
+        status.category, 
+        status.subcategory, 
+        status.subSubcategory
+      );
+    });
   }
 
   String _getInitialCategory(String armyNo) {
@@ -264,8 +360,47 @@ class PersonnelDataManager {
   }
 
   void updateStatus(String armyNo, PersonStatus newStatus) {
+    final oldStatus = _statuses[armyNo];
+    if (oldStatus != null) {
+      final finalOldStatus = PersonStatus(
+        category: oldStatus.category,
+        subcategory: oldStatus.subcategory,
+        subSubcategory: oldStatus.subSubcategory,
+        startDate: oldStatus.startDate,
+        endDate: newStatus.startDate,
+      );
+
+      if (!_history.containsKey(armyNo)) {
+        _history[armyNo] = [finalOldStatus];
+      } else {
+        _history[armyNo]!.removeWhere((s) => s.endDate == null);
+        _history[armyNo]!.add(finalOldStatus);
+      }
+    }
+
     _statuses[armyNo] = newStatus;
+
+    if (!_history.containsKey(armyNo)) {
+      _history[armyNo] = [newStatus];
+    } else {
+      _history[armyNo]!.removeWhere((s) => s.endDate == null);
+      _history[armyNo]!.add(newStatus);
+    }
     saveToPrefs();
+  }
+
+  List<PersonStatus> getHistory(String armyNo) {
+    if (!_history.containsKey(armyNo) || _history[armyNo]!.isEmpty) {
+      final current = getStatus(armyNo);
+      _history[armyNo] = _generateThreeMonthHistory(
+        armyNo, 
+        current.category, 
+        current.subcategory, 
+        current.subSubcategory
+      );
+      saveToPrefs();
+    }
+    return _history[armyNo]!;
   }
 
   List<Map<String, String>> getPeopleInNode({
@@ -506,12 +641,18 @@ class PersonnelDataManager {
     if (idx != -1) {
       nominalRollList[idx] = updatedPerson;
       final newArmyNo = updatedPerson['armyNo'] ?? '';
+
       if (oldArmyNo != newArmyNo && newArmyNo.isNotEmpty) {
         final status = _statuses.remove(oldArmyNo);
         if (status != null) {
           _statuses[newArmyNo] = status;
         }
+        final historyList = _history.remove(oldArmyNo);
+        if (historyList != null) {
+          _history[newArmyNo] = historyList;
+        }
       }
+
       saveToPrefs();
     }
   }
@@ -519,6 +660,7 @@ class PersonnelDataManager {
   void removePerson(String armyNo) {
     nominalRollList.removeWhere((p) => p['armyNo'] == armyNo);
     _statuses.remove(armyNo);
+    _history.remove(armyNo);
     saveToPrefs();
   }
 }
