@@ -1,5 +1,10 @@
+import 'dart:io';
 import 'dart:ui' show ImageFilter;
+import 'package:csv/csv.dart' as csv;
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'splash_screen.dart'; // Reuse TopographicPainter
 import 'mock_data.dart';
 import 'personnel_data.dart';
@@ -4808,6 +4813,252 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final shortYear = (date.year % 100).toString().padLeft(2, '0');
+    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} $shortYear';
+  }
+
+  String _formatDateRange(DateTime date, {bool includeYear = true}) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final shortYear = (date.year % 100).toString().padLeft(2, '0');
+    final base =
+        '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]}';
+    return includeYear ? '$base $shortYear' : base;
+  }
+
+  Future<void> _exportHistoryExcel(BuildContext context) async {
+    final manager = PersonnelDataManager();
+    final rows = <List<dynamic>>[
+      [
+        'Army No',
+        'Name',
+        'Rank',
+        'Trade',
+        'Current Status',
+        'History Start',
+        'History End',
+        'Movement Path',
+      ],
+    ];
+
+    for (final person in nominalRollList) {
+      final armyNo = person['armyNo'] ?? '';
+      final name = person['name'] ?? '';
+      final rank = person['rank'] ?? '';
+      final trade = _getTrade(person);
+      final status = manager.getStatus(armyNo);
+      final history = manager.getHistory(armyNo);
+
+      if (history.isEmpty) {
+        rows.add([armyNo, name, rank, trade, status.category, '', '', '']);
+        continue;
+      }
+
+      for (final entry in history) {
+        rows.add([
+          armyNo,
+          name,
+          rank,
+          trade,
+          status.category,
+          _formatDate(entry.startDate),
+          entry.endDate != null ? _formatDate(entry.endDate!) : 'Ongoing',
+          entry.displayPath,
+        ]);
+      }
+    }
+
+    final csvData = const csv.CsvEncoder().convert(rows);
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/personnel_history_export.csv');
+    await file.writeAsString(csvData, flush: true);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Excel export saved to ${file.path}'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _exportHistoryPdf(BuildContext context) async {
+    final manager = PersonnelDataManager();
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context pdfContext) {
+          return [
+            pw.Header(
+              level: 0,
+              child: pw.Text('Personnel Movement History Report'),
+            ),
+            pw.SizedBox(height: 8),
+            ...nominalRollList.map((person) {
+              final armyNo = person['armyNo'] ?? '';
+              final name = person['name'] ?? '';
+              final rank = person['rank'] ?? '';
+              final trade = _getTrade(person);
+              final history = manager.getHistory(armyNo);
+
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('$rank $name ($armyNo)'),
+                  pw.Text('Trade: $trade'),
+                  pw.SizedBox(height: 4),
+                  ...history.map((entry) {
+                    final dateRange = entry.endDate != null
+                        ? '${_formatDate(entry.startDate)} - ${_formatDate(entry.endDate!)}'
+                        : '${_formatDate(entry.startDate)} - Ongoing';
+                    return pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 3),
+                      child: pw.Row(
+                        children: [
+                          pw.Expanded(
+                            flex: 2,
+                            child: pw.Text(
+                              dateRange,
+                              style: const pw.TextStyle(fontSize: 9),
+                            ),
+                          ),
+                          pw.SizedBox(width: 6),
+                          pw.Expanded(
+                            flex: 3,
+                            child: pw.Text(
+                              entry.displayPath,
+                              style: const pw.TextStyle(fontSize: 9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                  pw.SizedBox(height: 8),
+                ],
+              );
+            }).toList(),
+          ];
+        },
+      ),
+    );
+
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/personnel_history_report.pdf');
+    await file.writeAsBytes(await pdf.save());
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('PDF exported to ${file.path}'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showDownloadHistoryOptionsSheet(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF051C0F) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'DOWNLOAD HISTORY',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: Icon(Icons.table_view_rounded, color: goldAccent),
+                title: Text(
+                  'Download Excel',
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                subtitle: Text(
+                  'Export all users and movement history as an Excel-ready CSV file',
+                  style: TextStyle(color: silverText, fontSize: 11),
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _exportHistoryExcel(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.picture_as_pdf_rounded, color: goldAccent),
+                title: Text(
+                  'Download PDF',
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                subtitle: Text(
+                  'Create a PDF report with all users and movement history',
+                  style: TextStyle(color: silverText, fontSize: 11),
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  await _exportHistoryPdf(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSettingsTab(
     BuildContext context,
     bool isDark,
@@ -5107,7 +5358,47 @@ class _DashboardScreenState extends State<DashboardScreen>
                   const SizedBox(height: 12),
                 ],
 
-                // 5. Logout Session
+                // 5. Download History Records
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.download_rounded,
+                      color: goldAccent,
+                      size: 20,
+                    ),
+                    title: Text(
+                      'Download History',
+                      style: TextStyle(
+                        color: textThemeColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Download Excel or PDF report with all personnel history',
+                      style: TextStyle(color: silverText, fontSize: 11),
+                    ),
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: goldAccent,
+                      size: 18,
+                    ),
+                    onTap: () {
+                      _showDownloadHistoryOptionsSheet(
+                        context,
+                        isDark,
+                        textThemeColor,
+                        silverText,
+                        goldAccent,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // 6. Logout Session
                 _buildSettingsModuleCard(
                   isDark,
                   goldAccent,
@@ -9552,6 +9843,27 @@ class PersonnelIdCardScreen extends StatelessWidget {
     return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} $shortYear';
   }
 
+  String _formatDateRange(DateTime date, {bool includeYear = true}) {
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final shortYear = (date.year % 100).toString().padLeft(2, '0');
+    final base =
+        '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]}';
+    return includeYear ? '$base $shortYear' : base;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isFighting = _isFighting(person);
@@ -10268,107 +10580,72 @@ class PersonnelIdCardScreen extends StatelessWidget {
                               final DateTime? end = record.endDate;
 
                               final String dateStr = end != null
-                                  ? '${_formatDate(start)} to ${_formatDate(end)}'
-                                  : '${_formatDate(start)} to Ongoing';
+                                  ? '${_formatDateRange(start, includeYear: false)} - ${_formatDateRange(end)}'
+                                  : '${_formatDateRange(start, includeYear: false)} - Ongoing';
 
-                              final dotColor = _getHistoryDotColor(record);
-
-                              return Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    children: [
-                                      Container(
-                                        width: 10,
-                                        height: 10,
-                                        decoration: BoxDecoration(
-                                          color: dotColor,
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: goldAccent,
-                                            width: 1.2,
-                                          ),
-                                        ),
-                                      ),
-                                      if (index < historyList.length - 1)
-                                        Container(
-                                          width: 1.2,
-                                          height: 38,
-                                          color: goldAccent.withValues(
-                                            alpha: 0.25,
-                                          ),
-                                        ),
-                                    ],
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(
+                                          0xFF0C3D21,
+                                        ).withValues(alpha: 0.2)
+                                      : const Color(
+                                          0xFFE8F5EE,
+                                        ).withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: goldAccent.withValues(alpha: 0.14),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? const Color(
-                                                0xFF0C3D21,
-                                              ).withValues(alpha: 0.2)
-                                            : const Color(
-                                                0xFFE8F5EE,
-                                              ).withValues(alpha: 0.3),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          color: goldAccent.withValues(
-                                            alpha: 0.14,
-                                          ),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 92,
+                                      child: Text(
+                                        dateStr,
+                                        style: TextStyle(
+                                          color: goldAccent,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w800,
                                         ),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              dateStr,
-                                              style: TextStyle(
-                                                color: goldAccent,
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 6,
-                                            ),
-                                            child: Text(
-                                              '→',
-                                              style: TextStyle(
-                                                color: goldAccent.withValues(
-                                                  alpha: 0.7,
-                                                ),
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 2,
-                                            child: Text(
-                                              record.displayPath,
-                                              style: TextStyle(
-                                                color: textThemeColor,
-                                                fontSize: 11.5,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    Container(
+                                      width: 2,
+                                      height: 28,
+                                      margin: const EdgeInsets.only(
+                                        left: 8,
+                                        right: 10,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: goldAccent.withValues(
+                                          alpha: isDark ? 0.25 : 0.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(99),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        record.displayPath,
+                                        style: TextStyle(
+                                          color: textThemeColor,
+                                          fontSize: 11.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               );
                             },
                           ),
