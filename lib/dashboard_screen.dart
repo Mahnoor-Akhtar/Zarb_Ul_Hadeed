@@ -5,6 +5,9 @@ import 'mock_data.dart';
 import 'personnel_data.dart';
 import 'personnel_data_manager.dart';
 import 'edit_assignment_screen.dart';
+import 'battery_detail_screen.dart';
+import 'manage_attributes_screen.dart';
+import 'view_all_groups_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -37,6 +40,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   String _selectedRankCategory = 'All';
   String _selectedTrade = 'All';
   String _analysisMode = 'Rank'; // Default to Rank Analysis
+  String _analysisFilterBattery = 'All';
+  String _analysisFilterTrade = 'All';
+  String _analysisFilterRank = 'All';
+
+  // Dynamic Attributes Lists
+  List<String> _tradesList = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
+  List<String> _ranksList = ['All', 'Officers', 'JCOs', 'Soldiers'];
+  List<String> _batteriesList = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
 
   // Edit Tab State Variables
   final TextEditingController _editSearchController = TextEditingController();
@@ -62,6 +73,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   @override
   void initState() {
     super.initState();
+    _loadDynamicAttributes();
     // Continuous drifting animation for background topographic lines
     _bgAnimationController = AnimationController(
       vsync: this,
@@ -85,6 +97,19 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         _editSearchQuery = _editSearchController.text.trim().toLowerCase();
       });
     });
+  }
+
+  Future<void> _loadDynamicAttributes() async {
+    final trades = await MockDataManager().getTrades();
+    final ranks = await MockDataManager().getRanks();
+    final batteries = await MockDataManager().getBatteries();
+    if (mounted) {
+      setState(() {
+        _tradesList = trades;
+        _ranksList = ranks;
+        _batteriesList = batteries;
+      });
+    }
   }
 
   @override
@@ -578,6 +603,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         isDark: isDark,
                                         textThemeColor: textThemeColor,
                                         goldAccent: goldAccent,
+                                        silverText: silverText,
+                                        valueGreenColor: valueGreenColor,
+                                        mainCategory: categoryName,
+                                        context: context,
                                         items: leftItems.map((sub) => {
                                           'name': sub,
                                           'val': '${manager.getCountForSubcategory(categoryName, sub)}',
@@ -588,6 +617,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                           isDark: isDark,
                                           textThemeColor: textThemeColor,
                                           goldAccent: goldAccent,
+                                          silverText: silverText,
+                                          valueGreenColor: valueGreenColor,
+                                          mainCategory: categoryName,
+                                          context: context,
                                           items: rightItems.map((sub) => {
                                             'name': sub,
                                             'val': '${manager.getCountForSubcategory(categoryName, sub)}',
@@ -605,6 +638,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                         isDark: isDark,
                                         textThemeColor: textThemeColor,
                                         goldAccent: goldAccent,
+                                        silverText: silverText,
+                                        valueGreenColor: valueGreenColor,
+                                        mainCategory: categoryName,
+                                        subCategory: subName,
+                                        context: context,
                                         items: subSubList.map((subSub) => {
                                           'name': subSub,
                                           'val': '${manager.getCountForSubSubcategory(categoryName, subName, subSub)}',
@@ -2839,7 +2877,151 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  void _showChangeCredentialsDialog(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    final armyNo = MockDataManager().adminArmyNo ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return FutureBuilder<Map<String, dynamic>>(
+          future: MockDataManager().getAdminAccounts(),
+          builder: (context, snapshot) {
+            final accounts = snapshot.data ?? {};
+            final accountData = accounts[armyNo] as Map? ?? {};
+            final currentUsername = accountData['username'] as String? ?? armyNo;
+            final currentPassword = accountData['password'] as String? ?? '123456';
+            
+            final userController = TextEditingController(text: currentUsername);
+            final passController = TextEditingController(text: currentPassword);
+            
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: goldAccent.withValues(alpha: 0.3), width: 1.2),
+              ),
+              title: Text(
+                'UPDATE MY CREDENTIALS',
+                style: TextStyle(
+                  color: goldAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: userController,
+                    style: TextStyle(color: textThemeColor, fontSize: 13),
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: passController,
+                    style: TextStyle(color: textThemeColor, fontSize: 13),
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: TextStyle(color: goldAccent, fontSize: 11),
+                      filled: true,
+                      fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent.withValues(alpha: 0.15)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: goldAccent),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('CANCEL', style: TextStyle(color: silverText, fontSize: 12)),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final newUsername = userController.text.trim();
+                    final newPassword = passController.text;
+                    
+                    if (newUsername.isEmpty || newPassword.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Fields cannot be empty.')),
+                      );
+                      return;
+                    }
+                    
+                    final textLower = newUsername.toLowerCase();
+                    if (textLower == 'superadmin' || textLower == 'admin' || textLower == 'user') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Cannot overwrite system accounts.')),
+                      );
+                      return;
+                    }
 
+                    var duplicate = false;
+                    for (var entry in accounts.entries) {
+                      if (entry.key != armyNo && (entry.value as Map)['username'].toString().toLowerCase() == textLower) {
+                        duplicate = true;
+                        break;
+                      }
+                    }
+                    if (duplicate) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Username already taken.')),
+                      );
+                      return;
+                    }
+
+                    await MockDataManager().updateCredentials(armyNo, newUsername, newPassword);
+                    MockDataManager().login(newUsername, 'Data Entry', adminArmyNo: armyNo);
+                    
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    setState(() {});
+                    
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Credentials updated successfully!'),
+                        backgroundColor: Color(0xFF0C5A32),
+                      ),
+                    );
+                  },
+                  child: Text('SAVE', style: TextStyle(color: goldAccent, fontWeight: FontWeight.bold, fontSize: 12)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showSelectSoldierAdminDialog(
     BuildContext pageContext,
@@ -3591,8 +3773,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 ),
                 const SizedBox(height: 12),
 
-                // 3. Manage Command Group (Superadmin Only)
-                if (isSuperAdmin) ...[
+                // 3. Manage Command Group (Superadmin & Admin)
+                if (isSuperAdmin || MockDataManager().role == 'Data Entry') ...[
                   _buildSettingsModuleCard(
                     isDark,
                     goldAccent,
@@ -3613,9 +3795,99 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // 3.5 Manage App Attributes (Superadmin Only)
+                  if (isSuperAdmin) ...[
+                    _buildSettingsModuleCard(
+                      isDark,
+                      goldAccent,
+                      child: ListTile(
+                        leading: Icon(Icons.list_alt_rounded, color: goldAccent, size: 20),
+                        title: Text(
+                          'Manage App Attributes',
+                          style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                        subtitle: Text(
+                          'Configure Trades, Ranks, and Batteries',
+                          style: TextStyle(color: silverText, fontSize: 11),
+                        ),
+                        trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ManageAttributesScreen(
+                                isDark: isDark,
+                                textThemeColor: textThemeColor,
+                                silverText: silverText,
+                                goldAccent: goldAccent,
+                                valueGreenColor: valueGreenColor,
+                              ),
+                            ),
+                          );
+                          _loadDynamicAttributes();
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 ],
 
+                // 3.6 View All Groups (For Everyone)
+                _buildSettingsModuleCard(
+                  isDark,
+                  goldAccent,
+                  child: ListTile(
+                    leading: Icon(Icons.group_rounded, color: goldAccent, size: 20),
+                    title: Text(
+                      'View All Groups',
+                      style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    subtitle: Text(
+                      'View all Admins, Users and Superadmin',
+                      style: TextStyle(color: silverText, fontSize: 11),
+                    ),
+                    trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ViewAllGroupsScreen(
+                            isDark: isDark,
+                            textThemeColor: textThemeColor,
+                            silverText: silverText,
+                            goldAccent: goldAccent,
+                            valueGreenColor: valueGreenColor,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
 
+                // 4. Change My Credentials (Admin Only)
+                if (MockDataManager().role == 'Data Entry' && MockDataManager().adminArmyNo != null) ...[
+                  _buildSettingsModuleCard(
+                    isDark,
+                    goldAccent,
+                    child: ListTile(
+                      leading: Icon(Icons.manage_accounts_rounded, color: goldAccent, size: 20),
+                      title: Text(
+                        'Change My Credentials',
+                        style: TextStyle(color: textThemeColor, fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                      subtitle: const Text(
+                        'Update username and password credentials',
+                        style: TextStyle(color: Colors.grey, fontSize: 11),
+                      ),
+                      trailing: Icon(Icons.chevron_right_rounded, color: goldAccent, size: 18),
+                      onTap: () {
+                        _showChangeCredentialsDialog(context, isDark, textThemeColor, silverText, goldAccent);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
 
                 // 5. Logout Session
                 _buildSettingsModuleCard(
@@ -4123,6 +4395,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     required bool isDark,
     required Color textThemeColor,
     required Color goldAccent,
+    Color? silverText,
+    Color? valueGreenColor,
+    String? mainCategory,
+    String? subCategory,
+    BuildContext? context,
     required List<Map<String, String>> items,
   }) {
     return Column(
@@ -4151,67 +4428,101 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ],
         // Key-Value rows with structured background card and count badges
         ...items.map((item) {
-          return Container(
-            margin: const EdgeInsets.only(bottom: 6.0),
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF03140A).withValues(alpha: 0.45)
-                  : const Color(0xFF0C5A32).withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isDark
-                    ? goldAccent.withValues(alpha: 0.15)
-                    : const Color(0xFF0C5A32).withValues(alpha: 0.08),
-                width: 1.0,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.arrow_right_outlined,
-                        color: goldAccent,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          item['name']!,
-                          style: TextStyle(
-                            color: textThemeColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF0C5A32).withValues(alpha: 0.3)
-                        : const Color(0xFF0C5A32).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    item['val']!,
-                    style: TextStyle(
-                      color: goldAccent,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
+          return GestureDetector(
+            onTap: () {
+              if (context != null && mainCategory != null && silverText != null && valueGreenColor != null) {
+                final targetName = item['name']!;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CategoryPersonnelListScreen(
+                      categoryName: targetName,
+                      isDark: isDark,
+                      textThemeColor: textThemeColor,
+                      silverText: silverText,
+                      goldAccent: goldAccent,
+                      valueGreenColor: valueGreenColor,
+                      getPersonStatus: (p) {
+                        final status = PersonnelDataManager().getStatus(p['armyNo'] ?? '');
+                        if (subCategory != null) {
+                          if (status.category == mainCategory && status.subcategory == subCategory) {
+                            return status.subSubcategory ?? '';
+                          }
+                          return '';
+                        } else {
+                          if (status.category == mainCategory) {
+                            return status.subcategory ?? '';
+                          }
+                          return '';
+                        }
+                      },
                     ),
                   ),
+                );
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 6.0),
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF03140A).withValues(alpha: 0.45)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isDark
+                      ? goldAccent.withValues(alpha: 0.15)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                  width: 1.0,
                 ),
-              ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.arrow_right_outlined,
+                          color: goldAccent,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            item['name']!,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF0C5A32).withValues(alpha: 0.3)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      item['val']!,
+                      style: TextStyle(
+                        color: goldAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }),
@@ -4355,7 +4666,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 child: _buildDropdownFilter(
                   label: 'Battery',
                   value: _selectedBattery,
-                  items: const ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'],
+                  items: _batteriesList,
                   isDark: isDark,
                   goldAccent: goldAccent,
                   textThemeColor: textThemeColor,
@@ -4372,7 +4683,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 child: _buildDropdownFilter(
                   label: 'Rank',
                   value: _selectedRankCategory,
-                  items: rankCategories,
+                  items: _ranksList,
                   isDark: isDark,
                   goldAccent: goldAccent,
                   textThemeColor: textThemeColor,
@@ -4389,7 +4700,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                 child: _buildDropdownFilter(
                   label: 'Trade',
                   value: _selectedTrade,
-                  items: trades,
+                  items: _tradesList,
                   isDark: isDark,
                   goldAccent: goldAccent,
                   textThemeColor: textThemeColor,
@@ -4589,14 +4900,27 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                               ),
                                             ),
                                           ),
-                                          Text(
-                                            'Bty: ${_getBattery(person)}',
-                                            style: TextStyle(
-                                              color: silverText,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
+                                          // Battery color chip
+                                          Builder(builder: (context) {
+                                            final bty = _getBattery(person);
+                                            final btyColor = _getBatteryColor(bty);
+                                            return Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: btyColor.withValues(alpha: 0.13),
+                                                borderRadius: BorderRadius.circular(5),
+                                                border: Border.all(color: btyColor.withValues(alpha: 0.5), width: 0.8),
+                                              ),
+                                              child: Text(
+                                                bty,
+                                                style: TextStyle(
+                                                  color: btyColor,
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            );
+                                          }),
                                           Text(
                                             'Cl: $cl',
                                             style: TextStyle(
@@ -4822,6 +5146,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     return 'R Bty';
   }
 
+  /// Returns the distinct color for each battery.
+  Color _getBatteryColor(String bty) {
+    switch (bty) {
+      case 'HQ Bty': return const Color(0xFFE53935); // Red - Headquarter Battery
+      case 'P Bty':  return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
+      case 'Q Bty':  return const Color(0xFFFF9800); // Light Orange - Quebec Battery
+      case 'R Bty':  return const Color(0xFF4CAF50); // Light Green - Romeo Battery
+      default:       return const Color(0xFFE53935);
+    }
+  }
+
   Widget _buildDropdownFilter({
     required String label,
     required String value,
@@ -4832,7 +5167,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     required ValueChanged<String?> onChanged,
   }) {
     return DropdownButtonFormField<String>(
-      initialValue: value,
+      value: value,
       isExpanded: true,
       dropdownColor: isDark ? const Color(0xFF03140A) : Colors.white,
       style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.w600),
@@ -4892,7 +5227,25 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Color goldAccent,
     Color valueGreenColor,
   ) {
-    int totalStrength = nominalRollList.length;
+    // ── Apply analysis filter (mode-aware: only active mode's filter applies) ─
+    final filteredPersonnel = nominalRollList.where((person) {
+      if (_analysisMode == 'Battery' && _analysisFilterBattery != 'All') {
+        if (_getBattery(person) != _analysisFilterBattery) return false;
+      }
+      if (_analysisMode == 'Trade' && _analysisFilterTrade != 'All') {
+        if (_getTrade(person) != _analysisFilterTrade) return false;
+      }
+      if (_analysisMode == 'Rank' && _analysisFilterRank != 'All') {
+        final rankCatFilter = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
+        if (_analysisFilterRank == 'Officers' && rankCatFilter != 'OFFICERS') return false;
+        if (_analysisFilterRank == 'JCOs' && rankCatFilter != 'JCOs') return false;
+        if (_analysisFilterRank == 'Soldiers' && rankCatFilter != 'SLDRS') return false;
+      }
+      return true;
+    }).toList();
+    // ──────────────────────────────────────────────────────────────────────────
+
+    int totalStrength = filteredPersonnel.length;
     int fightingStrength = 0;
     int nonFightingStrength = 0;
     
@@ -4919,7 +5272,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       'R Bty': {'total': 0, 'officers': 0, 'jcos': 0, 'sldrs': 0, 'nonFighting': 0},
     };
 
-    for (var person in nominalRollList) {
+    for (var person in filteredPersonnel) {
       final isFighting = _isFighting(person);
       final bty = _getBattery(person);
       final rankCat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
@@ -4967,7 +5320,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     Map<String, int> fightingStatusCounts = {};
     Map<String, int> nonFightingStatusCounts = {};
     
-    for (var person in nominalRollList) {
+    for (var person in filteredPersonnel) {
       final isFighting = _isFighting(person);
       final status = _getPersonStatus(person);
       if (isFighting) {
@@ -4982,6 +5335,20 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       'Sta Gds', 'Unit Gds', 'CMH/Sick', 'Regt Emp', 'Trg', 'Sports',
       'Aslt Course', 'DIDO', 'Working', 'Prot', 'Ex/Cl', 'U/D'
     ];
+
+    // Dropdown option lists
+    final List<String> batteryOptions = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
+    final List<String> tradeOptions = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'NCB', 'SW', 'Engr', 'N/A', 'LAD'];
+    final List<String> rankOptions = ['All', 'Officers', 'JCOs', 'Soldiers'];
+
+    // Active filter value for current mode only
+    final String currentFilterValue = _analysisMode == 'Battery'
+        ? _analysisFilterBattery
+        : _analysisMode == 'Trade'
+            ? _analysisFilterTrade
+            : _analysisFilterRank;
+    final bool isFiltered = currentFilterValue != 'All';
+    final String filterLabel = isFiltered ? currentFilterValue : 'All ${_analysisMode}s';
 
     return Column(
       children: [
@@ -5014,8 +5381,96 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ),
           ),
         ),
-        
-        const SizedBox(height: 12),
+
+        const SizedBox(height: 10),
+
+        // ── Analysis Filter Dropdowns ──────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0A2214).withValues(alpha: 0.6) : const Color(0xFFF0F8F4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isDark ? goldAccent.withValues(alpha: 0.18) : const Color(0xFF0C5A32).withValues(alpha: 0.12),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.filter_list_rounded, size: 13, color: goldAccent.withValues(alpha: 0.8)),
+                    const SizedBox(width: 5),
+                    Text(
+                      'FILTER: $filterLabel',
+                      style: TextStyle(
+                        color: goldAccent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.7,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (isFiltered)
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          if (_analysisMode == 'Battery') _analysisFilterBattery = 'All';
+                          if (_analysisMode == 'Trade')   _analysisFilterTrade = 'All';
+                          if (_analysisMode == 'Rank')    _analysisFilterRank = 'All';
+                        }),
+                        child: Text(
+                          'Reset',
+                          style: TextStyle(
+                            color: Colors.redAccent.withValues(alpha: 0.8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Show only the dropdown relevant to the current analysis mode
+                if (_analysisMode == 'Battery')
+                  _buildAnalysisDropdown(
+                    label: 'Select Battery',
+                    value: _analysisFilterBattery,
+                    items: batteryOptions,
+                    isDark: isDark,
+                    goldAccent: goldAccent,
+                    textThemeColor: textThemeColor,
+                    onChanged: (v) => setState(() => _analysisFilterBattery = v ?? 'All'),
+                  )
+                else if (_analysisMode == 'Trade')
+                  _buildAnalysisDropdown(
+                    label: 'Select Trade',
+                    value: _analysisFilterTrade,
+                    items: tradeOptions,
+                    isDark: isDark,
+                    goldAccent: goldAccent,
+                    textThemeColor: textThemeColor,
+                    onChanged: (v) => setState(() => _analysisFilterTrade = v ?? 'All'),
+                  )
+                else
+                  _buildAnalysisDropdown(
+                    label: 'Select Rank',
+                    value: _analysisFilterRank,
+                    items: rankOptions,
+                    isDark: isDark,
+                    goldAccent: goldAccent,
+                    textThemeColor: textThemeColor,
+                    onChanged: (v) => setState(() => _analysisFilterRank = v ?? 'All'),
+                  ),
+              ],
+            ),
+          ),
+        ),
+        // ──────────────────────────────────────────────────────────────────
+
+        const SizedBox(height: 10),
 
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -5074,58 +5529,71 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (_analysisMode == 'Battery') ...[
-                  // 2x2 Grid of Battery cards
-                  Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildBatteryAnalysisCard(
-                              name: 'HQ Battery',
-                              stats: batteryStats['HQ Bty'] ?? {},
-                              isDark: isDark,
-                              goldAccent: goldAccent,
-                              textThemeColor: textThemeColor,
-                            ),
+                  // Battery cards — show only selected battery full-width, or all 4 in 2x2 grid
+                  if (_analysisFilterBattery == 'All') ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildBatteryAnalysisCard(
+                            name: 'HQ Battery',
+                            stats: batteryStats['HQ Bty'] ?? {},
+                            isDark: isDark,
+                            batteryColor: _getBatteryColor('HQ Bty'),
+                            textThemeColor: textThemeColor,
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildBatteryAnalysisCard(
-                              name: 'P Battery',
-                              stats: batteryStats['P Bty'] ?? {},
-                              isDark: isDark,
-                              goldAccent: goldAccent,
-                              textThemeColor: textThemeColor,
-                            ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildBatteryAnalysisCard(
+                            name: 'P Battery',
+                            stats: batteryStats['P Bty'] ?? {},
+                            isDark: isDark,
+                            batteryColor: _getBatteryColor('P Bty'),
+                            textThemeColor: textThemeColor,
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildBatteryAnalysisCard(
+                            name: 'Q Battery',
+                            stats: batteryStats['Q Bty'] ?? {},
+                            isDark: isDark,
+                            batteryColor: _getBatteryColor('Q Bty'),
+                            textThemeColor: textThemeColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildBatteryAnalysisCard(
+                            name: 'R Battery',
+                            stats: batteryStats['R Bty'] ?? {},
+                            isDark: isDark,
+                            batteryColor: _getBatteryColor('R Bty'),
+                            textThemeColor: textThemeColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    // Single selected battery — full width
+                    SizedBox(
+                      width: double.infinity,
+                      child: _buildBatteryAnalysisCard(
+                        name: _analysisFilterBattery == 'HQ Bty' ? 'HQ Battery'
+                            : _analysisFilterBattery == 'P Bty'  ? 'P Battery'
+                            : _analysisFilterBattery == 'Q Bty'  ? 'Q Battery'
+                            : 'R Battery',
+                        stats: batteryStats[_analysisFilterBattery] ?? {},
+                        isDark: isDark,
+                        batteryColor: _getBatteryColor(_analysisFilterBattery),
+                        textThemeColor: textThemeColor,
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildBatteryAnalysisCard(
-                              name: 'Q Battery',
-                              stats: batteryStats['Q Bty'] ?? {},
-                              isDark: isDark,
-                              goldAccent: goldAccent,
-                              textThemeColor: textThemeColor,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildBatteryAnalysisCard(
-                              name: 'R Battery',
-                              stats: batteryStats['R Bty'] ?? {},
-                              isDark: isDark,
-                              goldAccent: goldAccent,
-                              textThemeColor: textThemeColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ] else ...[
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -5253,6 +5721,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   counts: fightingStatusCounts,
                   isDark: isDark,
                   goldAccent: goldAccent,
+                  isFightingGroup: true,
+                  baseList: filteredPersonnel,
+                  initialBattery: _analysisMode == 'Battery' ? _analysisFilterBattery : 'All',
+                  initialTrade:   _analysisMode == 'Trade'   ? _analysisFilterTrade   : 'All',
+                  initialRank:    _analysisMode == 'Rank'    ? _analysisFilterRank    : 'All',
                 ),
                 
                 const SizedBox(height: 16),
@@ -5263,6 +5736,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   counts: nonFightingStatusCounts,
                   isDark: isDark,
                   goldAccent: goldAccent,
+                  isFightingGroup: false,
+                  baseList: filteredPersonnel,
+                  initialBattery: _analysisMode == 'Battery' ? _analysisFilterBattery : 'All',
+                  initialTrade:   _analysisMode == 'Trade'   ? _analysisFilterTrade   : 'All',
+                  initialRank:    _analysisMode == 'Rank'    ? _analysisFilterRank    : 'All',
                 ),
                 
                 const SizedBox(height: 32),
@@ -5384,11 +5862,92 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  Widget _buildAnalysisDropdown({
+    required String label,
+    required String value,
+    required List<String> items,
+    required bool isDark,
+    required Color goldAccent,
+    required Color textThemeColor,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      isExpanded: true,
+      dropdownColor: isDark ? const Color(0xFF03140A) : Colors.white,
+      style: TextStyle(color: textThemeColor, fontSize: 11, fontWeight: FontWeight.w600),
+      icon: Icon(Icons.arrow_drop_down_rounded, color: goldAccent, size: 18),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(
+          color: isDark ? goldAccent.withValues(alpha: 0.7) : const Color(0xFF0C5A32).withValues(alpha: 0.7),
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+        ),
+        filled: true,
+        fillColor: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.06) : Colors.white,
+        contentPadding: const EdgeInsets.only(left: 8, right: 4, top: 8, bottom: 8),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(
+            color: isDark ? goldAccent.withValues(alpha: 0.2) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: goldAccent, width: 1.2),
+        ),
+      ),
+      items: items.map((item) {
+        final isActive = item != 'All';
+        return DropdownMenuItem<String>(
+          value: item,
+          child: Text(
+            item,
+            style: TextStyle(
+              color: isActive ? textThemeColor : (isDark ? Colors.white54 : Colors.black38),
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        );
+      }).toList(),
+      selectedItemBuilder: (BuildContext context) {
+        return items.map<Widget>((item) {
+          final displayText = (item == 'All') ? 'All' : item;
+          final isFiltered = item != 'All';
+          return Text(
+            displayText,
+            style: TextStyle(
+              color: isFiltered ? goldAccent : (isDark ? Colors.white54 : Colors.black38),
+              fontSize: 11,
+              fontWeight: isFiltered ? FontWeight.w800 : FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+        }).toList();
+      },
+      onChanged: onChanged,
+    );
+  }
+
+  // Maps display name (e.g. 'HQ Battery') -> battery key (e.g. 'HQ Bty')
+  String _batteryKeyFromName(String displayName) {
+    switch (displayName) {
+      case 'HQ Battery': return 'HQ Bty';
+      case 'P Battery':  return 'P Bty';
+      case 'Q Battery':  return 'Q Bty';
+      case 'R Battery':  return 'R Bty';
+      default:           return 'HQ Bty';
+    }
+  }
+
   Widget _buildBatteryAnalysisCard({
     required String name,
     required Map<String, int> stats,
     required bool isDark,
-    required Color goldAccent,
+    required Color batteryColor,
     required Color textThemeColor,
   }) {
     final total = stats['total'] ?? 0;
@@ -5397,88 +5956,162 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     final sldrs = stats['sldrs'] ?? 0;
     final nonFighting = stats['nonFighting'] ?? 0;
     final fighting = officers + jcos + sldrs;
-    
     final fightingRatio = total > 0 ? fighting / total : 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(12),
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                BatteryDetailScreen(
+              batteryKey: _batteryKeyFromName(name),
+              batteryName: name,
+              batteryColor: batteryColor,
+              isDarkMode: widget.isDarkMode,
+              onToggleTheme: widget.onToggleTheme,
+            ),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              final tween = Tween(begin: begin, end: end)
+                  .chain(CurveTween(curve: Curves.easeInOutCubic));
+              return SlideTransition(position: animation.drive(tween), child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 350),
+          ),
+        );
+      },
+      child: Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.04) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: isDark
+            ? batteryColor.withValues(alpha: 0.07)
+            : batteryColor.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? goldAccent.withValues(alpha: 0.15) : const Color(0xFF0C5A32).withValues(alpha: 0.1),
-          width: 1,
+          color: batteryColor.withValues(alpha: 0.45),
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: batteryColor.withValues(alpha: isDark ? 0.15 : 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(13),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                name.toUpperCase(),
-                style: TextStyle(
-                  color: goldAccent,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+              // Left battery color accent strip
+              Container(
+                width: 5,
+                decoration: BoxDecoration(
+                  color: batteryColor,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(13),
+                    bottomLeft: Radius.circular(13),
+                  ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: goldAccent.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  'Str: $total',
-                  style: TextStyle(
-                    color: goldAccent,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header row: battery name + strength badge
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            name.toUpperCase(),
+                            style: TextStyle(
+                              color: batteryColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: batteryColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(
+                                color: batteryColor.withValues(alpha: 0.4),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Text(
+                              'Str: $total',
+                              style: TextStyle(
+                                color: batteryColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(
+                        height: 14,
+                        thickness: 0.5,
+                        color: batteryColor.withValues(alpha: 0.3),
+                      ),
+                      if (officers > 0) _buildCardDetailRow('Officers', '$officers', isDark, batteryColor),
+                      if (jcos > 0) _buildCardDetailRow('JCOs', '$jcos', isDark, batteryColor),
+                      if (sldrs > 0) _buildCardDetailRow('Sldrs', '$sldrs', isDark, batteryColor),
+                      if (nonFighting > 0) _buildCardDetailRow('Non-Fighting', '$nonFighting', isDark, batteryColor),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Fighting Ratio',
+                            style: TextStyle(
+                              color: textThemeColor.withValues(alpha: 0.5),
+                              fontSize: 9.5,
+                            ),
+                          ),
+                          Text(
+                            '${(fightingRatio * 100).toStringAsFixed(0)}%',
+                            style: TextStyle(
+                              color: batteryColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: fightingRatio,
+                          backgroundColor: isDark
+                              ? Colors.white.withValues(alpha: 0.07)
+                              : Colors.black.withValues(alpha: 0.06),
+                          valueColor: AlwaysStoppedAnimation<Color>(batteryColor),
+                          minHeight: 5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-          const Divider(height: 12, thickness: 0.5),
-          const SizedBox(height: 4),
-          if (officers > 0) _buildCardDetailRow('Officers', '$officers', isDark),
-          if (jcos > 0) _buildCardDetailRow('JCOs', '$jcos', isDark),
-          if (sldrs > 0) _buildCardDetailRow('Sldrs (Soldiers)', '$sldrs', isDark),
-          if (nonFighting > 0) _buildCardDetailRow('Non-Fighting', '$nonFighting', isDark),
-          const SizedBox(height: 12),
-          
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Fighting Strength Ratio',
-                style: TextStyle(color: Color(0xFF888888), fontSize: 9.5),
-              ),
-              Text(
-                '${(fightingRatio * 100).toStringAsFixed(0)}%',
-                style: TextStyle(color: goldAccent, fontSize: 10, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: fightingRatio,
-              backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
-              valueColor: AlwaysStoppedAnimation<Color>(goldAccent),
-              minHeight: 4,
-            ),
-          ),
-        ],
+        ),
       ),
+    ), // GestureDetector
     );
   }
 
-  Widget _buildCardDetailRow(String label, String value, bool isDark) {
+  Widget _buildCardDetailRow(String label, String value, bool isDark, [Color? accentColor]) {
+    final color = accentColor ?? const Color(0xFFCD9B2D);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3.0),
       child: Row(
@@ -5487,10 +6120,10 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           Row(
             children: [
               Container(
-                width: 4,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFCD9B2D),
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: color,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -5508,13 +6141,14 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFF0C5A32).withValues(alpha: 0.05),
+              color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: color.withValues(alpha: 0.3), width: 0.6),
             ),
             child: Text(
               value,
               style: TextStyle(
-                color: isDark ? Colors.white : const Color(0xFF0C5A32),
+                color: color,
                 fontSize: 11,
                 fontWeight: FontWeight.bold,
               ),
@@ -5531,6 +6165,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     required Map<String, int> counts,
     required bool isDark,
     required Color goldAccent,
+    required bool isFightingGroup,
+    required List<Map<String, String>> baseList,
+    String initialBattery = 'All',
+    String initialTrade   = 'All',
+    String initialRank    = 'All',
   }) {
     return Container(
       width: double.infinity,
@@ -5574,6 +6213,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         goldAccent: goldAccent,
                         valueGreenColor: isDark ? const Color(0xFF00FF66) : const Color(0xFF0C5A32),
                         getPersonStatus: _getPersonStatus,
+                        filterIsFighting: isFightingGroup,
+                        baseList: baseList,
+                        initialBattery: initialBattery,
+                        initialTrade:   initialTrade,
+                        initialRank:    initialRank,
                       ),
                     ),
                   );
@@ -5628,6 +6272,16 @@ class CategoryPersonnelListScreen extends StatefulWidget {
   final Color goldAccent;
   final Color valueGreenColor;
   final String Function(Map<String, String>) getPersonStatus;
+  /// If non-null, restricts list to fighting (true) or non-fighting (false) personnel.
+  final bool? filterIsFighting;
+  /// If provided, used as the source list instead of the full nominalRollList.
+  /// Pass the already-filtered personnel from the analysis tab so that
+  /// tapping a chip (e.g. "Present: 4") shows only those 4 specific people.
+  final List<Map<String, String>>? baseList;
+  /// Pre-selected filter values (from analysis screen).
+  final String initialBattery;
+  final String initialTrade;
+  final String initialRank;
 
   const CategoryPersonnelListScreen({
     super.key,
@@ -5638,6 +6292,11 @@ class CategoryPersonnelListScreen extends StatefulWidget {
     required this.goldAccent,
     required this.valueGreenColor,
     required this.getPersonStatus,
+    this.filterIsFighting,
+    this.baseList,
+    this.initialBattery = 'All',
+    this.initialTrade   = 'All',
+    this.initialRank    = 'All',
   });
 
   @override
@@ -5653,14 +6312,36 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
   String _selectedRankCategory = 'All';
   String _selectedTrade = 'All';
 
+  List<String> _tradesList = ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
+  List<String> _ranksList = ['All', 'Officers', 'JCOs', 'Soldiers'];
+  List<String> _batteriesList = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
+
   @override
   void initState() {
     super.initState();
+    // Pre-apply filters passed from the analysis screen
+    _selectedBattery      = widget.initialBattery;
+    _selectedRankCategory = widget.initialRank; // 'All', 'Officers', 'JCOs', or 'Soldiers' — matches _ranksList exactly
+    _selectedTrade        = widget.initialTrade;
+    _loadDynamicAttributes();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.trim().toLowerCase();
       });
     });
+  }
+
+  Future<void> _loadDynamicAttributes() async {
+    final trades = await MockDataManager().getTrades();
+    final ranks = await MockDataManager().getRanks();
+    final batteries = await MockDataManager().getBatteries();
+    if (mounted) {
+      setState(() {
+        _tradesList = trades;
+        _ranksList = ranks;
+        _batteriesList = batteries;
+      });
+    }
   }
 
   @override
@@ -5728,11 +6409,42 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     return btys[id % 4];
   }
 
+  /// Returns the color associated with a battery name.
+  Color _getBatteryColor(String bty) {
+    switch (bty) {
+      case 'HQ Bty': return const Color(0xFFE53935); // Red - Headquarter Battery
+      case 'P Bty':  return const Color(0xFF9E9E9E); // Light Gray - Papa Battery
+      case 'Q Bty':  return const Color(0xFFFF9800); // Light Orange - Quebec Battery
+      case 'R Bty':  return const Color(0xFF4CAF50); // Light Green - Romeo Battery
+      default:       return const Color(0xFFE53935);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final rawList = nominalRollList.where((p) {
-      return widget.getPersonStatus(p) == widget.categoryName;
+    // Use the pre-filtered base list (from analysis tab) if provided, otherwise full list
+    final sourceList = widget.baseList ?? nominalRollList;
+    final rawList = sourceList.where((p) {
+      // Must match the status category (e.g. 'Present', 'Leave')
+      if (widget.getPersonStatus(p) != widget.categoryName) return false;
+      // If launched from Fighting panel, show only fighting personnel; Non-Fighting panel → non-fighting only
+      if (widget.filterIsFighting != null) {
+        final fighting = _isFighting(p);
+        if (widget.filterIsFighting! && !fighting) return false;
+        if (!widget.filterIsFighting! && fighting) return false;
+      }
+      return true;
     }).toList();
+
+    // Compute which values are actually present in rawList (for disabling irrelevant dropdown items)
+    final availableBatteries = rawList.map((p) => _getBattery(p)).toSet();
+    final availableTrades    = rawList.map((p) => _getTrade(p)).toSet();
+    final availableRanks     = rawList.map((p) {
+      final rc = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
+      if (rc == 'OFFICERS') return 'Officers';
+      if (rc == 'JCOs')     return 'JCOs';
+      return 'Soldiers';
+    }).toSet();
 
     final filteredList = rawList.where((person) {
       final name = (person['name'] ?? '').toLowerCase();
@@ -5753,7 +6465,13 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
 
       if (_selectedRankCategory != 'All') {
         final rankCat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
-        if (rankCat != _selectedRankCategory.toUpperCase()) return false;
+        // Map dropdown label to the value _getRankCategory returns
+        final expectedCat = _selectedRankCategory == 'Officers'
+            ? 'OFFICERS'
+            : _selectedRankCategory == 'JCOs'
+                ? 'JCOs'
+                : 'SOLDIERS';
+        if (rankCat != expectedCat) return false;
       }
 
       if (_selectedTrade != 'All') {
@@ -5776,7 +6494,11 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
-            '${widget.categoryName} - ${rawList.length} Pers',
+            widget.filterIsFighting == null
+                ? '${widget.categoryName} · ${rawList.length} Pers'
+                : widget.filterIsFighting!
+                    ? 'Fighting · ${widget.categoryName} · ${rawList.length} Pers'
+                    : 'Non-Fighting · ${widget.categoryName} · ${rawList.length} Pers',
             style: TextStyle(
               color: widget.textThemeColor,
               fontWeight: FontWeight.bold,
@@ -5847,7 +6569,8 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           _buildFilterDropdown(
                             label: 'Battery',
                             value: _selectedBattery,
-                            items: ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'],
+                            items: _batteriesList,
+                            availableValues: availableBatteries,
                             onChanged: (val) {
                               setState(() {
                                 _selectedBattery = val ?? 'All';
@@ -5858,7 +6581,8 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           _buildFilterDropdown(
                             label: 'Rank',
                             value: _selectedRankCategory,
-                            items: ['All', 'Officers', 'JCOs', 'Soldiers'],
+                            items: _ranksList,
+                            availableValues: availableRanks,
                             onChanged: (val) {
                               setState(() {
                                 _selectedRankCategory = val ?? 'All';
@@ -5869,10 +6593,8 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           _buildFilterDropdown(
                             label: 'Trade',
                             value: _selectedTrade,
-                            items: [
-                              'All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy',
-                              'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'
-                            ],
+                            items: _tradesList,
+                            availableValues: availableTrades,
                             onChanged: (val) {
                               setState(() {
                                 _selectedTrade = val ?? 'All';
@@ -5902,6 +6624,7 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                         final person = filteredList[index];
                         final isFighting = _isFighting(person);
                         final bty = _getBattery(person);
+                        final btyColor = _getBatteryColor(bty);
                         final armyNo = person['armyNo'] ?? '';
                         final rank = person['rank'] ?? '';
                         final name = person['name'] ?? '';
@@ -5934,12 +6657,11 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                           },
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
                               color: widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.12) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: widget.isDark ? widget.goldAccent.withValues(alpha: 0.25) : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+                                color: btyColor.withValues(alpha: 0.45),
                                 width: 1.0,
                               ),
                               boxShadow: [
@@ -5950,6 +6672,26 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                                 ),
                               ],
                             ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: IntrinsicHeight(
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    // Battery color indicator strip
+                                    Container(
+                                      width: 5,
+                                      decoration: BoxDecoration(
+                                        color: btyColor,
+                                        borderRadius: const BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          bottomLeft: Radius.circular(15),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(14),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -6035,12 +6777,21 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                                                   ),
                                                 ),
                                               ),
-                                              Text(
-                                                'Bty: $bty',
-                                                style: TextStyle(
-                                                  color: widget.silverText,
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.w500,
+                                              // Battery color chip
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: btyColor.withValues(alpha: 0.13),
+                                                  borderRadius: BorderRadius.circular(5),
+                                                  border: Border.all(color: btyColor.withValues(alpha: 0.5), width: 0.8),
+                                                ),
+                                                child: Text(
+                                                  bty,
+                                                  style: TextStyle(
+                                                    color: btyColor,
+                                                    fontSize: 10.5,
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
                                                 ),
                                               ),
                                               Text(
@@ -6148,7 +6899,13 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
                               ],
                             ),
                           ),
-                        );
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
                       },
                     ),
             ),
@@ -6163,6 +6920,7 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
     required String value,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    Set<String>? availableValues, // items NOT in this set are shown disabled
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -6183,9 +6941,21 @@ class _CategoryPersonnelListScreenState extends State<CategoryPersonnelListScree
           icon: Icon(Icons.arrow_drop_down, color: widget.goldAccent, size: 18),
           style: TextStyle(color: widget.textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
           items: items.map<DropdownMenuItem<String>>((String val) {
+            final isAvailable = availableValues == null || val == 'All' || availableValues.contains(val);
             return DropdownMenuItem<String>(
               value: val,
-              child: Text(val == 'All' ? '$label: All' : val),
+              enabled: isAvailable,
+              child: Text(
+                val == 'All' ? '$label: All' : val,
+                style: TextStyle(
+                  color: isAvailable
+                      ? (val == value
+                          ? widget.goldAccent
+                          : widget.textThemeColor)
+                      : (widget.isDark ? Colors.white24 : Colors.black26),
+                  fontWeight: val == value ? FontWeight.w800 : FontWeight.normal,
+                ),
+              ),
             );
           }).toList(),
         ),

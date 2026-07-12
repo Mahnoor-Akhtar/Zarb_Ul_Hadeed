@@ -158,4 +158,53 @@ class MockDataManager {
     await saveCommandGroup(group);
   }
 
+  // --- Dynamic Attributes Management ---
+
+  Future<List<String>> getTrades() async {
+    final prefs = await SharedPreferences.getInstance();
+    final str = prefs.getString('trades_list');
+    if (str != null) {
+      try {
+        return List<String>.from(jsonDecode(str));
+      } catch (_) {}
+    }
+    return ['All', 'Gnr', 'TA', 'OCU', 'DMT', 'DSV', 'Svy', 'Clk', 'Ck', 'Engr', 'N/A', 'LAD', 'NCB', 'SW'];
+  }
+
+  Future<void> saveTrades(List<String> trades) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('trades_list', jsonEncode(trades));
+  }
+
+  Future<List<String>> getRanks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final str = prefs.getString('ranks_list');
+    if (str != null) {
+      try {
+        return List<String>.from(jsonDecode(str));
+      } catch (_) {}
+    }
+    return ['All', 'Officers', 'JCOs', 'Soldiers'];
+  }
+
+  Future<void> saveRanks(List<String> ranks) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('ranks_list', jsonEncode(ranks));
+  }
+
+  Future<List<String>> getBatteries() async {
+    final prefs = await SharedPreferences.getInstance();
+    final str = prefs.getString('batteries_list');
+    if (str != null) {
+      try {
+        return List<String>.from(jsonDecode(str));
+      } catch (_) {}
+    }
+    return ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
+  }
+
+  Future<void> saveBatteries(List<String> batteries) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('batteries_list', jsonEncode(batteries));
+  }
 }

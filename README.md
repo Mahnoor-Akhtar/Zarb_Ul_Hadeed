@@ -113,18 +113,54 @@ Displays collapsible, multi-layered hierarchies of locations, tasks, and duties 
 ---
 
 ### C. Analysis Screen (Tab 2)
-Provides visual metrics, headcounts, percentages, and charts detailing regimental strength distribution.
+Provides visual metrics, headcounts, percentages, and battery/trade/rank breakdowns for regimental strength distribution. Features a powerful drill-down system so commanders can inspect any sub-group in detail.
 
 #### Interface Components:
-* **Metrics Ratios Grid**:
-  - Stat Card 1: *Total Regimental Strength* (Number).
-  - Stat Card 2: *Present Ratio* (Muted percentage).
-  - Stat Card 3: *Leave Ratio* (Muted percentage).
-* **Bar Chart Representation**:
-  - Horizontal bar layout showing the strength of each battery (*HQ Battery*, *180 SP Battery*, *181 SP Battery*, *182 SP Battery*).
-  - Color-coded: Gold bars on dark green backdrops.
-* **Detailed Legend List**:
-  - Scrollable view of percentages of personnel assigned to every category.
+
+**1. Analysis Mode Tabs**
+Three segmented tabs at the top switch the entire analysis view:
+- **Rank Analysis** — Breakdown by Officers, JCOs, Soldiers
+- **Trade Analysis** — Breakdown by trade (Gnr, TA, OCU, DMT, DSV, Svy, Clk, Ck, NCB, SW, Engr, N/A, LAD)
+- **Battery Analysis** — Breakdown by battery (HQ Bty, P Bty, Q Bty, R Bty)
+
+**2. Smart Context-Aware Filter Dropdown**
+Below the mode tabs, a single filter dropdown appears that changes dynamically based on the active mode:
+- **Battery mode** → `Select Battery` dropdown (HQ Bty / P Bty / Q Bty / R Bty)
+- **Trade mode** → `Select Trade` dropdown (all trades)
+- **Rank mode** → `Select Rank` dropdown (Officers / JCOs / Soldiers)
+
+A header label `FILTER: <active value>` shows the current selection. A `Reset` button appears whenever a filter is active.
+
+The filter is **mode-aware**: selecting Trade=DMT only affects Trade analysis; switching to Battery mode uses Battery filter independently.
+
+**3. Summary Bar**
+Displays live-updated counts for the currently filtered dataset:
+- `Bty / Trade / Rank Total`, `Fighting`, `Non Fighting`
+
+**4. Battery Analysis Cards — Smart Grid**
+- **All selected**: 2×2 grid of all 4 battery cards (HQ / P / Q / R)
+- **Specific battery selected**: Only that one battery card is shown full-width; the other 3 are hidden
+- Each card shows: Officers, JCOs, Sldrs, Non-Fighting counts, Fighting Ratio with a progress bar
+
+**5. Fighting & Non-Fighting Parade State Panels**
+Two expandable panels below the analysis cards:
+- **OFFRS/JCOs/SLDRS** — Fighting group parade states
+- **CLK/CK/NCBs/ENGRS, ETC.** — Non-fighting group parade states
+
+Each panel shows Wrap chips of active parade categories with counts (e.g. `• Present: 4`, `• Leave: 6`).
+
+**6. Drill-Down: Status → Filtered Personnel List**
+Tapping any chip (e.g. `Present: 4`) opens `CategoryPersonnelListScreen` with intelligent pre-filtering:
+- **Source list**: Only the personnel already visible after the active analysis filter (e.g. DMT trade)
+- **Group context**: Fighting panel → only Fighting personnel; Non-Fighting panel → only Non-Fighting personnel
+- **AppBar title**: Shows full context — e.g. `Fighting · Present · 4 Pers`
+
+**7. CategoryPersonnelListScreen — Pre-selected & Smart Disabled Dropdowns**
+When opened from the analysis screen, the in-screen filter dropdowns are automatically configured:
+- The **active analysis filter is pre-selected** (e.g. Trade dropdown shows `DMT` by default)
+- Dropdown items **not present** in the current filtered data are **greyed-out and disabled**, preventing invalid filter combinations
+- Four dropdown filters: `Div` (All / Fighting / Non-Fighting), `Battery`, `Rank`, `Trade`
+- Full-text search by Name or Army Number
 
 ---
 
@@ -179,6 +215,36 @@ Provides system parameters, guide tutorials, and user account management.
   - **Accounts Directory**: Scrollable list of custom admins showing: `[Rank] [Name] ([Army Number])`.
   - **Edit Credentials Button**: Opens username/password modifiers.
   - **Delete Credentials Button**: Revokes admin status.
+* **Manage Attributes Tile (Superadmin Only)**:
+  - Opens the **Manage Attributes Screen** to configure regimental Trades, Ranks, and Batteries.
+* **View All Groups Tile (Superadmin Only)**:
+  - Opens the **View All Groups Screen** to see the list of active superadmin, admin, and user slot assignments.
+
+---
+
+### G. Battery Detail Screen
+Provides detailed analytical and personnel breakdown of a selected battery unit.
+* **Header & Stats Panel**: Renders a glassmorphism header card with battery specific color coding (e.g. Papa battery in gray, Romeo in green) showing total active strength, fighting ratio, and count breakdown by officers, JCOs, soldiers, and non-fighting personnel.
+* **Smart Filter & Search**: Search bar to filter by name or army number. Filter chips to select specific personnel categories (All / Officers / JCOs / Soldiers / Non-Fighting).
+* **Interactive Roster List**: Displays matching personnel details cards. Tapping any card launches the soldier's **Military ID Card Modal**.
+
+---
+
+### H. Manage Attributes Screen (Superadmin Only)
+Allows customization and configuration of core database metadata constraints.
+* **Tabbed Categorization**: Divided into three management segments: **Trades**, **Ranks**, and **Batteries**.
+* **Attributes Registry**: Scrollable list of active tags.
+* **Dynamic Modifiers (CRUD)**:
+  - **Add Tag Button**: Add a new trade designation, military rank title, or battery code.
+  - **Edit Badge Indicator**: Update names of existing items.
+  - **Delete Indicator**: Remove attributes from future select lists.
+
+---
+
+### I. View All Groups Screen (Superadmin Only)
+Renders a comprehensive directory of system credentials and access slots.
+* **Categorized Directory**: Groups credentials by authorization levels: **Superadmin**, **Admins**, and **Users**.
+* **Account Info Card**: Displays username, slot designation, and associated account profile metrics.
 
 ---
 
