@@ -10322,15 +10322,49 @@ class PersonnelIdCardScreen extends StatelessWidget {
                                           ),
                                         ),
                                       ),
-                                      child: Text(
-                                        '$dateStr → ${record.displayPath}',
-                                        style: TextStyle(
-                                          color: textThemeColor,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              dateStr,
+                                              style: TextStyle(
+                                                color: goldAccent,
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                            ),
+                                            child: Text(
+                                              '→',
+                                              style: TextStyle(
+                                                color: goldAccent.withValues(
+                                                  alpha: 0.7,
+                                                ),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 2,
+                                            child: Text(
+                                              record.displayPath,
+                                              style: TextStyle(
+                                                color: textThemeColor,
+                                                fontSize: 11.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
