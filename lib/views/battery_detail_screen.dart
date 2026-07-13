@@ -1,11 +1,11 @@
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
-import 'personnel_data.dart';
-import 'personnel_data_manager.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/battery_detail_viewmodel.dart';
 
 /// Battery Detail Screen — shows all personnel of a specific battery
 /// with rank-wise breakdown, strength summary, and searchable list.
-class BatteryDetailScreen extends StatefulWidget {
+class BatteryDetailScreen extends StatelessWidget {
   final String batteryKey;   // e.g. 'HQ Bty'
   final String batteryName;  // e.g. 'HQ Battery'
   final Color batteryColor;
@@ -22,180 +22,43 @@ class BatteryDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<BatteryDetailScreen> createState() => _BatteryDetailScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => BatteryDetailViewModel(batteryKey: batteryKey),
+      child: _BatteryDetailScreenContent(
+        batteryKey: batteryKey,
+        batteryName: batteryName,
+        batteryColor: batteryColor,
+        isDarkMode: isDarkMode,
+        onToggleTheme: onToggleTheme,
+      ),
+    );
+  }
 }
 
-class _BatteryDetailScreenState extends State<BatteryDetailScreen>
+class _BatteryDetailScreenContent extends StatefulWidget {
+  final String batteryKey;
+  final String batteryName;
+  final Color batteryColor;
+  final bool isDarkMode;
+  final VoidCallback onToggleTheme;
+
+  const _BatteryDetailScreenContent({
+    required this.batteryKey,
+    required this.batteryName,
+    required this.batteryColor,
+    required this.isDarkMode,
+    required this.onToggleTheme,
+  });
+
+  @override
+  State<_BatteryDetailScreenContent> createState() => _BatteryDetailScreenContentState();
+}
+
+class _BatteryDetailScreenContentState extends State<_BatteryDetailScreenContent>
     with SingleTickerProviderStateMixin {
   late AnimationController _headerAnimCtrl;
   final TextEditingController _searchCtrl = TextEditingController();
-  String _searchQuery = '';
-  String _filterCategory = 'All'; // All | Officers | JCOs | Sldrs | Non-Fighting
-
-  // ─── Helpers duplicated from DashboardScreen ─────────────────────────────
-
-  bool _isFighting(Map<String, String> person) {
-    if (person['isFighting'] == 'false') return false;
-    if (person['isFighting'] == 'true') return true;
-    final category = (person['category'] ?? '').toLowerCase();
-    final combined = '${person['rank'] ?? ''} ${person['name'] ?? ''}'.toLowerCase();
-    if (category == 'clks' || category == 'c/us' || category == 'sws' || category == 's/ws' || category == 'ncbs' || category == 'civs' || category == 'lads') return false;
-    if (combined.contains('clk') || combined.contains('ck ') || combined.contains('ck(') ||
-        combined.contains('c/u') || combined.contains('c/m') || combined.contains('engr') ||
-        combined.contains('n/a') || combined.contains('lad') || combined.contains('civ') ||
-        combined.contains('ncb') || combined.contains('sw') || combined.contains('s/w')) return false;
-    return true;
-  }
-
-  String _getTrade(Map<String, String> person) {
-    final category = (person['category'] ?? '').toLowerCase();
-    final rank = (person['rank'] ?? '').toLowerCase();
-    final name = (person['name'] ?? '').toLowerCase();
-    final combined = '$rank $name'.toLowerCase();
-
-    if (category == 'clks' || combined.contains('clk')) return 'Clk';
-    if (category == 'ncbs' || combined.contains('ncb')) return 'NCB';
-    if (category == 'sws' || combined.contains('sw') || combined.contains('s/w')) return 'S/W';
-    if (category == 'c/us' || combined.contains('ck') || combined.contains('c/u') || combined.contains('c/m')) return 'Ck';
-    if (category == 'civs' || combined.contains('civ')) return 'Civ';
-    if (category == 'lads' || combined.contains('lad')) return 'LAD';
-
-    if (category == 'jcos') {
-      if (combined.contains('gnr')) return 'Gnr';
-      if (combined.contains('ta')) return 'TA';
-      if (combined.contains('ocu')) return 'OCU';
-      if (combined.contains('dmt')) return 'DMT';
-      if (combined.contains('dsv')) return 'DSV';
-      if (combined.contains('svy') || combined.contains('sry')) return 'Svy';
-    }
-    if (category == 'svys' || combined.contains('svy') || combined.contains('sry')) return 'Svy';
-    if (category == 'tas' || combined.contains('ta')) return 'TA';
-    if (category == 'ocsu' || combined.contains('ocu')) return 'OCU';
-    if (category == 'dsvs' || combined.contains('dsv')) return 'DSV';
-    if (category == 'dmts' || combined.contains('dmt')) return 'DMT';
-    if (category == 'gnrs' || combined.contains('gnr')) return 'Gnr';
-
-    return 'Gnr';
-  }
-
-  String _getRankSubcategory(String rank, String name) {
-    final r = rank.trim().toLowerCase();
-
-    // 1. Officers
-    if (r == 'lt col' || r.startsWith('lt col') || r.contains('lt col')) return 'Lt Col';
-    if (r == 'maj' || r.startsWith('maj') || r.contains('maj')) return 'Maj';
-    if (r == 'capt' || r.startsWith('capt') || r.contains('capt')) return 'Capt';
-    if (r == '2/lt' || r == '2-lt' || r == '2/ lt' || r.contains('2/lt')) return '2/Lt';
-    if (r == 'lt' || r == 'lieutenant') return 'Lt';
-
-    // 2. JCOs
-    if (r == 'sm' || r == 'subedar major') return 'SM';
-    if (r == 'n/sub' || r == 'n-sub' || r == 'naib subedar' || r.contains('n/sub')) return 'N/Sub';
-    if (r == 'sub' || r == 'subedar') return 'Sub';
-
-    // 3. Soldiers
-    if (r.contains('hav') || r.contains('bqmh') || r.contains('rqmh') || r == 'havildar') {
-      return 'Hav';
-    }
-    if (r == 'lhav' || r == 'lhv' || r == 'lance havildar' || r.contains('lhav') || r.contains('lhv')) {
-      return 'Lhav';
-    }
-    if (r == 'lnk' || r == 'l/nk' || r == 'lance naik' || r.contains('lnk') || r.contains('l/nk')) {
-      return 'Lnk';
-    }
-    if (r == 'nk' || r == 'naik' || r == 'nco' || r.contains('nk')) {
-      return 'Nk';
-    }
-
-    return 'Sep';
-  }
-
-  String _getRankCategory(String rank, String name) {
-    final sub = _getRankSubcategory(rank, name);
-    if (['Lt Col', 'Maj', 'Capt', 'Lt', '2/Lt'].contains(sub)) {
-      return 'OFFICERS';
-    }
-    if (['SM', 'Sub', 'N/Sub'].contains(sub)) {
-      return 'JCOs';
-    }
-    return 'SLDRS';
-  }
-
-  String _getBattery(Map<String, String> person) {
-    final armyNo = person['armyNo'] ?? '';
-    if (armyNo == 'NYA' || armyNo.isEmpty) return 'HQ Bty';
-    final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
-    if (cleanNo.isEmpty) return 'HQ Bty';
-    final lastDigit = int.tryParse(cleanNo[cleanNo.length - 1]) ?? 0;
-    if (lastDigit == 0 || lastDigit == 4) return 'HQ Bty';
-    if (lastDigit == 1 || lastDigit == 5) return 'P Bty';
-    if (lastDigit == 2 || lastDigit == 6 || lastDigit == 8) return 'Q Bty';
-    return 'R Bty';
-  }
-
-  // ─── Computed Data ────────────────────────────────────────────────────────
-
-  List<Map<String, String>> get _batteryPersonnel =>
-      nominalRollList.where((p) => _getBattery(p) == widget.batteryKey).toList();
-
-  List<Map<String, String>> get _filteredPersonnel {
-    return _batteryPersonnel.where((p) {
-      final name = (p['name'] ?? '').toLowerCase();
-      final rank = (p['rank'] ?? '').toLowerCase();
-      final armyNo = (p['armyNo'] ?? '').toLowerCase();
-      final matchQuery = _searchQuery.isEmpty ||
-          name.contains(_searchQuery) ||
-          rank.contains(_searchQuery) ||
-          armyNo.contains(_searchQuery);
-
-      if (!matchQuery) return false;
-
-      if (_filterCategory == 'All') return true;
-      final isFighting = _isFighting(p);
-      if (_filterCategory == 'Non-Fighting') return !isFighting;
-      
-      final selectedRank = _filterCategory.trim();
-      
-      if (['Clk', 'Ck', 'Civ', 'LAD', 'NCB', 'S/W', 'Engr', 'N/A'].contains(selectedRank)) {
-        return !isFighting && _getTrade(p).toLowerCase() == selectedRank.toLowerCase();
-      }
-      
-      final subcat = _getRankSubcategory(p['rank'] ?? '', p['name'] ?? '');
-      final cat = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
-      
-      if (selectedRank == 'Officers') {
-        return isFighting && cat == 'OFFICERS';
-      } else if (selectedRank == 'JCOs') {
-        return isFighting && cat == 'JCOs';
-      } else if (selectedRank == 'Sldrs' || selectedRank == 'Soldiers' || selectedRank == 'SLDRS') {
-        return isFighting && cat == 'SLDRS';
-      } else {
-        if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
-        return isFighting;
-      }
-    }).toList();
-  }
-
-  Map<String, int> get _stats {
-    int total = 0, officers = 0, jcos = 0, sldrs = 0, nonFighting = 0;
-    for (final p in _batteryPersonnel) {
-      total++;
-      if (!_isFighting(p)) {
-        nonFighting++;
-      } else {
-        final cat = _getRankCategory(p['rank'] ?? '', p['name'] ?? '');
-        if (cat == 'OFFICERS') officers++;
-        else if (cat == 'JCOs') jcos++;
-        else sldrs++;
-      }
-    }
-    return {'total': total, 'officers': officers, 'jcos': jcos, 'sldrs': sldrs, 'nonFighting': nonFighting};
-  }
-
-  // ─── Status helpers ──────────────────────────────────────────────────────
-
-  String _getStatus(Map<String, String> p) =>
-      PersonnelDataManager().getStatus(p['armyNo'] ?? '').category;
 
   Color _statusColor(String status, bool isDark) {
     switch (status.toLowerCase()) {
@@ -217,7 +80,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
       duration: const Duration(milliseconds: 800),
     )..forward();
     _searchCtrl.addListener(() {
-      setState(() => _searchQuery = _searchCtrl.text.trim().toLowerCase());
+      context.read<BatteryDetailViewModel>().setSearchQuery(_searchCtrl.text);
     });
   }
 
@@ -232,6 +95,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<BatteryDetailViewModel>();
     final isDark = widget.isDarkMode;
     final accent = widget.batteryColor;
     final bgColor = isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE);
@@ -240,8 +104,8 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
     final subText   = isDark ? const Color(0xFFB0B0B0) : const Color(0xFF4A5D52);
     final goldAccent = isDark ? const Color(0xFFCD9B2D) : const Color(0xFF9E7715);
 
-    final stats = _stats;
-    final personnel = _filteredPersonnel;
+    final stats = viewModel.stats;
+    final personnel = viewModel.filteredPersonnel;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -503,7 +367,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
                         hintStyle: TextStyle(color: subText, fontSize: 12),
                         border: InputBorder.none,
                         prefixIcon: Icon(Icons.search_rounded, color: accent, size: 20),
-                        suffixIcon: _searchQuery.isNotEmpty
+                        suffixIcon: viewModel.searchQuery.isNotEmpty
                             ? IconButton(
                                 icon: Icon(Icons.clear_rounded, color: subText, size: 16),
                                 onPressed: () => _searchCtrl.clear(),
@@ -546,7 +410,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
                         'NCB',
                         'S/W',
                       ]
-                          .map((cat) => _filterChip(cat, accent, textColor, subText, isDark))
+                          .map((cat) => _filterChip(viewModel, cat, accent, textColor, subText, isDark))
                           .toList(),
                     ),
                   ),
@@ -606,7 +470,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
               delegate: SliverChildBuilderDelegate(
                 (context, i) {
                   final p = personnel[i];
-                  return _buildPersonCard(p, i, accent, textColor, subText, goldAccent, cardBg, isDark);
+                  return _buildPersonCard(viewModel, p, i, accent, textColor, subText, goldAccent, cardBg, isDark);
                 },
                 childCount: personnel.length,
               ),
@@ -759,15 +623,16 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
       );
 
   Widget _filterChip(
+    BatteryDetailViewModel viewModel,
     String label,
     Color accent,
     Color textColor,
     Color subText,
     bool isDark,
   ) {
-    final isSelected = _filterCategory == label;
+    final isSelected = viewModel.filterCategory == label;
     return GestureDetector(
-      onTap: () => setState(() => _filterCategory = label),
+      onTap: () => viewModel.setFilterCategory(label),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(right: 8),
@@ -804,6 +669,7 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
   }
 
   Widget _buildPersonCard(
+    BatteryDetailViewModel viewModel,
     Map<String, String> p,
     int index,
     Color accent,
@@ -818,10 +684,10 @@ class _BatteryDetailScreenState extends State<BatteryDetailScreen>
     final armyNo = p['armyNo'] ?? '—';
     final cl = p['cl'] ?? '—';
     final remarks = p['remarks'] ?? '';
-    final isFighting = _isFighting(p);
-    final status = _getStatus(p);
+    final isFighting = viewModel.isFighting(p);
+    final status = viewModel.getStatus(p);
     final statusColor = _statusColor(status, isDark);
-    final rankCat = _getRankCategory(rank, name);
+    final rankCat = viewModel.getRankCategory(rank, name);
 
     // Category chip styling
     Color catColor;

@@ -6,16 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'file_saver.dart';
+import 'package:provider/provider.dart';
+import '../services/file_saver.dart';
 import 'splash_screen.dart'; // Reuse TopographicPainter
-import 'mock_data.dart';
-import 'personnel_data.dart';
-import 'personnel_data_manager.dart';
+import '../services/mock_data.dart';
+import '../services/personnel_data.dart';
+import '../services/personnel_data_manager.dart';
 import 'edit_assignment_screen.dart';
 import 'battery_detail_screen.dart';
 import 'manage_attributes_screen.dart';
 import 'view_all_groups_screen.dart';
-import 'movement_history_widget.dart';
+import '../widgets/movement_history_widget.dart';
+import '../viewmodels/dashboard_viewmodel.dart';
+import '../viewmodels/nominal_roll_viewmodel.dart';
+import '../viewmodels/analysis_viewmodel.dart';
+import '../viewmodels/edit_tab_viewmodel.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -35,124 +40,111 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen>
     with SingleTickerProviderStateMixin {
+  // Pure animation controller — stays local, not business logic
   late AnimationController _bgAnimationController;
+
+  // TextEditingControllers stay local (they are UI concerns); they push
+  // updates into the appropriate ViewModels.
   final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
-  final Set<String> _expandedSections = {};
-
-  // Nominal Roll State Variables
-  int _selectedTabIndex = 0;
   final TextEditingController _rollSearchController = TextEditingController();
-  String _rollSearchQuery = '';
-  String _selectedDivision = 'All';
-  String _selectedBattery = 'All';
-  String _selectedRankCategory = 'All';
-  String _selectedTrade = 'All';
-  String _analysisMode = 'Rank'; // Default to Rank Analysis
-  String _analysisFilterBattery = 'All';
-  String _analysisFilterTrade = 'All';
-  String _analysisFilterRank = 'All';
-
-  // Dynamic Attributes Lists
-  List<String> _tradesList = [
-    'All',
-    'Gnr',
-    'TA',
-    'OCU',
-    'DMT',
-    'DSV',
-    'Svy',
-    'Clk',
-    'Ck',
-    'Engr',
-    'N/A',
-    'LAD',
-    'NCB',
-    'S/W',
-    'Civ',
-  ];
-  List<String> _ranksList = [
-    'All',
-    'Officers',
-    '  Lt Col',
-    '  Maj',
-    '  Capt',
-    '  Lt',
-    '  2/Lt',
-    'JCOs',
-    '  SM',
-    '  Sub',
-    '  N/Sub',
-    'Soldiers',
-    '  Hav',
-    '  Lhav',
-    '  Nk',
-    '  Lnk',
-    '  Sep',
-  ];
-  List<String> _batteriesList = ['All', 'HQ Bty', 'P Bty', 'Q Bty', 'R Bty'];
-
-  // Edit Tab State Variables
   final TextEditingController _editSearchController = TextEditingController();
   final TextEditingController _settingsAdminUsernameController =
       TextEditingController();
-  String _editSearchQuery = '';
-  final Set<String> _expandedEditCategories = {};
-  final Set<String> _expandedEditSubcategories = {};
-  final Set<String> _expandedEditSubSubcategories = {};
-  bool _isFabMenuOpen = false;
-  bool _isRollFabMenuOpen = false;
-  bool _isRollEditMode = false;
-  bool _isRollDeleteMode = false;
-  bool get _canAccessEditTab {
-    final role = MockDataManager().role;
-    return role == 'Administrator' || role == 'Data Entry';
-  }
 
-  bool get _canAccessFABs {
-    return MockDataManager().role == 'Administrator';
-  }
+  // ── ViewModel convenience getters ──────────────────────────────────────
+  // Read-only helpers so the rest of the 10k-line build method keeps
+  // exactly the same property names it used before.
+
+  DashboardViewModel get _dashVM =>
+      context.read<DashboardViewModel>();
+  NominalRollViewModel get _rollVM =>
+      context.read<NominalRollViewModel>();
+  AnalysisViewModel get _analysisVM =>
+      context.read<AnalysisViewModel>();
+  EditTabViewModel get _editVM =>
+      context.read<EditTabViewModel>();
+
+  // Property aliases — delegate to ViewModels so every existing reference
+  // in the build tree continues to compile without change.
+  int get _selectedTabIndex => context.read<DashboardViewModel>().selectedTabIndex;
+  set _selectedTabIndex(int val) => _dashVM.setSelectedTabIndex(val);
+
+  String get _searchQuery => context.read<DashboardViewModel>().searchQuery;
+
+  Set<String> get _expandedSections => context.read<DashboardViewModel>().expandedSections;
+
+  bool get _isFabMenuOpen => context.read<DashboardViewModel>().isFabMenuOpen;
+  set _isFabMenuOpen(bool val) => _dashVM.setFabMenuOpen(val);
+
+  bool get _isRollFabMenuOpen => context.read<DashboardViewModel>().isRollFabMenuOpen;
+  set _isRollFabMenuOpen(bool val) => _dashVM.setRollFabMenuOpen(val);
+
+  bool get _isRollEditMode => context.read<DashboardViewModel>().isRollEditMode;
+  set _isRollEditMode(bool val) => _dashVM.setRollEditMode(val);
+
+  bool get _isRollDeleteMode => context.read<DashboardViewModel>().isRollDeleteMode;
+  set _isRollDeleteMode(bool val) => _dashVM.setRollDeleteMode(val);
+
+  List<String> get _tradesList => context.read<DashboardViewModel>().tradesList;
+  List<String> get _ranksList => context.read<DashboardViewModel>().ranksList;
+  List<String> get _batteriesList => context.read<DashboardViewModel>().batteriesList;
+  bool get _canAccessEditTab => context.read<DashboardViewModel>().canAccessEditTab;
+  bool get _canAccessFABs => context.read<DashboardViewModel>().canAccessFABs;
+
+  void _loadDynamicAttributes() => _dashVM.refreshAttributes();
+
+  String get _rollSearchQuery => context.read<NominalRollViewModel>().rollSearchQuery;
+
+  String get _selectedDivision => context.read<NominalRollViewModel>().selectedDivision;
+  set _selectedDivision(String val) => _rollVM.setSelectedDivision(val);
+
+  String get _selectedBattery => context.read<NominalRollViewModel>().selectedBattery;
+  set _selectedBattery(String val) => _rollVM.setSelectedBattery(val);
+
+  String get _selectedRankCategory => context.read<NominalRollViewModel>().selectedRankCategory;
+  set _selectedRankCategory(String val) => _rollVM.setSelectedRankCategory(val);
+
+  String get _selectedTrade => context.read<NominalRollViewModel>().selectedTrade;
+  set _selectedTrade(String val) => _rollVM.setSelectedTrade(val);
+
+  String get _analysisMode => context.read<AnalysisViewModel>().analysisMode;
+  set _analysisMode(String val) => _analysisVM.setAnalysisMode(val);
+
+  String get _analysisFilterBattery => context.read<AnalysisViewModel>().analysisFilterBattery;
+  set _analysisFilterBattery(String val) => _analysisVM.setAnalysisFilterBattery(val);
+
+  String get _analysisFilterTrade => context.read<AnalysisViewModel>().analysisFilterTrade;
+  set _analysisFilterTrade(String val) => _analysisVM.setAnalysisFilterTrade(val);
+
+  String get _analysisFilterRank => context.read<AnalysisViewModel>().analysisFilterRank;
+  set _analysisFilterRank(String val) => _analysisVM.setAnalysisFilterRank(val);
+
+  String get _editSearchQuery => context.read<EditTabViewModel>().editSearchQuery;
+  Set<String> get _expandedEditCategories => context.read<EditTabViewModel>().expandedEditCategories;
+  Set<String> get _expandedEditSubcategories => context.read<EditTabViewModel>().expandedEditSubcategories;
+  Set<String> get _expandedEditSubSubcategories => context.read<EditTabViewModel>().expandedEditSubSubcategories;
 
   @override
   void initState() {
     super.initState();
-    _loadDynamicAttributes();
     // Continuous drifting animation for background topographic lines
     _bgAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 30),
     )..repeat(reverse: true);
 
+    // Text controllers push changes into ViewModels; no setState needed here.
     _searchController.addListener(() {
-      setState(() {
-        _searchQuery = _searchController.text.trim().toLowerCase();
-      });
+      _dashVM.setSearchQuery(_searchController.text.trim().toLowerCase());
     });
 
     _rollSearchController.addListener(() {
-      setState(() {
-        _rollSearchQuery = _rollSearchController.text.trim().toLowerCase();
-      });
+      _rollVM.setRollSearchQuery(_rollSearchController.text.trim().toLowerCase());
     });
 
     _editSearchController.addListener(() {
-      setState(() {
-        _editSearchQuery = _editSearchController.text.trim().toLowerCase();
-      });
+      _editVM.setEditSearchQuery(_editSearchController.text.trim().toLowerCase());
     });
-  }
-
-  Future<void> _loadDynamicAttributes() async {
-    final trades = await MockDataManager().getTrades();
-    final ranks = await MockDataManager().getRanks();
-    final batteries = await MockDataManager().getBatteries();
-    if (mounted) {
-      setState(() {
-        _tradesList = trades;
-        _ranksList = ranks;
-        _batteriesList = batteries;
-      });
-    }
   }
 
   @override
@@ -167,6 +159,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Watch ViewModels to rebuild widget when they notify changes
+    context.watch<DashboardViewModel>();
+    context.watch<NominalRollViewModel>();
+    context.watch<AnalysisViewModel>();
+    context.watch<EditTabViewModel>();
+
     final maxTabs = _canAccessEditTab ? 5 : 4;
     if (_selectedTabIndex >= maxTabs) {
       _selectedTabIndex = 0;
@@ -951,9 +949,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isFabMenuOpen = false;
-                        });
+                        _dashVM.setFabMenuOpen(false);
                         _showAddCategoryDialog(
                           context,
                           isDark,
@@ -1002,9 +998,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isFabMenuOpen = false;
-                        });
+                        _dashVM.setFabMenuOpen(false);
                         _showManageCategoryDialog(
                           context,
                           isDark,
@@ -1053,9 +1047,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isFabMenuOpen = false;
-                        });
+                        _dashVM.setFabMenuOpen(false);
                         _showDeleteCategoryDialog(
                           context,
                           isDark,
@@ -1097,9 +1089,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 child: FloatingActionButton(
                   onPressed: () {
-                    setState(() {
-                      _isFabMenuOpen = !_isFabMenuOpen;
-                    });
+                    _dashVM.setFabMenuOpen(!_dashVM.isFabMenuOpen);
                   },
                   backgroundColor: goldAccent,
                   foregroundColor: isDark ? Colors.black : Colors.white,
@@ -1146,9 +1136,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isRollFabMenuOpen = false;
-                        });
+                        _dashVM.setRollFabMenuOpen(false);
                         _showPersonFormDialog(
                           context,
                           isDark: isDark,
@@ -1203,11 +1191,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isRollFabMenuOpen = false;
-                          _isRollEditMode = !_isRollEditMode;
-                          _isRollDeleteMode = false;
-                        });
+                        _dashVM.setRollFabMenuOpen(false);
+                        _dashVM.setRollEditMode(!_dashVM.isRollEditMode);
+                        _dashVM.setRollDeleteMode(false);
                       },
                       mini: true,
                       backgroundColor: _isRollEditMode
@@ -1261,11 +1247,9 @@ class _DashboardScreenState extends State<DashboardScreen>
                     ),
                     child: FloatingActionButton(
                       onPressed: () {
-                        setState(() {
-                          _isRollFabMenuOpen = false;
-                          _isRollDeleteMode = !_isRollDeleteMode;
-                          _isRollEditMode = false;
-                        });
+                        _dashVM.setRollFabMenuOpen(false);
+                        _dashVM.setRollDeleteMode(!_dashVM.isRollDeleteMode);
+                        _dashVM.setRollEditMode(false);
                       },
                       mini: true,
                       backgroundColor: _isRollDeleteMode
@@ -1306,9 +1290,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 ),
                 child: FloatingActionButton(
                   onPressed: () {
-                    setState(() {
-                      _isRollFabMenuOpen = !_isRollFabMenuOpen;
-                    });
+                    _dashVM.setRollFabMenuOpen(!_dashVM.isRollFabMenuOpen);
                   },
                   backgroundColor: goldAccent,
                   foregroundColor: isDark ? Colors.black : Colors.white,
@@ -4937,6 +4919,148 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  String _getMonthName(int month) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    if (month >= 1 && month <= 12) {
+      return months[month - 1];
+    }
+    return '';
+  }
+
+  pw.Widget _buildTableHeaderCell(String text) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+      ),
+    );
+  }
+
+  pw.Widget _buildTableCell(String text, {bool isBold = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(6),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(
+          fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+          fontSize: 9,
+        ),
+      ),
+    );
+  }
+
+  pw.Widget _buildPdfCategoryCard(
+    String displayTitle,
+    List<Map<String, String>> people,
+    int totalCount,
+    PersonnelDataManager manager,
+    PdfColor primaryColor,
+    PdfColor accentColor,
+    PdfColor borderColor,
+    PdfColor lightBg,
+    PdfColor darkText,
+  ) {
+    final List<pw.TableRow> tableRows = [];
+
+    for (var person in people) {
+      final rank = person['rank'] ?? '';
+      final name = person['name'] ?? '';
+      final status = manager.getStatus(person['armyNo'] ?? '');
+      
+      String duty = '';
+      if (status.subSubcategory != null && status.subSubcategory!.isNotEmpty) {
+        duty = status.subSubcategory!;
+      } else if (status.subcategory != null && status.subcategory!.isNotEmpty) {
+        duty = status.subcategory!;
+      }
+
+      tableRows.add(
+        pw.TableRow(
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4),
+              child: pw.Text('$rank $name', style: pw.TextStyle(fontSize: 8, color: darkText)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4),
+              child: pw.Text(duty, style: pw.TextStyle(fontSize: 8, color: darkText)),
+            ),
+          ],
+        )
+      );
+    }
+
+    return pw.Container(
+      margin: const pw.EdgeInsets.only(bottom: 12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: borderColor, width: 0.8),
+        borderRadius: pw.BorderRadius.circular(6),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          // Card Header
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: pw.BoxDecoration(
+              color: primaryColor,
+              borderRadius: const pw.BorderRadius.only(
+                topLeft: pw.Radius.circular(5),
+                topRight: pw.Radius.circular(5),
+              ),
+            ),
+            child: pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  displayTitle,
+                  style: pw.TextStyle(
+                    color: PdfColors.white,
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+                pw.Text(
+                  '$totalCount',
+                  style: pw.TextStyle(
+                    color: accentColor,
+                    fontWeight: pw.FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Subcategory lists
+          pw.Container(
+            padding: const pw.EdgeInsets.all(2),
+            color: lightBg,
+            child: people.isEmpty
+                ? pw.Padding(
+                    padding: const pw.EdgeInsets.all(4),
+                    child: pw.Text(
+                      'No Individuals',
+                      style: pw.TextStyle(fontSize: 8, color: PdfColors.grey500),
+                    ),
+                  )
+                : pw.Table(
+                    columnWidths: {
+                      0: const pw.FlexColumnWidth(3),
+                      1: const pw.FlexColumnWidth(2),
+                    },
+                    children: tableRows,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Future<void> _exportHistoryPdf(BuildContext context) async {
     showDialog(
       context: context,
@@ -4953,66 +5077,278 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     try {
       final manager = PersonnelDataManager();
-      final pdf = pw.Document();
+
+      // Must set a default font for web compatibility — pdf package
+      // cannot access system fonts on web, so we use the built-in Helvetica.
+      final baseFont = pw.Font.helvetica();
+      final boldFont = pw.Font.helveticaBold();
+      final pdf = pw.Document(
+        theme: pw.ThemeData.withFont(
+          base: baseFont,
+          bold: boldFont,
+        ),
+      );
+
+      final now = DateTime.now();
+      final dateStr = '${now.day} ${_getMonthName(now.month)} ${now.year}';
+
+      final primaryColor = PdfColor.fromHex('#0C5A32');
+      final accentColor = PdfColor.fromHex('#CD9B2D');
+      final darkText = PdfColor.fromHex('#042011');
+      final lightBg = PdfColor.fromHex('#F4F9F6');
+      final borderColor = PdfColor.fromHex('#D0DFD7');
+
+      int totalStrength = nominalRollList.length;
+      int officersCount = 0;
+      int jcosCount = 0;
+      int sldrsCount = 0;
+
+      for (var person in nominalRollList) {
+        final cat = _getRankCategory(person['rank'] ?? '', person['name'] ?? '');
+        if (cat == 'OFFICERS') {
+          officersCount++;
+        } else if (cat == 'JCOs') {
+          jcosCount++;
+        } else {
+          sldrsCount++;
+        }
+      }
 
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          build: (pw.Context pdfContext) {
+          margin: const pw.EdgeInsets.all(32),
+          header: (pw.Context context) {
+            return pw.Container(
+              alignment: pw.Alignment.centerRight,
+              margin: const pw.EdgeInsets.only(bottom: 8),
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
+              ),
+              child: pw.Text(
+                'ZARB-UL-HADEED - PARADE STATE REPORT',
+                style: pw.TextStyle(color: PdfColors.grey500, fontSize: 8),
+              ),
+            );
+          },
+          footer: (pw.Context context) {
+            return pw.Container(
+              alignment: pw.Alignment.centerRight,
+              margin: const pw.EdgeInsets.only(top: 8),
+              child: pw.Text(
+                'Page ${context.pageNumber}',
+                style: pw.TextStyle(color: PdfColors.grey500, fontSize: 8),
+              ),
+            );
+          },
+          build: (pw.Context context) {
             return [
-              pw.Header(
-                level: 0,
-                child: pw.Text('Personnel Movement History Report'),
+              // ── Header banner ──────────────────────────────────
+              pw.Container(
+                padding: const pw.EdgeInsets.all(12),
+                decoration: pw.BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: pw.BorderRadius.circular(6),
+                ),
+                child: pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          'ZARB-UL-HADEED',
+                          style: pw.TextStyle(
+                            color: PdfColors.white,
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                        pw.SizedBox(height: 2),
+                        pw.Text(
+                          '117 SP REGT. - PARADE STATE REPORT',
+                          style: pw.TextStyle(
+                            color: accentColor,
+                            fontSize: 12,
+                            fontWeight: pw.FontWeight.bold,
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.Text(
+                      dateStr,
+                      style: pw.TextStyle(
+                        color: PdfColors.white,
+                        fontSize: 12,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              pw.SizedBox(height: 24),
+
+              // ── Section title ──────────────────────────────────
+              pw.Text(
+                'Strength & Category Analysis',
+                style: pw.TextStyle(
+                  color: primaryColor,
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Container(height: 2, color: accentColor, width: 80),
+              pw.SizedBox(height: 20),
+
+              // ── Rank summary table ─────────────────────────────
+              pw.Text(
+                'Personnel Strengths Summary',
+                style: pw.TextStyle(
+                  color: darkText,
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 8),
-              ...nominalRollList.map((person) {
-                final armyNo = person['armyNo'] ?? '';
-                final name = person['name'] ?? '';
-                final rank = person['rank'] ?? '';
-                final trade = _getTrade(person);
-                final history = manager.getHistory(armyNo);
+              pw.Table(
+                border: pw.TableBorder.all(color: borderColor, width: 0.5),
+                children: [
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: lightBg),
+                    children: [
+                      _buildTableHeaderCell('Category / Group'),
+                      _buildTableHeaderCell('Count'),
+                      _buildTableHeaderCell('Percentage'),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      _buildTableCell('Officers'),
+                      _buildTableCell('$officersCount'),
+                      _buildTableCell(totalStrength > 0 ? '${(officersCount / totalStrength * 100).toStringAsFixed(1)}%' : '0%'),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      _buildTableCell('JCOs'),
+                      _buildTableCell('$jcosCount'),
+                      _buildTableCell(totalStrength > 0 ? '${(jcosCount / totalStrength * 100).toStringAsFixed(1)}%' : '0%'),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      _buildTableCell('Soldiers (Sldrs)'),
+                      _buildTableCell('$sldrsCount'),
+                      _buildTableCell(totalStrength > 0 ? '${(sldrsCount / totalStrength * 100).toStringAsFixed(1)}%' : '0%'),
+                    ],
+                  ),
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: lightBg),
+                    children: [
+                      _buildTableCell('Total Strength', isBold: true),
+                      _buildTableCell('$totalStrength', isBold: true),
+                      _buildTableCell('100%', isBold: true),
+                    ],
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 24),
 
-                return pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('$rank $name ($armyNo)'),
-                    pw.Text('Trade: $trade'),
-                    pw.SizedBox(height: 4),
-                    ...history.map((entry) {
-                      final dateRange = entry.endDate != null
-                          ? '${_formatDate(entry.startDate)} - ${_formatDate(entry.endDate!)}'
-                          : '${_formatDate(entry.startDate)} - Ongoing';
-                      return pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 3),
-                        child: pw.Row(
-                          children: [
-                            pw.Expanded(
-                              flex: 2,
-                              child: pw.Text(
-                                dateRange,
-                                style: const pw.TextStyle(fontSize: 9),
-                              ),
-                            ),
-                            pw.SizedBox(width: 6),
-                            pw.Expanded(
-                              flex: 3,
-                              child: pw.Text(
-                                entry.displayPath,
-                                style: const pw.TextStyle(fontSize: 9),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    pw.SizedBox(height: 8),
-                  ],
-                );
-              }).toList(),
+              // ── Category table ─────────────────────────────────
+              pw.Text(
+                'Main Categories Strength',
+                style: pw.TextStyle(
+                  color: darkText,
+                  fontSize: 12,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 8),
+              pw.Table(
+                border: pw.TableBorder.all(color: borderColor, width: 0.5),
+                children: [
+                  pw.TableRow(
+                    decoration: pw.BoxDecoration(color: lightBg),
+                    children: [
+                      _buildTableHeaderCell('Category'),
+                      _buildTableHeaderCell('Current Count'),
+                      _buildTableHeaderCell('% of Total'),
+                    ],
+                  ),
+                  ...manager.categoryHierarchy.keys.map((cat) {
+                    final count = manager.getCountForCategory(cat);
+                    final pct = totalStrength > 0 ? (count / totalStrength * 100).toStringAsFixed(1) : '0';
+                    return pw.TableRow(
+                      children: [
+                        _buildTableCell(cat),
+                        _buildTableCell('$count'),
+                        _buildTableCell('$pct%'),
+                      ],
+                    );
+                  }).toList(),
+                ],
+              ),
+              pw.SizedBox(height: 32),
+
+              // ── Category-wise detail cards ─────────────────────
+              pw.Text(
+                'Category-Wise Distribution Details',
+                style: pw.TextStyle(
+                  color: primaryColor,
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 12),
+
+              pw.Wrap(
+                spacing: 16,
+                runSpacing: 0,
+                children: manager.categoryHierarchy.keys.expand((cat) {
+                  final people = manager.getPeopleInNode(category: cat);
+                  final totalCount = manager.getCountForCategory(cat);
+                  
+                  if (people.isEmpty) {
+                    return [
+                      pw.Container(
+                        width: (PdfPageFormat.a4.availableWidth - 16) / 2,
+                        child: _buildPdfCategoryCard(cat, [], totalCount, manager, primaryColor, accentColor, borderColor, lightBg, darkText),
+                      )
+                    ];
+                  }
+
+                  // Helper function to chunk people list
+                  List<List<Map<String, String>>> chunkPeopleList(List<Map<String, String>> list, int size) {
+                    List<List<Map<String, String>>> chunks = [];
+                    for (var i = 0; i < list.length; i += size) {
+                      chunks.add(list.sublist(i, i + size > list.length ? list.length : i + size));
+                    }
+                    return chunks;
+                  }
+
+                  final chunks = chunkPeopleList(people, 12);
+                  return chunks.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final chunkPeople = entry.value;
+                    final totalChunks = chunks.length;
+                    final titleSuffix = totalChunks > 1 ? ' (${index + 1}/$totalChunks)' : '';
+                    
+                    return pw.Container(
+                      width: (PdfPageFormat.a4.availableWidth - 16) / 2,
+                      child: _buildPdfCategoryCard('$cat$titleSuffix', chunkPeople, totalCount, manager, primaryColor, accentColor, borderColor, lightBg, darkText),
+                    );
+                  });
+                }).toList(),
+              ),
             ];
           },
         ),
       );
+
+
 
       final pdfBytes = await pdf.save();
       
@@ -5033,8 +5369,20 @@ class _DashboardScreenState extends State<DashboardScreen>
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } catch (e) {
-      if (mounted) Navigator.of(context).pop(); // Close loading
+    } catch (e, stack) {
+      // ignore: avoid_print
+      print('PDF export error: $e\n$stack');
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('PDF export failed: $e'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
     }
   }
 
@@ -6211,13 +6559,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              setState(() {
-                if (isExpanded) {
-                  _expandedSections.remove(title);
-                } else {
-                  _expandedSections.add(title);
-                }
-              });
+              _dashVM.toggleSection(title);
             },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

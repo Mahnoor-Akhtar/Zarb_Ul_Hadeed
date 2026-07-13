@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'splash_screen.dart'; // Import to reuse TopographicPainter
-import 'mock_data.dart';
+import '../viewmodels/login_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
   final VoidCallback onLoginSuccess;
@@ -50,65 +51,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     final username = _usernameController.text.trim();
     final password = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter both username and password.'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
+    final loginVM = context.read<LoginViewModel>();
+    final error = await loginVM.login(username, password);
 
-    String role = '';
-    String? adminArmyNo;
-    final usernameLower = username.toLowerCase();
-
-    // Look up custom admin accounts from command group slots
-    final group = await MockDataManager().getCommandGroup();
     if (!mounted) return;
-    
-    Map? matchedSlot;
-    for (var slot in group) {
-      if (slot['armyNo'] != null) {
-        final accUsername = (slot['username'] as String).toLowerCase();
-        if (accUsername == usernameLower) {
-          matchedSlot = slot;
-          break;
-        }
-      }
-    }
 
-    if (matchedSlot != null) {
-      final accPassword = matchedSlot['password'] as String;
-      if (password != accPassword) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Incorrect password.'), backgroundColor: Colors.redAccent),
-        );
-        return;
-      }
-      final slotRole = matchedSlot['role'] as String;
-      if (slotRole == 'superadmin') {
-        role = 'Administrator';
-      } else if (slotRole == 'admin') {
-        role = 'Data Entry';
-      } else {
-        role = 'View-Only';
-      }
-      adminArmyNo = matchedSlot['armyNo'] as String;
-    } else {
+    if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('User "$username" is not registered in the command group.'),
+          content: Text(error),
           backgroundColor: Colors.redAccent,
         ),
       );
       return;
     }
 
-    MockDataManager().login(username, role, adminArmyNo: adminArmyNo);
     widget.onLoginSuccess();
   }
+
 
   bool get _forcedDarkTheme => true;
 

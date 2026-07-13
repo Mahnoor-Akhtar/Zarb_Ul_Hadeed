@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'mock_data.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/manage_attributes_viewmodel.dart';
 
-class ManageAttributesScreen extends StatefulWidget {
+class ManageAttributesScreen extends StatelessWidget {
   final bool isDark;
   final Color textThemeColor;
   final Color silverText;
@@ -18,40 +19,47 @@ class ManageAttributesScreen extends StatefulWidget {
   });
 
   @override
-  State<ManageAttributesScreen> createState() => _ManageAttributesScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ManageAttributesViewModel(),
+      child: _ManageAttributesScreenContent(
+        isDark: isDark,
+        textThemeColor: textThemeColor,
+        silverText: silverText,
+        goldAccent: goldAccent,
+        valueGreenColor: valueGreenColor,
+      ),
+    );
+  }
 }
 
-class _ManageAttributesScreenState extends State<ManageAttributesScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  
-  List<String> _trades = [];
-  List<String> _ranks = [];
-  List<String> _batteries = [];
+class _ManageAttributesScreenContent extends StatefulWidget {
+  final bool isDark;
+  final Color textThemeColor;
+  final Color silverText;
+  final Color goldAccent;
+  final Color valueGreenColor;
 
-  bool _isLoading = true;
+  const _ManageAttributesScreenContent({
+    required this.isDark,
+    required this.textThemeColor,
+    required this.silverText,
+    required this.goldAccent,
+    required this.valueGreenColor,
+  });
+
+  @override
+  State<_ManageAttributesScreenContent> createState() => _ManageAttributesScreenContentState();
+}
+
+class _ManageAttributesScreenContentState extends State<_ManageAttributesScreenContent>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _loadAttributes();
-  }
-
-  Future<void> _loadAttributes() async {
-    setState(() => _isLoading = true);
-    
-    final trades = await MockDataManager().getTrades();
-    final ranks = await MockDataManager().getRanks();
-    final batteries = await MockDataManager().getBatteries();
-
-    if (mounted) {
-      setState(() {
-        _trades = trades;
-        _ranks = ranks;
-        _batteries = batteries;
-        _isLoading = false;
-      });
-    }
   }
 
   @override
@@ -60,14 +68,17 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
     super.dispose();
   }
 
-  void _showAddEditDialog(String type, {String? existingValue, int? index}) {
+  void _showAddEditDialog(BuildContext context, String type, {String? existingValue, int? index}) {
+    final viewModel = context.read<ManageAttributesViewModel>();
     final TextEditingController controller = TextEditingController(
       text: type == 'Rank' && existingValue != null ? existingValue.trim() : existingValue,
     );
 
     String selectedType = 'Subcategory';
     String? selectedParent;
-    final List<String> categories = _ranks.where((r) => r.toLowerCase() != 'all' && !r.startsWith(' ')).toList();
+    final List<String> categories = viewModel.ranks
+        .where((r) => r.toLowerCase() != 'all' && !r.startsWith(' '))
+        .toList();
 
     if (type == 'Rank') {
       if (existingValue != null) {
@@ -75,8 +86,9 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
           selectedType = 'Subcategory';
           String? foundParent;
           for (int i = index! - 1; i >= 0; i--) {
-            if (!_ranks[i].startsWith(' ') && _ranks[i].toLowerCase() != 'all') {
-              foundParent = _ranks[i];
+            if (!viewModel.ranks[i].startsWith(' ') &&
+                viewModel.ranks[i].toLowerCase() != 'all') {
+              foundParent = viewModel.ranks[i];
               break;
             }
           }
@@ -94,9 +106,9 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (context, setDialogState) {
+          builder: (builderContext, setDialogState) {
             return AlertDialog(
               backgroundColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
               title: Text(
@@ -140,13 +152,16 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
                     ),
                     if (selectedType == 'Subcategory') ...[
                       const SizedBox(height: 8),
-                      const Text('Parent Category:', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
+                      const Text('Parent Category:',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)),
                       DropdownButton<String>(
                         value: selectedParent,
                         isExpanded: true,
                         dropdownColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
                         style: TextStyle(color: widget.textThemeColor, fontSize: 12),
-                        items: categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                        items: categories
+                            .map((cat) => DropdownMenuItem(value: cat, child: Text(cat)))
+                            .toList(),
                         onChanged: (val) {
                           if (val != null) {
                             setDialogState(() => selectedParent = val);
@@ -164,72 +179,57 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
                           ? (selectedType == 'Category' ? 'Enter Category name' : 'Enter Rank name')
                           : 'Enter $type name',
                       hintStyle: TextStyle(color: widget.silverText),
-                      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent.withValues(alpha: 0.5))),
-                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: widget.goldAccent)),
+                      enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: widget.goldAccent.withValues(alpha: 0.5))),
+                      focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: widget.goldAccent)),
                     ),
                   ),
                 ],
               ),
               actions: [
                 TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(dialogContext),
                   child: Text('Cancel', style: TextStyle(color: widget.silverText)),
                 ),
                 ElevatedButton(
                   onPressed: () async {
                     final val = controller.text.trim();
                     if (val.isEmpty) return;
+                    Navigator.pop(dialogContext);
 
-                    Navigator.pop(context);
-                    setState(() {
-                      if (type == 'Trade') {
-                        if (existingValue != null && index != null) {
-                          _trades[index] = val;
-                        } else {
-                          _trades.add(val);
-                        }
-                      } else if (type == 'Battery') {
-                        if (existingValue != null && index != null) {
-                          _batteries[index] = val;
-                        } else {
-                          _batteries.add(val);
-                        }
-                      } else if (type == 'Rank') {
-                        final formattedVal = selectedType == 'Category' ? val : '  $val';
-
-                        if (existingValue != null && index != null) {
-                          _ranks.removeAt(index);
-                        }
-
-                        if (selectedType == 'Category') {
-                          if (existingValue != null && index != null && index < _ranks.length) {
-                            _ranks.insert(index, formattedVal);
-                          } else {
-                            _ranks.add(formattedVal);
-                          }
-                        } else {
-                          if (selectedParent != null) {
-                            int insertIdx = _ranks.indexOf(selectedParent!);
-                            if (insertIdx != -1) {
-                              int i = insertIdx + 1;
-                              while (i < _ranks.length && _ranks[i].startsWith(' ')) {
-                                i++;
-                              }
-                              _ranks.insert(i, formattedVal);
-                            } else {
-                              _ranks.add(formattedVal);
-                            }
-                          } else {
-                            _ranks.add(formattedVal);
-                          }
-                        }
+                    if (type == 'Trade') {
+                      if (existingValue != null && index != null) {
+                        await viewModel.editTrade(index, val);
+                      } else {
+                        await viewModel.addTrade(val);
                       }
-                    });
-
-                    await _saveAttributes(type);
+                    } else if (type == 'Battery') {
+                      if (existingValue != null && index != null) {
+                        await viewModel.editBattery(index, val);
+                      } else {
+                        await viewModel.addBattery(val);
+                      }
+                    } else if (type == 'Rank') {
+                      if (existingValue != null && index != null) {
+                        await viewModel.editRank(
+                          index: index,
+                          value: val,
+                          selectedType: selectedType,
+                          selectedParent: selectedParent,
+                        );
+                      } else {
+                        await viewModel.addRank(
+                          value: val,
+                          selectedType: selectedType,
+                          selectedParent: selectedParent,
+                        );
+                      }
+                    }
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: widget.goldAccent),
-                  child: const Text('Save', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  child: const Text('Save',
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -239,50 +239,45 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
     );
   }
 
-  void _deleteAttribute(String type, int index) {
+  void _deleteAttribute(BuildContext context, String type, int index) {
+    final viewModel = context.read<ManageAttributesViewModel>();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
-        title: Text('Delete $type', style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-        content: Text('Are you sure you want to delete this $type?', style: TextStyle(color: widget.textThemeColor)),
+        title: Text('Delete $type',
+            style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to delete this $type?',
+            style: TextStyle(color: widget.textThemeColor)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text('Cancel', style: TextStyle(color: widget.silverText)),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
-              setState(() {
-                if (type == 'Trade') _trades.removeAt(index);
-                else if (type == 'Rank') _ranks.removeAt(index);
-                else if (type == 'Battery') _batteries.removeAt(index);
-              });
-              await _saveAttributes(type);
+              Navigator.pop(dialogContext);
+              if (type == 'Trade') await viewModel.deleteTrade(index);
+              else if (type == 'Rank') await viewModel.deleteRank(index);
+              else if (type == 'Battery') await viewModel.deleteBattery(index);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text('Delete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text('Delete',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _saveAttributes(String type) async {
-    if (type == 'Trade') await MockDataManager().saveTrades(_trades);
-    else if (type == 'Rank') await MockDataManager().saveRanks(_ranks);
-    else if (type == 'Battery') await MockDataManager().saveBatteries(_batteries);
-  }
-
-  Widget _buildList(String type, List<String> items) {
+  Widget _buildList(BuildContext context, String type, List<String> items) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
         final isAll = item.toLowerCase() == 'all';
-        
+
         final isSub = type == 'Rank' && item.startsWith(' ');
         final displayText = isSub ? item.trim() : item;
         final isCategoryHeader = type == 'Rank' && !isSub && !isAll;
@@ -290,44 +285,56 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
         return Padding(
           padding: EdgeInsets.only(left: isSub ? 20.0 : 0.0),
           child: Card(
-            color: isCategoryHeader 
-                ? (widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.2) : const Color(0xFFE8F5EE))
-                : (widget.isDark ? const Color(0xFF0C5A32).withValues(alpha: 0.1) : Colors.white),
+            color: isCategoryHeader
+                ? (widget.isDark
+                    ? const Color(0xFF0C5A32).withValues(alpha: 0.2)
+                    : const Color(0xFFE8F5EE))
+                : (widget.isDark
+                    ? const Color(0xFF0C5A32).withValues(alpha: 0.1)
+                    : Colors.white),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
               side: BorderSide(
-                color: isCategoryHeader ? widget.goldAccent : widget.goldAccent.withValues(alpha: 0.3),
+                color: isCategoryHeader
+                    ? widget.goldAccent
+                    : widget.goldAccent.withValues(alpha: 0.3),
                 width: isCategoryHeader ? 1.2 : 1.0,
               ),
             ),
             margin: const EdgeInsets.only(bottom: 10),
             child: ListTile(
-              leading: isSub 
-                  ? Icon(Icons.subdirectory_arrow_right, color: widget.goldAccent.withValues(alpha: 0.7), size: 16) 
+              leading: isSub
+                  ? Icon(Icons.subdirectory_arrow_right,
+                      color: widget.goldAccent.withValues(alpha: 0.7), size: 16)
                   : null,
               title: Text(
                 displayText,
                 style: TextStyle(
-                  color: isAll 
-                      ? widget.goldAccent 
+                  color: isAll
+                      ? widget.goldAccent
                       : (isCategoryHeader ? widget.goldAccent : widget.textThemeColor),
-                  fontWeight: (isAll || isCategoryHeader) ? FontWeight.bold : FontWeight.w500,
+                  fontWeight: (isAll || isCategoryHeader)
+                      ? FontWeight.bold
+                      : FontWeight.w500,
                   fontSize: isCategoryHeader ? 14 : 13,
                 ),
               ),
-              trailing: isAll ? const SizedBox.shrink() : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.edit, color: widget.valueGreenColor, size: 20),
-                    onPressed: () => _showAddEditDialog(type, existingValue: item, index: index),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
-                    onPressed: () => _deleteAttribute(type, index),
-                  ),
-                ],
-              ),
+              trailing: isAll
+                  ? const SizedBox.shrink()
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.edit, color: widget.valueGreenColor, size: 20),
+                          onPressed: () => _showAddEditDialog(context, type,
+                              existingValue: item, index: index),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.redAccent, size: 20),
+                          onPressed: () => _deleteAttribute(context, type, index),
+                        ),
+                      ],
+                    ),
             ),
           ),
         );
@@ -337,12 +344,16 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = context.watch<ManageAttributesViewModel>();
+
     return Theme(
       data: widget.isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
         backgroundColor: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
         appBar: AppBar(
-          backgroundColor: widget.isDark ? const Color(0xFF03140A).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.85),
+          backgroundColor: widget.isDark
+              ? const Color(0xFF03140A).withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.85),
           elevation: 0,
           leading: IconButton(
             icon: Icon(Icons.arrow_back_rounded, color: widget.goldAccent),
@@ -369,25 +380,31 @@ class _ManageAttributesScreenState extends State<ManageAttributesScreen> with Si
             ],
           ),
         ),
-        body: _isLoading 
+        body: viewModel.isLoading
             ? Center(child: CircularProgressIndicator(color: widget.goldAccent))
             : TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildList('Trade', _trades),
-                  _buildList('Rank', _ranks),
-                  _buildList('Battery', _batteries),
+                  _buildList(context, 'Trade', viewModel.trades),
+                  _buildList(context, 'Rank', viewModel.ranks),
+                  _buildList(context, 'Battery', viewModel.batteries),
                 ],
               ),
-        floatingActionButton: _isLoading ? null : FloatingActionButton(
-          onPressed: () {
-            final idx = _tabController.index;
-            final type = idx == 0 ? 'Trade' : idx == 1 ? 'Rank' : 'Battery';
-            _showAddEditDialog(type);
-          },
-          backgroundColor: widget.goldAccent,
-          child: const Icon(Icons.add, color: Colors.black),
-        ),
+        floatingActionButton: viewModel.isLoading
+            ? null
+            : FloatingActionButton(
+                onPressed: () {
+                  final idx = _tabController.index;
+                  final type = idx == 0
+                      ? 'Trade'
+                      : idx == 1
+                          ? 'Rank'
+                          : 'Battery';
+                  _showAddEditDialog(context, type);
+                },
+                backgroundColor: widget.goldAccent,
+                child: const Icon(Icons.add, color: Colors.black),
+              ),
       ),
     );
   }

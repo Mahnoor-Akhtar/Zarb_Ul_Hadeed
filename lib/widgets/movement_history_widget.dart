@@ -1,18 +1,7 @@
 import 'package:flutter/material.dart';
+import '../models/movement_record.dart';
+export '../models/movement_record.dart'; // Re-export for backward compatibility
 
-class MovementRecord {
-  final String dateRange;
-  final String movement;
-  final String duration;
-  final Color dotColor;
-
-  MovementRecord({
-    required this.dateRange,
-    required this.movement,
-    required this.duration,
-    required this.dotColor,
-  });
-}
 
 class MovementHistoryWidget extends StatelessWidget {
   final List<MovementRecord> records;

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'mock_data.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/view_all_groups_viewmodel.dart';
 
-class ViewAllGroupsScreen extends StatefulWidget {
+class ViewAllGroupsScreen extends StatelessWidget {
   final bool isDark;
   final Color textThemeColor;
   final Color silverText;
@@ -18,28 +19,34 @@ class ViewAllGroupsScreen extends StatefulWidget {
   });
 
   @override
-  State<ViewAllGroupsScreen> createState() => _ViewAllGroupsScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => ViewAllGroupsViewModel(),
+      child: _ViewAllGroupsScreenContent(
+        isDark: isDark,
+        textThemeColor: textThemeColor,
+        silverText: silverText,
+        goldAccent: goldAccent,
+        valueGreenColor: valueGreenColor,
+      ),
+    );
+  }
 }
 
-class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
-  List<Map<String, dynamic>> _groups = [];
-  bool _isLoading = true;
+class _ViewAllGroupsScreenContent extends StatelessWidget {
+  final bool isDark;
+  final Color textThemeColor;
+  final Color silverText;
+  final Color goldAccent;
+  final Color valueGreenColor;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadGroups();
-  }
-
-  Future<void> _loadGroups() async {
-    final groups = await MockDataManager().getCommandGroup();
-    if (mounted) {
-      setState(() {
-        _groups = groups;
-        _isLoading = false;
-      });
-    }
-  }
+  const _ViewAllGroupsScreenContent({
+    required this.isDark,
+    required this.textThemeColor,
+    required this.silverText,
+    required this.goldAccent,
+    required this.valueGreenColor,
+  });
 
   Widget _buildGroupSection(String title, List<Map<String, dynamic>> slots, IconData icon) {
     if (slots.isEmpty) return const SizedBox.shrink();
@@ -51,12 +58,12 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Row(
             children: [
-              Icon(icon, color: widget.goldAccent, size: 20),
+              Icon(icon, color: goldAccent, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: TextStyle(
-                  color: widget.goldAccent,
+                  color: goldAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                   letterSpacing: 1.2,
@@ -77,13 +84,13 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
       decoration: BoxDecoration(
-        color: widget.isDark 
+        color: isDark 
             ? const Color(0xFF0C5A32).withValues(alpha: 0.15) 
             : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: widget.isDark 
-              ? widget.goldAccent.withValues(alpha: 0.3)
+          color: isDark 
+              ? goldAccent.withValues(alpha: 0.3)
               : const Color(0xFF0C5A32).withValues(alpha: 0.2),
           width: 1.0,
         ),
@@ -98,11 +105,11 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: widget.goldAccent.withValues(alpha: 0.2),
+          backgroundColor: goldAccent.withValues(alpha: 0.2),
           child: Text(
             '${slot['slotId']}',
             style: TextStyle(
-              color: widget.goldAccent,
+              color: goldAccent,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -110,7 +117,7 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
         title: Text(
           isAssigned ? (slot['username'] ?? 'Unknown') : 'Unassigned Slot',
           style: TextStyle(
-            color: isAssigned ? widget.textThemeColor : widget.silverText,
+            color: isAssigned ? textThemeColor : silverText,
             fontWeight: isAssigned ? FontWeight.bold : FontWeight.normal,
             fontStyle: isAssigned ? FontStyle.normal : FontStyle.italic,
           ),
@@ -119,20 +126,20 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
           padding: const EdgeInsets.only(top: 4.0),
           child: Text(
             'Army No: ${slot['armyNo']}',
-            style: TextStyle(color: widget.silverText, fontSize: 12),
+            style: TextStyle(color: silverText, fontSize: 12),
           ),
         ) : null,
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: widget.valueGreenColor.withValues(alpha: 0.15),
+            color: valueGreenColor.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: widget.valueGreenColor.withValues(alpha: 0.3)),
+            border: Border.all(color: valueGreenColor.withValues(alpha: 0.3)),
           ),
           child: Text(
             (slot['role'] as String).toUpperCase(),
             style: TextStyle(
-              color: widget.valueGreenColor,
+              color: valueGreenColor,
               fontSize: 10,
               fontWeight: FontWeight.bold,
             ),
@@ -144,35 +151,36 @@ class _ViewAllGroupsScreenState extends State<ViewAllGroupsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final superAdmins = _groups.where((s) => s['role'] == 'superadmin').toList();
-    final admins = _groups.where((s) => s['role'] == 'admin').toList();
-    final users = _groups.where((s) => s['role'] == 'user').toList();
+    final viewModel = context.watch<ViewAllGroupsViewModel>();
+    final superAdmins = viewModel.groups.where((s) => s['role'] == 'superadmin').toList();
+    final admins = viewModel.groups.where((s) => s['role'] == 'admin').toList();
+    final users = viewModel.groups.where((s) => s['role'] == 'user').toList();
 
     return Theme(
-      data: widget.isDark ? ThemeData.dark() : ThemeData.light(),
+      data: isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
-        backgroundColor: widget.isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+        backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
         appBar: AppBar(
-          backgroundColor: widget.isDark 
+          backgroundColor: isDark 
               ? const Color(0xFF03140A).withValues(alpha: 0.85) 
               : Colors.white.withValues(alpha: 0.85),
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_rounded, color: widget.goldAccent),
+            icon: Icon(Icons.arrow_back_rounded, color: goldAccent),
             onPressed: () => Navigator.pop(context),
           ),
           title: Text(
             'All Command Groups',
             style: TextStyle(
-              color: widget.textThemeColor,
+              color: textThemeColor,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),
           ),
           centerTitle: true,
         ),
-        body: _isLoading 
-            ? Center(child: CircularProgressIndicator(color: widget.goldAccent))
+        body: viewModel.isLoading 
+            ? Center(child: CircularProgressIndicator(color: goldAccent))
             : ListView(
                 padding: const EdgeInsets.only(top: 8, bottom: 40),
                 children: [

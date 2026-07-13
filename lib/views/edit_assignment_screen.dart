@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'personnel_data_manager.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/edit_assignment_viewmodel.dart';
 
-class EditAssignmentScreen extends StatefulWidget {
+class EditAssignmentScreen extends StatelessWidget {
   final Map<String, String> person;
   final bool isDark;
   final Color textThemeColor;
@@ -22,124 +23,79 @@ class EditAssignmentScreen extends StatefulWidget {
   });
 
   @override
-  State<EditAssignmentScreen> createState() => _EditAssignmentScreenState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => EditAssignmentViewModel(person: person),
+      child: _EditAssignmentScreenContent(
+        person: person,
+        isDark: isDark,
+        textThemeColor: textThemeColor,
+        silverText: silverText,
+        goldAccent: goldAccent,
+        valueGreenColor: valueGreenColor,
+        onSaved: onSaved,
+      ),
+    );
+  }
 }
 
-class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
-  final PersonnelDataManager _dataManager = PersonnelDataManager();
+class _EditAssignmentScreenContent extends StatelessWidget {
+  final Map<String, String> person;
+  final bool isDark;
+  final Color textThemeColor;
+  final Color silverText;
+  final Color goldAccent;
+  final Color valueGreenColor;
+  final VoidCallback onSaved;
 
-  late String _selectedCategory;
-  String? _selectedSubcategory;
-  String? _selectedSubSubcategory;
-  late DateTime _startDate;
-  DateTime? _endDate;
+  const _EditAssignmentScreenContent({
+    required this.person,
+    required this.isDark,
+    required this.textThemeColor,
+    required this.silverText,
+    required this.goldAccent,
+    required this.valueGreenColor,
+    required this.onSaved,
+  });
 
-  List<String> _categories = [];
-  List<String> _subcategories = [];
-  List<String> _subSubcategories = [];
-
-  @override
-  void initState() {
-    super.initState();
-    final armyNo = widget.person['armyNo'] ?? '';
-    final currentStatus = _dataManager.getStatus(armyNo);
-
-    _selectedCategory = currentStatus.category;
-    _selectedSubcategory = currentStatus.subcategory;
-    _selectedSubSubcategory = currentStatus.subSubcategory;
-    final now = DateTime.now();
-    _startDate = DateTime(now.year, now.month, now.day); // Start date default to today (date only)
-    final initialEndDate = currentStatus.endDate;
-    _endDate = initialEndDate != null
-        ? DateTime(initialEndDate.year, initialEndDate.month, initialEndDate.day)
-        : null;
-
-    _categories = _dataManager.categoryHierarchy.keys.toList();
-    _updateDropdownLists(initial: true);
-  }
-
-  void _updateDropdownLists({bool initial = false}) {
-    final categoryData = _dataManager.categoryHierarchy[_selectedCategory];
-
-    if (categoryData == null) {
-      // Category has no subcategories
-      _subcategories = [];
-      if (!initial) {
-        _selectedSubcategory = null;
-        _selectedSubSubcategory = null;
-      }
-      _subSubcategories = [];
-    } else if (categoryData is List<String>) {
-      // Category has subcategories as a list of strings
-      _subcategories = categoryData;
-      if (!initial || (_selectedSubcategory != null && !_subcategories.contains(_selectedSubcategory))) {
-        _selectedSubcategory = _subcategories.first;
-        _selectedSubSubcategory = null;
-      }
-      _subSubcategories = [];
-    } else if (categoryData is Map<String, List<String>>) {
-      // Category has subcategories and sub-subcategories
-      _subcategories = categoryData.keys.toList();
-      if (!initial || (_selectedSubcategory != null && !_subcategories.contains(_selectedSubcategory))) {
-        _selectedSubcategory = _subcategories.first;
-      }
-
-      final subSubData = categoryData[_selectedSubcategory];
-      if (subSubData != null) {
-        _subSubcategories = subSubData;
-        if (!initial || (_selectedSubSubcategory != null && !_subSubcategories.contains(_selectedSubSubcategory))) {
-          _selectedSubSubcategory = _subSubcategories.first;
-        }
-      } else {
-        _subSubcategories = [];
-        _selectedSubSubcategory = null;
-      }
-    }
-  }
-
-  Future<void> _selectStartDate() async {
+  Future<void> _selectStartDate(BuildContext context) async {
+    final viewModel = context.read<EditAssignmentViewModel>();
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _startDate.isBefore(today) ? today : _startDate,
+      initialDate: viewModel.startDate.isBefore(today) ? today : viewModel.startDate,
       firstDate: today,
       lastDate: DateTime(2030),
-      builder: (context, child) => _buildDatePickerTheme(child!),
+      builder: (context, child) => _buildDatePickerTheme(context, child!),
     );
     if (picked != null) {
-      setState(() {
-        _startDate = picked;
-        if (_endDate != null && _endDate!.isBefore(_startDate)) {
-          _endDate = _startDate.add(const Duration(days: 7));
-        }
-      });
+      viewModel.setStartDate(picked);
     }
   }
 
-  Future<void> _selectEndDate() async {
-    final initialDate = (_endDate != null && _endDate!.isAfter(_startDate))
-        ? _endDate!
-        : _startDate.add(const Duration(days: 7));
+  Future<void> _selectEndDate(BuildContext context) async {
+    final viewModel = context.read<EditAssignmentViewModel>();
+    final initialDate = (viewModel.endDate != null && viewModel.endDate!.isAfter(viewModel.startDate))
+        ? viewModel.endDate!
+        : viewModel.startDate.add(const Duration(days: 7));
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
-      firstDate: _startDate,
+      firstDate: viewModel.startDate,
       lastDate: DateTime(2030),
-      builder: (context, child) => _buildDatePickerTheme(child!),
+      builder: (context, child) => _buildDatePickerTheme(context, child!),
     );
     if (picked != null) {
-      setState(() {
-        _endDate = picked;
-      });
+      viewModel.setEndDate(picked);
     }
   }
 
-  Widget _buildDatePickerTheme(Widget child) {
+  Widget _buildDatePickerTheme(BuildContext context, Widget child) {
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: ColorScheme.dark(
-          primary: widget.goldAccent,
+          primary: goldAccent,
           onPrimary: Colors.black,
           surface: const Color(0xFF0A2214),
           onSurface: Colors.white,
@@ -149,31 +105,15 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ];
-    return '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
-  }
-
-  void _saveAssignment() {
-    final armyNo = widget.person['armyNo'] ?? '';
-    final newStatus = PersonStatus(
-      category: _selectedCategory,
-      subcategory: _selectedSubcategory,
-      subSubcategory: _selectedSubSubcategory,
-      startDate: _startDate,
-      endDate: _endDate,
-    );
-
-    _dataManager.updateStatus(armyNo, newStatus);
-    widget.onSaved();
+  void _saveAssignment(BuildContext context) {
+    final viewModel = context.read<EditAssignmentViewModel>();
+    viewModel.saveAssignment();
+    onSaved();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Assignment Updated for ${widget.person['name']}',
+          'Assignment Updated for ${person['name']}',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF0C5A32),
@@ -186,14 +126,10 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = widget.isDark;
-    final textThemeColor = widget.textThemeColor;
-    final goldAccent = widget.goldAccent;
-    final valueGreenColor = widget.valueGreenColor;
-
-    final rank = widget.person['rank'] ?? '';
-    final name = widget.person['name'] ?? '';
-    final armyNo = widget.person['armyNo'] ?? '';
+    final viewModel = context.watch<EditAssignmentViewModel>();
+    final rank = person['rank'] ?? '';
+    final name = person['name'] ?? '';
+    final armyNo = person['armyNo'] ?? '';
 
     return Theme(
       data: isDark ? ThemeData.dark() : ThemeData.light(),
@@ -340,31 +276,25 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                     // Primary Category
                     _buildFormLabel('Primary Category'),
                     _buildDropdown<String>(
-                      value: _selectedCategory,
-                      items: _categories,
+                      value: viewModel.selectedCategory,
+                      items: viewModel.categories,
                       onChanged: (val) {
                         if (val != null) {
-                          setState(() {
-                            _selectedCategory = val;
-                            _updateDropdownLists();
-                          });
+                          viewModel.setCategory(val);
                         }
                       },
                     ),
                     const SizedBox(height: 14),
 
                     // Subcategory (if applicable)
-                    if (_subcategories.isNotEmpty) ...[
+                    if (viewModel.subcategories.isNotEmpty) ...[
                       _buildFormLabel('Subcategory'),
                       _buildDropdown<String>(
-                        value: _selectedSubcategory,
-                        items: _subcategories,
+                        value: viewModel.selectedSubcategory,
+                        items: viewModel.subcategories,
                         onChanged: (val) {
                           if (val != null) {
-                            setState(() {
-                              _selectedSubcategory = val;
-                              _updateDropdownLists();
-                            });
+                            viewModel.setSubcategory(val);
                           }
                         },
                       ),
@@ -372,16 +302,14 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                     ],
 
                     // Sub-subcategory (if applicable)
-                    if (_subSubcategories.isNotEmpty) ...[
+                    if (viewModel.subSubcategories.isNotEmpty) ...[
                       _buildFormLabel('Sub-subcategory Detail'),
                       _buildDropdown<String>(
-                        value: _selectedSubSubcategory,
-                        items: _subSubcategories,
+                        value: viewModel.selectedSubSubcategory,
+                        items: viewModel.subSubcategories,
                         onChanged: (val) {
                           if (val != null) {
-                            setState(() {
-                              _selectedSubSubcategory = val;
-                            });
+                            viewModel.setSubSubcategory(val);
                           }
                         },
                       ),
@@ -397,8 +325,8 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                             children: [
                               _buildFormLabel('Start Date'),
                               GestureDetector(
-                                onTap: _selectStartDate,
-                                child: _buildDateDisplay(_formatDate(_startDate)),
+                                onTap: () => _selectStartDate(context),
+                                child: _buildDateDisplay(viewModel.formatDate(viewModel.startDate)),
                               ),
                             ],
                           ),
@@ -412,19 +340,17 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   _buildFormLabel('End Date'),
-                                  if (_endDate != null)
+                                  if (viewModel.endDate != null)
                                     GestureDetector(
                                       onTap: () {
-                                        setState(() {
-                                          _endDate = null;
-                                        });
+                                        viewModel.setEndDate(null);
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.only(bottom: 6.0, right: 2.0),
                                         child: Text(
                                           'Set Infinite',
                                           style: TextStyle(
-                                            color: widget.goldAccent,
+                                            color: goldAccent,
                                             fontSize: 9.5,
                                             fontWeight: FontWeight.bold,
                                             decoration: TextDecoration.underline,
@@ -435,8 +361,10 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                                 ],
                               ),
                               GestureDetector(
-                                onTap: _selectEndDate,
-                                child: _buildDateDisplay(_endDate != null ? _formatDate(_endDate!) : 'Infinite'),
+                                onTap: () => _selectEndDate(context),
+                                child: _buildDateDisplay(
+                                  viewModel.endDate != null ? viewModel.formatDate(viewModel.endDate!) : 'Infinite',
+                                ),
                               ),
                             ],
                           ),
@@ -451,7 +379,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: _saveAssignment,
+                        onPressed: () => _saveAssignment(context),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0C5A32),
                           foregroundColor: Colors.white,
@@ -487,7 +415,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
       child: Text(
         label.toUpperCase(),
         style: TextStyle(
-          color: widget.isDark ? const Color(0xFF8B9B90) : const Color(0xFF4A5D52),
+          color: isDark ? const Color(0xFF8B9B90) : const Color(0xFF4A5D52),
           fontSize: 9.5,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,
@@ -501,14 +429,13 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
     required List<T> items,
     required ValueChanged<T?> onChanged,
   }) {
-    final isDark = widget.isDark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: widget.goldAccent.withValues(alpha: 0.3),
+          color: goldAccent.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -518,8 +445,8 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
           isExpanded: true,
           onChanged: onChanged,
           dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-          icon: Icon(Icons.arrow_drop_down, color: widget.goldAccent),
-          style: TextStyle(color: widget.textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
+          icon: Icon(Icons.arrow_drop_down, color: goldAccent),
+          style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
           items: items.map<DropdownMenuItem<T>>((T val) {
             return DropdownMenuItem<T>(
               value: val,
@@ -532,7 +459,6 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
   }
 
   Widget _buildDateDisplay(String formattedText) {
-    final isDark = widget.isDark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       width: double.infinity,
@@ -540,7 +466,7 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
         color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: widget.goldAccent.withValues(alpha: 0.3),
+          color: goldAccent.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -550,12 +476,12 @@ class _EditAssignmentScreenState extends State<EditAssignmentScreen> {
           Text(
             formattedText,
             style: TextStyle(
-              color: widget.textThemeColor,
+              color: textThemeColor,
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),
           ),
-          Icon(Icons.calendar_month_rounded, color: widget.goldAccent, size: 18),
+          Icon(Icons.calendar_month_rounded, color: goldAccent, size: 18),
         ],
       ),
     );

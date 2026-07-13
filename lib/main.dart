@@ -1,56 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'personnel_data_manager.dart';
-import 'splash_screen.dart';
-import 'login_screen.dart';
-import 'dashboard_screen.dart';
+import 'services/personnel_data_manager.dart';
+import 'views/splash_screen.dart';
+import 'views/login_screen.dart';
+import 'views/dashboard_screen.dart';
+import 'viewmodels/app_viewmodel.dart';
+import 'viewmodels/login_viewmodel.dart';
+import 'viewmodels/dashboard_viewmodel.dart';
+import 'viewmodels/nominal_roll_viewmodel.dart';
+import 'viewmodels/analysis_viewmodel.dart';
+import 'viewmodels/edit_tab_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   PersonnelDataManager().init(prefs);
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppViewModel()),
+        ChangeNotifierProvider(create: (_) => LoginViewModel()),
+        ChangeNotifierProvider(create: (_) => DashboardViewModel()),
+        ChangeNotifierProvider(create: (_) => NominalRollViewModel()),
+        ChangeNotifierProvider(create: (_) => AnalysisViewModel()),
+        ChangeNotifierProvider(create: (_) => EditTabViewModel()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool _showSplash = true;
-  bool _isLoggedIn = false;
-  bool _isDarkMode = false; // default to light theme
-  late SharedPreferences _prefs;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadTheme();
-  }
-
-  Future<void> _loadTheme() async {
-    _prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isDarkMode = _prefs.getBool('isDarkMode') ?? false; // default to light (false)
-    });
-  }
-
-  Future<void> _toggleTheme() async {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-      _prefs.setBool('isDarkMode', _isDarkMode);
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final appVM = context.watch<AppViewModel>();
+    final isDark = appVM.isDarkMode;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: '117 SP Regt.',
-      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF0C5A32),
@@ -65,32 +57,23 @@ class _MyAppState extends State<MyApp> {
         ),
         useMaterial3: true,
       ),
-      home: _showSplash
+      home: appVM.showSplash
           ? SplashScreen(
-              onFinish: () {
-                setState(() {
-                  _showSplash = false;
-                });
-              },
+              onFinish: () => context.read<AppViewModel>().onSplashFinished(),
             )
-          : !_isLoggedIn
+          : !appVM.isLoggedIn
               ? LoginScreen(
-                  onLoginSuccess: () {
-                    setState(() {
-                      _isLoggedIn = true;
-                    });
-                  },
-                  isDarkMode: _isDarkMode,
-                  onToggleTheme: _toggleTheme,
+                  onLoginSuccess: () =>
+                      context.read<AppViewModel>().onLoginSuccess(),
+                  isDarkMode: isDark,
+                  onToggleTheme: () =>
+                      context.read<AppViewModel>().toggleTheme(),
                 )
               : DashboardScreen(
-                  onLogout: () {
-                    setState(() {
-                      _isLoggedIn = false;
-                    });
-                  },
-                  isDarkMode: _isDarkMode,
-                  onToggleTheme: _toggleTheme,
+                  onLogout: () => context.read<AppViewModel>().onLogout(),
+                  isDarkMode: isDark,
+                  onToggleTheme: () =>
+                      context.read<AppViewModel>().toggleTheme(),
                 ),
     );
   }
