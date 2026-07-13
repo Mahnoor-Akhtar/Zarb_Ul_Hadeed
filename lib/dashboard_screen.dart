@@ -1,10 +1,12 @@
-import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui' show ImageFilter;
 import 'package:csv/csv.dart' as csv;
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'file_saver.dart';
 import 'splash_screen.dart'; // Reuse TopographicPainter
 import 'mock_data.dart';
 import 'personnel_data.dart';
@@ -4911,16 +4913,22 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
 
       final csvData = const csv.CsvEncoder().convert(rows);
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/personnel_history_export.csv');
-      await file.writeAsString(csvData, flush: true);
+      final csvBytes = Uint8List.fromList(utf8.encode(csvData));
+      
+      await saveAndDownloadFile(
+        filename: 'personnel_history_export.csv',
+        bytes: csvBytes,
+        mimeType: 'text/csv',
+      );
 
       if (!mounted) return;
       Navigator.of(context).pop(); // Close loading
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Excel export saved to ${file.path}'),
+          content: Text(kIsWeb
+              ? 'Excel export download started'
+              : 'Excel export saved to downloads directory'),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -5006,16 +5014,22 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       );
 
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/personnel_history_report.pdf');
-      await file.writeAsBytes(await pdf.save());
+      final pdfBytes = await pdf.save();
+      
+      await saveAndDownloadFile(
+        filename: 'personnel_history_report.pdf',
+        bytes: pdfBytes,
+        mimeType: 'application/pdf',
+      );
 
       if (!mounted) return;
       Navigator.of(context).pop(); // Close loading
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('PDF exported to ${file.path}'),
+          content: Text(kIsWeb
+              ? 'PDF report download started'
+              : 'PDF exported to downloads directory'),
           behavior: SnackBarBehavior.floating,
         ),
       );
