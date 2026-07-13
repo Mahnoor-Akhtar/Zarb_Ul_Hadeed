@@ -13,6 +13,7 @@ import 'edit_assignment_screen.dart';
 import 'battery_detail_screen.dart';
 import 'manage_attributes_screen.dart';
 import 'view_all_groups_screen.dart';
+import 'movement_history_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -4854,135 +4855,173 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Future<void> _exportHistoryExcel(BuildContext context) async {
-    final manager = PersonnelDataManager();
-    final rows = <List<dynamic>>[
-      [
-        'Army No',
-        'Name',
-        'Rank',
-        'Trade',
-        'Current Status',
-        'History Start',
-        'History End',
-        'Movement Path',
-      ],
-    ];
-
-    for (final person in nominalRollList) {
-      final armyNo = person['armyNo'] ?? '';
-      final name = person['name'] ?? '';
-      final rank = person['rank'] ?? '';
-      final trade = _getTrade(person);
-      final status = manager.getStatus(armyNo);
-      final history = manager.getHistory(armyNo);
-
-      if (history.isEmpty) {
-        rows.add([armyNo, name, rank, trade, status.category, '', '', '']);
-        continue;
-      }
-
-      for (final entry in history) {
-        rows.add([
-          armyNo,
-          name,
-          rank,
-          trade,
-          status.category,
-          _formatDate(entry.startDate),
-          entry.endDate != null ? _formatDate(entry.endDate!) : 'Ongoing',
-          entry.displayPath,
-        ]);
-      }
-    }
-
-    final csvData = const csv.CsvEncoder().convert(rows);
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/personnel_history_export.csv');
-    await file.writeAsString(csvData, flush: true);
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Excel export saved to ${file.path}'),
-        behavior: SnackBarBehavior.floating,
-      ),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+        );
+      },
     );
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    try {
+      final manager = PersonnelDataManager();
+      final rows = <List<dynamic>>[
+        [
+          'Army No',
+          'Name',
+          'Rank',
+          'Trade',
+          'Current Status',
+          'History Start',
+          'History End',
+          'Movement Path',
+        ],
+      ];
+
+      for (final person in nominalRollList) {
+        final armyNo = person['armyNo'] ?? '';
+        final name = person['name'] ?? '';
+        final rank = person['rank'] ?? '';
+        final trade = _getTrade(person);
+        final status = manager.getStatus(armyNo);
+        final history = manager.getHistory(armyNo);
+
+        if (history.isEmpty) {
+          rows.add([armyNo, name, rank, trade, status.category, '', '', '']);
+          continue;
+        }
+
+        for (final entry in history) {
+          rows.add([
+            armyNo,
+            name,
+            rank,
+            trade,
+            entry.category,
+            _formatDate(entry.startDate),
+            entry.endDate != null ? _formatDate(entry.endDate!) : 'Ongoing',
+            entry.displayPath.replaceAll(' -> ', ' → '),
+          ]);
+        }
+      }
+
+      final csvData = const csv.CsvEncoder().convert(rows);
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/personnel_history_export.csv');
+      await file.writeAsString(csvData, flush: true);
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Excel export saved to ${file.path}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop(); // Close loading
+    }
   }
 
   Future<void> _exportHistoryPdf(BuildContext context) async {
-    final manager = PersonnelDataManager();
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        build: (pw.Context pdfContext) {
-          return [
-            pw.Header(
-              level: 0,
-              child: pw.Text('Personnel Movement History Report'),
-            ),
-            pw.SizedBox(height: 8),
-            ...nominalRollList.map((person) {
-              final armyNo = person['armyNo'] ?? '';
-              final name = person['name'] ?? '';
-              final rank = person['rank'] ?? '';
-              final trade = _getTrade(person);
-              final history = manager.getHistory(armyNo);
-
-              return pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text('$rank $name ($armyNo)'),
-                  pw.Text('Trade: $trade'),
-                  pw.SizedBox(height: 4),
-                  ...history.map((entry) {
-                    final dateRange = entry.endDate != null
-                        ? '${_formatDate(entry.startDate)} - ${_formatDate(entry.endDate!)}'
-                        : '${_formatDate(entry.startDate)} - Ongoing';
-                    return pw.Padding(
-                      padding: const pw.EdgeInsets.only(bottom: 3),
-                      child: pw.Row(
-                        children: [
-                          pw.Expanded(
-                            flex: 2,
-                            child: pw.Text(
-                              dateRange,
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                          ),
-                          pw.SizedBox(width: 6),
-                          pw.Expanded(
-                            flex: 3,
-                            child: pw.Text(
-                              entry.displayPath,
-                              style: const pw.TextStyle(fontSize: 9),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }).toList(),
-                  pw.SizedBox(height: 8),
-                ],
-              );
-            }).toList(),
-          ];
-        },
-      ),
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Dialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Center(child: CircularProgressIndicator(color: Colors.white)),
+        );
+      },
     );
+    await Future.delayed(const Duration(milliseconds: 100));
 
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/personnel_history_report.pdf');
-    await file.writeAsBytes(await pdf.save());
+    try {
+      final manager = PersonnelDataManager();
+      final pdf = pw.Document();
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('PDF exported to ${file.path}'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          build: (pw.Context pdfContext) {
+            return [
+              pw.Header(
+                level: 0,
+                child: pw.Text('Personnel Movement History Report'),
+              ),
+              pw.SizedBox(height: 8),
+              ...nominalRollList.map((person) {
+                final armyNo = person['armyNo'] ?? '';
+                final name = person['name'] ?? '';
+                final rank = person['rank'] ?? '';
+                final trade = _getTrade(person);
+                final history = manager.getHistory(armyNo);
+
+                return pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('$rank $name ($armyNo)'),
+                    pw.Text('Trade: $trade'),
+                    pw.SizedBox(height: 4),
+                    ...history.map((entry) {
+                      final dateRange = entry.endDate != null
+                          ? '${_formatDate(entry.startDate)} - ${_formatDate(entry.endDate!)}'
+                          : '${_formatDate(entry.startDate)} - Ongoing';
+                      return pw.Padding(
+                        padding: const pw.EdgeInsets.only(bottom: 3),
+                        child: pw.Row(
+                          children: [
+                            pw.Expanded(
+                              flex: 2,
+                              child: pw.Text(
+                                dateRange,
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                            ),
+                            pw.SizedBox(width: 6),
+                            pw.Expanded(
+                              flex: 3,
+                              child: pw.Text(
+                                entry.displayPath,
+                                style: const pw.TextStyle(fontSize: 9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    pw.SizedBox(height: 8),
+                  ],
+                );
+              }).toList(),
+            ];
+          },
+        ),
+      );
+
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/personnel_history_report.pdf');
+      await file.writeAsBytes(await pdf.save());
+
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF exported to ${file.path}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop(); // Close loading
+    }
   }
 
   void _showDownloadHistoryOptionsSheet(
@@ -10413,276 +10452,166 @@ class PersonnelIdCardScreen extends StatelessWidget {
   }
 
   void _showHistoryDialog(BuildContext context, String name, String armyNo) {
-    final DateTime threeMonthsAgo = DateTime.now().subtract(
-      const Duration(days: 90),
-    );
-    final historyList =
-        List<PersonStatus>.from(PersonnelDataManager().getHistory(armyNo))
-            .where(
-              (status) =>
-                  status.startDate.isAfter(threeMonthsAgo) ||
-                  (status.endDate == null ||
-                      status.endDate!.isAfter(threeMonthsAgo)),
-            )
-            .toList();
-    historyList.sort((a, b) => a.startDate.compareTo(b.startDate));
+    int selectedMonths = 3;
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 24,
-          ),
-          backgroundColor: Colors.transparent,
-          child: Container(
-            width: double.maxFinite,
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.72,
-            ),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF051C0F) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: goldAccent.withValues(alpha: 0.35),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (isDark ? Colors.black : const Color(0xFF0C5A32))
-                      .withValues(alpha: 0.18),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                  decoration: BoxDecoration(
-                    color: goldAccent.withValues(alpha: isDark ? 0.14 : 0.10),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                    border: Border(
-                      bottom: BorderSide(
-                        color: goldAccent.withValues(alpha: 0.2),
-                        width: 1,
-                      ),
-                    ),
+    final person = nominalRollList.firstWhere(
+      (p) => p['armyNo'] == armyNo,
+      orElse: () => {'rank': 'Gnr', 'name': name, 'armyNo': armyNo, 'category': 'Gnrs'},
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) {
+          return StatefulBuilder(
+            builder: (context, setScreenState) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              final goldAccent = isDark ? const Color(0xFFD4AF37) : const Color(0xFF1B4D3E);
+              final silverText = isDark ? const Color(0xFFA8B2A1) : Colors.grey[700]!;
+
+              final DateTime filterDate = DateTime.now().subtract(
+                Duration(days: selectedMonths * 30),
+              );
+              
+              final allHistory = PersonnelDataManager().getHistory(armyNo);
+              final filteredHistory = selectedMonths == 0
+                  ? List<PersonStatus>.from(allHistory)
+                  : allHistory.where(
+                      (status) =>
+                          status.startDate.isAfter(filterDate) ||
+                          (status.endDate == null || status.endDate!.isAfter(filterDate)),
+                    ).toList();
+              
+              filteredHistory.sort((a, b) => b.startDate.compareTo(a.startDate));
+
+              final List<MovementRecord> records = filteredHistory.map((status) {
+                final String duration;
+                if (status.endDate != null) {
+                  final days = status.endDate!.difference(status.startDate).inDays;
+                  duration = '$days Days';
+                } else {
+                  duration = '-';
+                }
+
+                final String dateRange;
+                if (status.endDate != null) {
+                  dateRange = '${_formatDate(status.startDate)} to ${_formatDate(status.endDate!)}';
+                } else {
+                  dateRange = '${_formatDate(status.startDate)} to Present';
+                }
+
+                return MovementRecord(
+                  dateRange: dateRange,
+                  movement: status.displayPath.replaceAll(' -> ', ' → '),
+                  duration: duration,
+                  dotColor: status.endDate == null ? const Color(0xFFF39C12) : const Color(0xFF1B4D3E),
+                );
+              }).toList();
+
+              return Scaffold(
+                backgroundColor: isDark ? const Color(0xFF051C0F) : Colors.white,
+                appBar: AppBar(
+                  backgroundColor: goldAccent.withValues(alpha: isDark ? 0.14 : 0.10),
+                  elevation: 0,
+                  centerTitle: false,
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back_ios_new_rounded, color: goldAccent, size: 20),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  child: Column(
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: goldAccent.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.history_rounded,
-                              color: goldAccent,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'MOVEMENT HISTORY',
-                                  style: TextStyle(
-                                    color: goldAccent,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${person['rank'] ?? 'Gnr'} $name ($armyNo) • Trade: ${_getTrade(person)}',
-                                  style: TextStyle(
-                                    color: silverText,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'MOVEMENT HISTORY',
+                        style: TextStyle(
+                          color: goldAccent,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
+                      Text(
+                        '${person['rank'] ?? 'Gnr'} $name ($armyNo) • Trade: ${_getTrade(person)}',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                        decoration: BoxDecoration(
-                          color: goldAccent.withValues(
-                            alpha: isDark ? 0.12 : 0.08,
-                          ),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: goldAccent.withValues(alpha: 0.2),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.timeline_rounded,
-                              color: goldAccent,
-                              size: 13,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'LAST 90 DAYS',
-                              style: TextStyle(
-                                color: goldAccent,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-                ),
-                Flexible(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
-                    child: historyList.isEmpty
-                        ? Center(
-                            child: Text(
-                              'No history records found for this month.',
-                              style: TextStyle(color: silverText, fontSize: 12),
-                            ),
-                          )
-                        : ListView.separated(
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: historyList.length,
-                            separatorBuilder: (context, index) =>
-                                const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final record = historyList[index];
-                              final DateTime start = record.startDate;
-                              final DateTime? end = record.endDate;
-
-                              final String dateStr = end != null
-                                  ? '${_formatDateRange(start, includeYear: false)} - ${_formatDateRange(end)}'
-                                  : '${_formatDateRange(start, includeYear: false)} - Ongoing';
-
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isDark
-                                      ? const Color(
-                                          0xFF0C3D21,
-                                        ).withValues(alpha: 0.2)
-                                      : const Color(
-                                          0xFFE8F5EE,
-                                        ).withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: goldAccent.withValues(alpha: 0.14),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      width: 92,
-                                      child: Text(
-                                        dateStr,
-                                        style: TextStyle(
-                                          color: goldAccent,
-                                          fontSize: 10.5,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 2,
-                                      height: 28,
-                                      margin: const EdgeInsets.only(
-                                        left: 8,
-                                        right: 10,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: goldAccent.withValues(
-                                          alpha: isDark ? 0.25 : 0.2,
-                                        ),
-                                        borderRadius: BorderRadius.circular(99),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        record.displayPath,
-                                        style: TextStyle(
-                                          color: textThemeColor,
-                                          fontSize: 11.5,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: goldAccent.withValues(alpha: 0.35),
-                          width: 1.2,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                  actions: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF03140A) : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: goldAccent.withValues(alpha: 0.3)),
                       ),
-                      child: Text(
-                        'CLOSE',
-                        style: TextStyle(
-                          color: goldAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: selectedMonths,
+                          icon: Icon(Icons.keyboard_arrow_down_rounded, color: goldAccent, size: 18),
+                          dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFFE8FEF5) : const Color(0xFF1B4D3E),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 1, child: Text('Last 1 Month')),
+                            DropdownMenuItem(value: 3, child: Text('Last 3 Months')),
+                            DropdownMenuItem(value: 6, child: Text('Last 6 Months')),
+                            DropdownMenuItem(value: 12, child: Text('Last 12 Months')),
+                            DropdownMenuItem(value: 0, child: Text('All Time')),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) {
+                              setScreenState(() {
+                                selectedMonths = value;
+                              });
+                            }
+                          },
                         ),
                       ),
                     ),
+                  ],
+                  bottom: PreferredSize(
+                    preferredSize: const Size.fromHeight(1.0),
+                    child: Container(
+                      color: goldAccent.withValues(alpha: 0.2),
+                      height: 1.0,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-        );
-      },
+                body: records.isEmpty
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Text(
+                            'No history records found for this period.',
+                            style: TextStyle(color: silverText, fontSize: 14),
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        physics: const BouncingScrollPhysics(),
+                        child: Center(
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 850),
+                            child: MovementHistoryWidget(records: records),
+                          ),
+                        ),
+                      ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
