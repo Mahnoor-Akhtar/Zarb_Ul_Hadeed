@@ -110,14 +110,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   String get _analysisMode => context.read<AnalysisViewModel>().analysisMode;
   set _analysisMode(String val) => _analysisVM.setAnalysisMode(val);
 
-  String get _analysisFilterBattery => context.read<AnalysisViewModel>().analysisFilterBattery;
-  set _analysisFilterBattery(String val) => _analysisVM.setAnalysisFilterBattery(val);
+  List<String> get _analysisFilterBattery => context.read<AnalysisViewModel>().analysisFilterBattery;
+  set _analysisFilterBattery(List<String> val) => _analysisVM.setAnalysisFilterBattery(val);
 
-  String get _analysisFilterTrade => context.read<AnalysisViewModel>().analysisFilterTrade;
-  set _analysisFilterTrade(String val) => _analysisVM.setAnalysisFilterTrade(val);
+  List<String> get _analysisFilterTrade => context.read<AnalysisViewModel>().analysisFilterTrade;
+  set _analysisFilterTrade(List<String> val) => _analysisVM.setAnalysisFilterTrade(val);
 
-  String get _analysisFilterRank => context.read<AnalysisViewModel>().analysisFilterRank;
-  set _analysisFilterRank(String val) => _analysisVM.setAnalysisFilterRank(val);
+  List<String> get _analysisFilterRank => context.read<AnalysisViewModel>().analysisFilterRank;
+  set _analysisFilterRank(List<String> val) => _analysisVM.setAnalysisFilterRank(val);
 
   String get _editSearchQuery => context.read<EditTabViewModel>().editSearchQuery;
   Set<String> get _expandedEditCategories => context.read<EditTabViewModel>().expandedEditCategories;
@@ -1107,7 +1107,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ],
           // NOMINAL ROLL FAB SPEED DIAL
-          if (_selectedTabIndex == 2 && _canAccessFABs) ...[
+          if (_selectedTabIndex == 2 && MockDataManager().role == 'Administrator') ...[
             // 1. ADD PERSON SUB-FAB (PLUS)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 250),
@@ -5416,25 +5416,6 @@ class _DashboardScreenState extends State<DashboardScreen>
               ),
               const SizedBox(height: 8),
               ListTile(
-                leading: Icon(Icons.table_view_rounded, color: goldAccent),
-                title: Text(
-                  'Download Excel',
-                  style: TextStyle(
-                    color: textThemeColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                ),
-                subtitle: Text(
-                  'Export all users and movement history as an Excel-ready CSV file',
-                  style: TextStyle(color: silverText, fontSize: 11),
-                ),
-                onTap: () async {
-                  Navigator.pop(sheetContext);
-                  await _exportHistoryExcel(context);
-                },
-              ),
-              ListTile(
                 leading: Icon(Icons.picture_as_pdf_rounded, color: goldAccent),
                 title: Text(
                   'Download PDF',
@@ -7720,16 +7701,20 @@ class _DashboardScreenState extends State<DashboardScreen>
     Color goldAccent,
     Color valueGreenColor,
   ) {
-    // ── Apply analysis filter (mode-aware: only active mode's filter applies) ─
     final filteredPersonnel = nominalRollList.where((person) {
-      if (_analysisMode == 'Battery' && _analysisFilterBattery != 'All') {
-        if (_getBattery(person) != _analysisFilterBattery) return false;
+      if (_analysisMode == 'Battery' &&
+          !_analysisFilterBattery.contains('All') &&
+          _analysisFilterBattery.isNotEmpty) {
+        if (!_analysisFilterBattery.contains(_getBattery(person))) return false;
       }
-      if (_analysisMode == 'Trade' && _analysisFilterTrade != 'All') {
-        if (_getTrade(person) != _analysisFilterTrade) return false;
+      if (_analysisMode == 'Trade' &&
+          !_analysisFilterTrade.contains('All') &&
+          _analysisFilterTrade.isNotEmpty) {
+        if (!_analysisFilterTrade.contains(_getTrade(person))) return false;
       }
-      if (_analysisMode == 'Rank' && _analysisFilterRank != 'All') {
-        final selectedRank = _analysisFilterRank.trim();
+      if (_analysisMode == 'Rank' &&
+          !_analysisFilterRank.contains('All') &&
+          _analysisFilterRank.isNotEmpty) {
         final subcat = _getRankSubcategory(
           person['rank'] ?? '',
           person['name'] ?? '',
@@ -7739,17 +7724,35 @@ class _DashboardScreenState extends State<DashboardScreen>
           person['name'] ?? '',
         );
 
-        if (selectedRank == 'Officers') {
-          if (cat != 'OFFICERS') return false;
-        } else if (selectedRank == 'JCOs') {
-          if (cat != 'JCOs') return false;
-        } else if (selectedRank == 'Soldiers' ||
-            selectedRank == 'Sldrs' ||
-            selectedRank == 'SLDRS') {
-          if (cat != 'SLDRS') return false;
-        } else {
-          if (subcat.toLowerCase() != selectedRank.toLowerCase()) return false;
+        bool matchesAny = false;
+        for (final selectedRankRaw in _analysisFilterRank) {
+          final selectedRank = selectedRankRaw.trim();
+          if (selectedRank == 'Officers') {
+            if (cat == 'OFFICERS') {
+              matchesAny = true;
+              break;
+            }
+          } else if (selectedRank == 'JCOs') {
+            if (cat == 'JCOs') {
+              matchesAny = true;
+              break;
+            }
+          } else if (selectedRank == 'Soldiers' ||
+              selectedRank == 'Sldrs' ||
+              selectedRank == 'SLDRS' ||
+              selectedRank == 'SOLDIERS') {
+            if (cat == 'SLDRS' || cat == 'SOLDIERS') {
+              matchesAny = true;
+              break;
+            }
+          } else {
+            if (subcat.toLowerCase() == selectedRank.toLowerCase()) {
+              matchesAny = true;
+              break;
+            }
+          }
         }
+        if (!matchesAny) return false;
       }
       return true;
     }).toList();
@@ -7951,15 +7954,14 @@ class _DashboardScreenState extends State<DashboardScreen>
       '  Sep',
     ];
 
-    // Active filter value for current mode only
-    final String currentFilterValue = _analysisMode == 'Battery'
+    final List<String> currentFilterValue = _analysisMode == 'Battery'
         ? _analysisFilterBattery
         : _analysisMode == 'Trade'
         ? _analysisFilterTrade
         : _analysisFilterRank;
-    final bool isFiltered = currentFilterValue != 'All';
+    final bool isFiltered = currentFilterValue.isNotEmpty && !currentFilterValue.contains('All');
     final String filterLabel = isFiltered
-        ? currentFilterValue
+        ? currentFilterValue.join(', ')
         : 'All ${_analysisMode}s';
 
     return Column(
@@ -8057,11 +8059,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                       GestureDetector(
                         onTap: () => setState(() {
                           if (_analysisMode == 'Battery')
-                            _analysisFilterBattery = 'All';
+                            _analysisFilterBattery = ['All'];
                           if (_analysisMode == 'Trade')
-                            _analysisFilterTrade = 'All';
+                            _analysisFilterTrade = ['All'];
                           if (_analysisMode == 'Rank')
-                            _analysisFilterRank = 'All';
+                            _analysisFilterRank = ['All'];
                         }),
                         child: Text(
                           'Reset',
@@ -8075,39 +8077,38 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Show only the dropdown relevant to the current analysis mode
                 if (_analysisMode == 'Battery')
-                  _buildAnalysisDropdown(
+                  _buildAnalysisMultiSelectDropdown(
                     label: 'Select Battery',
-                    value: _analysisFilterBattery,
+                    selectedValues: _analysisFilterBattery,
                     items: batteryOptions,
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
                     onChanged: (v) =>
-                        setState(() => _analysisFilterBattery = v ?? 'All'),
+                        setState(() => _analysisFilterBattery = v),
                   )
                 else if (_analysisMode == 'Trade')
-                  _buildAnalysisDropdown(
+                  _buildAnalysisMultiSelectDropdown(
                     label: 'Select Trade',
-                    value: _analysisFilterTrade,
+                    selectedValues: _analysisFilterTrade,
                     items: tradeOptions,
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
                     onChanged: (v) =>
-                        setState(() => _analysisFilterTrade = v ?? 'All'),
+                        setState(() => _analysisFilterTrade = v),
                   )
                 else
-                  _buildAnalysisDropdown(
+                  _buildAnalysisMultiSelectDropdown(
                     label: 'Select Rank',
-                    value: _analysisFilterRank,
+                    selectedValues: _analysisFilterRank,
                     items: rankOptions,
                     isDark: isDark,
                     goldAccent: goldAccent,
                     textThemeColor: textThemeColor,
                     onChanged: (v) =>
-                        setState(() => _analysisFilterRank = v ?? 'All'),
+                        setState(() => _analysisFilterRank = v),
                   ),
               ],
             ),
@@ -8183,7 +8184,7 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 if (_analysisMode == 'Battery') ...[
                   // Battery cards — show only selected battery full-width, or all 4 in 2x2 grid
-                  if (_analysisFilterBattery == 'All') ...[
+                  if (_analysisFilterBattery.contains('All') || _analysisFilterBattery.isEmpty) ...[
                     Row(
                       children: [
                         Expanded(
@@ -8232,23 +8233,28 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ],
                     ),
                   ] else ...[
-                    // Single selected battery — full width
-                    SizedBox(
-                      width: double.infinity,
-                      child: _buildBatteryAnalysisCard(
-                        name: _analysisFilterBattery == 'HQ Bty'
-                            ? 'HQ Battery'
-                            : _analysisFilterBattery == 'P Bty'
-                            ? 'P Battery'
-                            : _analysisFilterBattery == 'Q Bty'
-                            ? 'Q Battery'
-                            : 'R Battery',
-                        stats: batteryStats[_analysisFilterBattery] ?? {},
-                        isDark: isDark,
-                        batteryColor: _getBatteryColor(_analysisFilterBattery),
-                        textThemeColor: textThemeColor,
-                      ),
-                    ),
+                    ..._analysisFilterBattery.map((bty) {
+                      final displayName = bty == 'HQ Bty'
+                          ? 'HQ Battery'
+                          : bty == 'P Bty'
+                              ? 'P Battery'
+                              : bty == 'Q Bty'
+                                  ? 'Q Battery'
+                                  : 'R Battery';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: _buildBatteryAnalysisCard(
+                            name: displayName,
+                            stats: batteryStats[bty] ?? {},
+                            isDark: isDark,
+                            batteryColor: _getBatteryColor(bty),
+                            textThemeColor: textThemeColor,
+                          ),
+                        ),
+                      );
+                    }),
                   ],
                 ] else ...[
                   Row(
@@ -8456,13 +8462,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   isFightingGroup: true,
                   baseList: filteredPersonnel,
                   initialBattery: _analysisMode == 'Battery'
-                      ? _analysisFilterBattery
+                      ? (_analysisFilterBattery.contains('All') ? 'All' : _analysisFilterBattery.join(', '))
                       : 'All',
                   initialTrade: _analysisMode == 'Trade'
-                      ? _analysisFilterTrade
+                      ? (_analysisFilterTrade.contains('All') ? 'All' : _analysisFilterTrade.join(', '))
                       : 'All',
                   initialRank: _analysisMode == 'Rank'
-                      ? _analysisFilterRank
+                      ? (_analysisFilterRank.contains('All') ? 'All' : _analysisFilterRank.join(', '))
                       : 'All',
                 ),
 
@@ -8477,13 +8483,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   isFightingGroup: false,
                   baseList: filteredPersonnel,
                   initialBattery: _analysisMode == 'Battery'
-                      ? _analysisFilterBattery
+                      ? (_analysisFilterBattery.contains('All') ? 'All' : _analysisFilterBattery.join(', '))
                       : 'All',
                   initialTrade: _analysisMode == 'Trade'
-                      ? _analysisFilterTrade
+                      ? (_analysisFilterTrade.contains('All') ? 'All' : _analysisFilterTrade.join(', '))
                       : 'All',
                   initialRank: _analysisMode == 'Rank'
-                      ? _analysisFilterRank
+                      ? (_analysisFilterRank.contains('All') ? 'All' : _analysisFilterRank.join(', '))
                       : 'All',
                 ),
 
@@ -8613,92 +8619,87 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _buildAnalysisDropdown({
+  Widget _buildAnalysisMultiSelectDropdown({
     required String label,
-    required String value,
+    required List<String> selectedValues,
     required List<String> items,
     required bool isDark,
     required Color goldAccent,
     required Color textThemeColor,
-    required ValueChanged<String?> onChanged,
+    required ValueChanged<List<String>> onChanged,
   }) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      isExpanded: true,
-      dropdownColor: isDark ? const Color(0xFF03140A) : Colors.white,
-      style: TextStyle(
-        color: textThemeColor,
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-      ),
-      icon: Icon(Icons.arrow_drop_down_rounded, color: goldAccent, size: 18),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(
+    final String displayText = (selectedValues.isEmpty || selectedValues.contains('All'))
+        ? 'All'
+        : selectedValues.join(', ');
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return _MultiSelectDialog(
+              title: label,
+              items: items,
+              initialSelectedValues: selectedValues,
+              isDark: isDark,
+              goldAccent: goldAccent,
+              textThemeColor: textThemeColor,
+              onApply: onChanged,
+            );
+          },
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
           color: isDark
-              ? goldAccent.withValues(alpha: 0.7)
-              : const Color(0xFF0C5A32).withValues(alpha: 0.7),
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-        ),
-        filled: true,
-        fillColor: isDark
-            ? const Color(0xFF0C5A32).withValues(alpha: 0.06)
-            : Colors.white,
-        contentPadding: const EdgeInsets.only(
-          left: 8,
-          right: 4,
-          top: 8,
-          bottom: 8,
-        ),
-        enabledBorder: OutlineInputBorder(
+              ? const Color(0xFF0C5A32).withValues(alpha: 0.06)
+              : Colors.white,
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
+          border: Border.all(
             color: isDark
                 ? goldAccent.withValues(alpha: 0.2)
                 : const Color(0xFF0C5A32).withValues(alpha: 0.15),
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: goldAccent, width: 1.2),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isDark
+                          ? goldAccent.withValues(alpha: 0.7)
+                          : const Color(0xFF0C5A32).withValues(alpha: 0.7),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    displayText,
+                    style: TextStyle(
+                      color: textThemeColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_drop_down_rounded,
+              color: goldAccent,
+              size: 20,
+            ),
+          ],
         ),
       ),
-      items: items.map((item) {
-        final isActive = item != 'All';
-        return DropdownMenuItem<String>(
-          value: item,
-          child: Text(
-            item,
-            style: TextStyle(
-              color: isActive
-                  ? textThemeColor
-                  : (isDark ? Colors.white54 : Colors.black38),
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-            ),
-          ),
-        );
-      }).toList(),
-      selectedItemBuilder: (BuildContext context) {
-        return items.map<Widget>((item) {
-          final displayText = (item == 'All') ? 'All' : item;
-          final isFiltered = item != 'All';
-          return Text(
-            displayText,
-            style: TextStyle(
-              color: isFiltered
-                  ? goldAccent
-                  : (isDark ? Colors.white54 : Colors.black38),
-              fontSize: 11,
-              fontWeight: isFiltered ? FontWeight.w800 : FontWeight.w400,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          );
-        }).toList();
-      },
-      onChanged: onChanged,
     );
   }
 
@@ -9193,11 +9194,9 @@ class _CategoryPersonnelListScreenState
   @override
   void initState() {
     super.initState();
-    // Pre-apply filters passed from the analysis screen
-    _selectedBattery = widget.initialBattery;
-    _selectedRankCategory = widget
-        .initialRank; // 'All', 'Officers', 'JCOs', or 'Soldiers' — matches _ranksList exactly
-    _selectedTrade = widget.initialTrade;
+    _selectedBattery = _batteriesList.contains(widget.initialBattery) ? widget.initialBattery : 'All';
+    _selectedRankCategory = _ranksList.contains(widget.initialRank) ? widget.initialRank : 'All';
+    _selectedTrade = _tradesList.contains(widget.initialTrade) ? widget.initialTrade : 'All';
     _loadDynamicAttributes();
     _searchController.addListener(() {
       setState(() {
@@ -10943,3 +10942,156 @@ class PersonnelIdCardScreen extends StatelessWidget {
     );
   }
 }
+
+class _MultiSelectDialog extends StatefulWidget {
+  final String title;
+  final List<String> items;
+  final List<String> initialSelectedValues;
+  final bool isDark;
+  final Color goldAccent;
+  final Color textThemeColor;
+  final ValueChanged<List<String>> onApply;
+
+  const _MultiSelectDialog({
+    required this.title,
+    required this.items,
+    required this.initialSelectedValues,
+    required this.isDark,
+    required this.goldAccent,
+    required this.textThemeColor,
+    required this.onApply,
+  });
+
+  @override
+  State<_MultiSelectDialog> createState() => _MultiSelectDialogState();
+}
+
+class _MultiSelectDialogState extends State<_MultiSelectDialog> {
+  late List<String> _tempSelectedValues;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempSelectedValues = List.from(widget.initialSelectedValues);
+    if (_tempSelectedValues.isEmpty) {
+      _tempSelectedValues.add('All');
+    }
+  }
+
+  void _toggleItem(String item) {
+    setState(() {
+      if (item == 'All') {
+        _tempSelectedValues = ['All'];
+      } else {
+        _tempSelectedValues.remove('All');
+        if (_tempSelectedValues.contains(item)) {
+          _tempSelectedValues.remove(item);
+          if (_tempSelectedValues.isEmpty) {
+            _tempSelectedValues.add('All');
+          }
+        } else {
+          _tempSelectedValues.add(item);
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: widget.isDark ? const Color(0xFF03140A) : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: widget.isDark
+              ? widget.goldAccent.withValues(alpha: 0.3)
+              : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+        ),
+      ),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.6,
+          maxWidth: MediaQuery.of(context).size.width * 0.85,
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              widget.title,
+              style: TextStyle(
+                color: widget.goldAccent,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.items.length,
+                itemBuilder: (context, index) {
+                  final item = widget.items[index];
+                  final isHeader = item == 'Officers' || item == 'JCOs' || item == 'Soldiers';
+                  final isSelected = _tempSelectedValues.contains(item);
+                  return CheckboxListTile(
+                    activeColor: widget.goldAccent,
+                    checkColor: widget.isDark ? Colors.black : Colors.white,
+                    title: Text(
+                      item,
+                      style: TextStyle(
+                        color: widget.textThemeColor,
+                        fontSize: isHeader ? 13 : 12,
+                        fontWeight: isHeader ? FontWeight.bold : FontWeight.w500,
+                      ),
+                    ),
+                    value: isSelected,
+                    onChanged: (bool? checked) {
+                      _toggleItem(item);
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: widget.isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.goldAccent,
+                    foregroundColor: widget.isDark ? Colors.black : Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    widget.onApply(_tempSelectedValues);
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

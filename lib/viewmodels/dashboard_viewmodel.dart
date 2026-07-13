@@ -44,7 +44,7 @@ class DashboardViewModel extends ChangeNotifier {
     return role == 'Administrator' || role == 'Data Entry';
   }
 
-  bool get canAccessFABs => MockDataManager().role == 'Administrator';
+  bool get canAccessFABs => MockDataManager().role != null;
 
   // ── Initialisation ───────────────────────────────────────────────────────
 

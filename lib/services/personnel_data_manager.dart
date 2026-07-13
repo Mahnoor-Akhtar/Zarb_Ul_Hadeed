@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'personnel_data.dart';
 import '../models/person_status.dart';
+import '../models/group_model.dart';
 export '../models/person_status.dart'; // Re-export so existing imports of personnel_data_manager.dart still resolve PersonStatus
+export '../models/group_model.dart'; // Re-export GroupModel
 
 
 class PersonnelDataManager {
@@ -83,6 +85,7 @@ class PersonnelDataManager {
     } else {
       _initializeHistory();
     }
+    _loadCustomGroups();
   }
 
   void saveToPrefs() {
@@ -626,5 +629,85 @@ class PersonnelDataManager {
     _statuses.remove(armyNo);
     _history.remove(armyNo);
     saveToPrefs();
+  }
+
+  // --- Dynamic Custom Groups Management ---
+
+  final List<GroupModel> _customGroups = [];
+
+  List<GroupModel> get customGroups => List.unmodifiable(_customGroups);
+
+  void _loadCustomGroups() {
+    final str = _prefs.getString('customGroups');
+    if (str != null) {
+      try {
+        final List decoded = jsonDecode(str);
+        _customGroups.clear();
+        _customGroups.addAll(decoded.map((g) => GroupModel.fromJson(Map<String, dynamic>.from(g as Map))));
+      } catch (e) {
+        _useDefaultCustomGroups();
+      }
+    } else {
+      _useDefaultCustomGroups();
+    }
+  }
+
+  void _useDefaultCustomGroups() {
+    _customGroups.clear();
+    _customGroups.addAll([
+      GroupModel(
+        id: '1',
+        name: 'PMA Visit Team',
+        category: 'Travel',
+        leaderArmyNo: 'PA-61755',
+        leaderName: 'Capt Muhammad Ali',
+        location: 'Kakul Abbottabad',
+        assignedPersonnel: ['3122918', '3138647', '3153363', '3158376'],
+        untilDate: DateTime(2026, 7, 15),
+      ),
+      GroupModel(
+        id: '2',
+        name: 'Assault Course Prep A',
+        category: 'Training',
+        leaderArmyNo: 'PJO-3114197',
+        leaderName: 'N/Sub Gnr Muhammad Naeem',
+        location: 'Training Area Sector 4',
+        assignedPersonnel: ['3158273', '3169371', '3192086'],
+        untilDate: DateTime(2026, 7, 12),
+      ),
+      GroupModel(
+        id: '3',
+        name: 'Kitchen Working Party',
+        category: 'Working Party',
+        leaderArmyNo: 'PA-45571',
+        leaderName: 'Maj Muhammad Usman Anwar',
+        location: 'Mess Hall Cookhouse',
+        assignedPersonnel: ['3158329', '3186830', '3221173', '3221392'],
+        untilDate: DateTime(2026, 7, 10),
+      ),
+    ]);
+    _saveCustomGroups();
+  }
+
+  void _saveCustomGroups() {
+    _prefs.setString('customGroups', jsonEncode(_customGroups.map((g) => g.toJson()).toList()));
+  }
+
+  void addCustomGroup(GroupModel group) {
+    _customGroups.add(group);
+    _saveCustomGroups();
+  }
+
+  void updateCustomGroup(GroupModel updatedGroup) {
+    final index = _customGroups.indexWhere((g) => g.id == updatedGroup.id);
+    if (index != -1) {
+      _customGroups[index] = updatedGroup;
+      _saveCustomGroups();
+    }
+  }
+
+  void deleteCustomGroup(String id) {
+    _customGroups.removeWhere((g) => g.id == id);
+    _saveCustomGroups();
   }
 }
