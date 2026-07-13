@@ -16,8 +16,15 @@ class MovementRecord {
 
 class MovementHistoryWidget extends StatelessWidget {
   final List<MovementRecord> records;
+  final int selectedDays;
+  final ValueChanged<int>? onDaysChanged;
 
-  const MovementHistoryWidget({Key? key, required this.records}) : super(key: key);
+  const MovementHistoryWidget({
+    Key? key,
+    required this.records,
+    this.selectedDays = 90,
+    this.onDaysChanged,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -46,26 +53,38 @@ class MovementHistoryWidget extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade300),
                     borderRadius: BorderRadius.circular(6),
                     color: Colors.white,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Last 3 Months',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Color(0xFF2E3E39),
-                        ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: selectedDays,
+                      icon: const Icon(Icons.keyboard_arrow_down, size: 20, color: Color(0xFF2E3E39)),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: Color(0xFF2E3E39),
                       ),
-                      const SizedBox(width: 8),
-                      Icon(Icons.keyboard_arrow_down, size: 20, color: Colors.grey.shade700),
-                    ],
+                      dropdownColor: Colors.white,
+                      items: const [
+                        DropdownMenuItem(value: 7, child: Text('Last 7 Days')),
+                        DropdownMenuItem(value: 15, child: Text('Last 15 Days')),
+                        DropdownMenuItem(value: 30, child: Text('Last 30 Days')),
+                        DropdownMenuItem(value: 60, child: Text('Last 2 Months')),
+                        DropdownMenuItem(value: 90, child: Text('Last 3 Months')),
+                        DropdownMenuItem(value: 0, child: Text('All Time')),
+                      ],
+                      onChanged: onDaysChanged != null
+                          ? (value) {
+                              if (value != null) {
+                                onDaysChanged!(value);
+                              }
+                            }
+                          : null,
+                    ),
                   ),
                 ),
               ],

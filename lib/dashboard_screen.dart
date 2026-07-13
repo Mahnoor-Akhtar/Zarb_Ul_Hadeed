@@ -10466,7 +10466,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
   }
 
   void _showHistoryDialog(BuildContext context, String name, String armyNo) {
-    int selectedMonths = 3;
+    int selectedDays = 90;
 
     final person = nominalRollList.firstWhere(
       (p) => p['armyNo'] == armyNo,
@@ -10484,11 +10484,11 @@ class PersonnelIdCardScreen extends StatelessWidget {
               final silverText = isDark ? const Color(0xFFA8B2A1) : Colors.grey[700]!;
 
               final DateTime filterDate = DateTime.now().subtract(
-                Duration(days: selectedMonths * 30),
+                Duration(days: selectedDays),
               );
               
               final allHistory = PersonnelDataManager().getHistory(armyNo);
-              final filteredHistory = selectedMonths == 0
+              final filteredHistory = selectedDays == 0
                   ? List<PersonStatus>.from(allHistory)
                   : allHistory.where(
                       (status) =>
@@ -10556,43 +10556,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  actions: [
-                    Container(
-                      margin: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF03140A) : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: goldAccent.withValues(alpha: 0.3)),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int>(
-                          value: selectedMonths,
-                          icon: Icon(Icons.keyboard_arrow_down_rounded, color: goldAccent, size: 18),
-                          dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
-                          style: TextStyle(
-                            color: isDark ? const Color(0xFFE8FEF5) : const Color(0xFF1B4D3E),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          items: const [
-                            DropdownMenuItem(value: 1, child: Text('Last 1 Month')),
-                            DropdownMenuItem(value: 3, child: Text('Last 3 Months')),
-                            DropdownMenuItem(value: 6, child: Text('Last 6 Months')),
-                            DropdownMenuItem(value: 12, child: Text('Last 12 Months')),
-                            DropdownMenuItem(value: 0, child: Text('All Time')),
-                          ],
-                          onChanged: (value) {
-                            if (value != null) {
-                              setScreenState(() {
-                                selectedMonths = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
+                  actions: const [],
                   bottom: PreferredSize(
                     preferredSize: const Size.fromHeight(1.0),
                     child: Container(
@@ -10617,7 +10581,15 @@ class PersonnelIdCardScreen extends StatelessWidget {
                         child: Center(
                           child: Container(
                             constraints: const BoxConstraints(maxWidth: 850),
-                            child: MovementHistoryWidget(records: records),
+                            child: MovementHistoryWidget(
+                              records: records,
+                              selectedDays: selectedDays,
+                              onDaysChanged: (value) {
+                                setScreenState(() {
+                                    selectedDays = value;
+                                  });
+                              },
+                            ),
                           ),
                         ),
                       ),
