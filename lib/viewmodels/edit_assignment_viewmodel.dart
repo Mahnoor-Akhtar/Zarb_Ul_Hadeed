@@ -13,6 +13,7 @@ class EditAssignmentViewModel extends ChangeNotifier {
   String? _selectedSubSubcategory;
   late DateTime _startDate;
   DateTime? _endDate;
+  String? _destination;
 
   List<String> _categories = [];
   List<String> _subcategories = [];
@@ -25,6 +26,7 @@ class EditAssignmentViewModel extends ChangeNotifier {
   String? get selectedSubSubcategory => _selectedSubSubcategory;
   DateTime get startDate => _startDate;
   DateTime? get endDate => _endDate;
+  String? get destination => _destination;
   List<String> get categories => _categories;
   List<String> get subcategories => _subcategories;
   List<String> get subSubcategories => _subSubcategories;
@@ -42,6 +44,7 @@ class EditAssignmentViewModel extends ChangeNotifier {
     _selectedCategory = currentStatus.category;
     _selectedSubcategory = currentStatus.subcategory;
     _selectedSubSubcategory = currentStatus.subSubcategory;
+    _destination = currentStatus.destination;
 
     final now = DateTime.now();
     _startDate = DateTime(now.year, now.month, now.day);
@@ -129,6 +132,11 @@ class EditAssignmentViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setDestination(String? destination) {
+    _destination = destination;
+    notifyListeners();
+  }
+
   // ── Save ─────────────────────────────────────────────────────────────────
 
   void saveAssignment() {
@@ -139,6 +147,7 @@ class EditAssignmentViewModel extends ChangeNotifier {
       subSubcategory: _selectedSubSubcategory,
       startDate: _startDate,
       endDate: _endDate,
+      destination: _destination,
     );
     _dataManager.updateStatus(armyNo, newStatus);
   }

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-Future<void> saveAndDownloadFile({
+Future<String> saveAndDownloadFile({
   required String filename,
   required Uint8List bytes,
   required String mimeType,

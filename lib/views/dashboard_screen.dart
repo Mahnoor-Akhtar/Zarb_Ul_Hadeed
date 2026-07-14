@@ -20,7 +20,9 @@ import '../widgets/movement_history_widget.dart';
 import '../viewmodels/dashboard_viewmodel.dart';
 import '../viewmodels/nominal_roll_viewmodel.dart';
 import '../viewmodels/analysis_viewmodel.dart';
+import 'personnel_profile_screen.dart';
 import '../viewmodels/edit_tab_viewmodel.dart';
+import 'package:open_file/open_file.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback onLogout;
@@ -50,6 +52,14 @@ class _DashboardScreenState extends State<DashboardScreen>
   final TextEditingController _editSearchController = TextEditingController();
   final TextEditingController _settingsAdminUsernameController =
       TextEditingController();
+
+  // Attendance filter state variables
+  String _filterCategory = 'Leave';
+  List<String> _filterSelectedSubcategories = [];
+  DateTime? _filterStartDate;
+  DateTime? _filterEndDate;
+  final TextEditingController _filterDestinationController = TextEditingController();
+  String _filterDestinationQuery = '';
 
   // ── ViewModel convenience getters ──────────────────────────────────────
   // Read-only helpers so the rest of the 10k-line build method keeps
@@ -145,6 +155,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     _editSearchController.addListener(() {
       _editVM.setEditSearchQuery(_editSearchController.text.trim().toLowerCase());
     });
+
+    _filterDestinationController.addListener(() {
+      setState(() {
+        _filterDestinationQuery = _filterDestinationController.text.trim().toLowerCase();
+      });
+    });
   }
 
   @override
@@ -154,6 +170,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     _rollSearchController.dispose();
     _editSearchController.dispose();
     _settingsAdminUsernameController.dispose();
+    _filterDestinationController.dispose();
     super.dispose();
   }
 
@@ -165,7 +182,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     context.watch<AnalysisViewModel>();
     context.watch<EditTabViewModel>();
 
-    final maxTabs = _canAccessEditTab ? 5 : 4;
+    final maxTabs = 5;
     if (_selectedTabIndex >= maxTabs) {
       _selectedTabIndex = 0;
     }
@@ -684,6 +701,146 @@ class _DashboardScreenState extends State<DashboardScreen>
                               ),
                               const SizedBox(height: 15),
 
+                              // PERSONNEL NAME SEARCH RESULTS
+                              if (_searchQuery.isNotEmpty) ...(() {
+                                final matchedPersonnel = nominalRollList.where((person) {
+                                  final name = (person['name'] ?? '').toLowerCase();
+                                  final armyNo = (person['armyNo'] ?? '').toLowerCase();
+                                  final rank = (person['rank'] ?? '').toLowerCase();
+                                  return name.contains(_searchQuery) ||
+                                      armyNo.contains(_searchQuery) ||
+                                      rank.contains(_searchQuery);
+                                }).toList();
+
+                                if (matchedPersonnel.isEmpty) return <Widget>[];
+
+                                return [
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 10),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.person_search_rounded,
+                                            size: 16, color: goldAccent),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          'Personnel Results (${matchedPersonnel.length})',
+                                          style: TextStyle(
+                                            color: goldAccent,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ...matchedPersonnel.map((person) {
+                                    final armyNo = person['armyNo'] ?? '';
+                                    final rank = person['rank'] ?? '';
+                                    final name = person['name'] ?? '';
+                                    final status = manager.getStatus(armyNo);
+                                    final isLeave = status.category == 'Leave';
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => PersonnelProfileScreen(person: person),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF0C5A32).withValues(alpha: 0.10)
+                                              : Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: isDark
+                                                ? goldAccent.withValues(alpha: 0.25)
+                                                : const Color(0xFF0C5A32).withValues(alpha: 0.18),
+                                            width: 1,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: isDark
+                                                  ? Colors.black.withValues(alpha: 0.08)
+                                                  : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                                              blurRadius: 8,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 20,
+                                              backgroundColor: isDark
+                                                  ? goldAccent.withValues(alpha: 0.15)
+                                                  : const Color(0xFF0C5A32).withValues(alpha: 0.10),
+                                              child: Text(
+                                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                                style: TextStyle(
+                                                  color: goldAccent,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    '$rank $name',
+                                                    style: TextStyle(
+                                                      color: textThemeColor,
+                                                      fontSize: 13,
+                                                      fontWeight: FontWeight.w700,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    'Army No: $armyNo',
+                                                    style: TextStyle(
+                                                      color: silverText,
+                                                      fontSize: 11,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: isLeave
+                                                    ? Colors.redAccent.withValues(alpha: 0.12)
+                                                    : const Color(0xFF388E3C).withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                status.category,
+                                                style: TextStyle(
+                                                  color: isLeave ? Colors.redAccent : Colors.green,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Icon(Icons.chevron_right_rounded,
+                                                color: silverText, size: 18),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  const SizedBox(height: 10),
+                                ];
+                              })(),
+
                               // DETAILED STRENGTH BREAKDOWNS SECTION
                               if (_searchQuery.isEmpty) ...[
                                 ...manager.categoryHierarchy.entries
@@ -821,24 +978,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                     goldAccent,
                     valueGreenColor,
                   )
-                : _canAccessEditTab
-                ? (_selectedTabIndex == 3
-                      ? _buildEditTab(
-                          context,
-                          isDark,
-                          textThemeColor,
-                          silverText,
-                          goldAccent,
-                          valueGreenColor,
-                        )
-                      : _buildSettingsTab(
-                          context,
-                          isDark,
-                          textThemeColor,
-                          silverText,
-                          goldAccent,
-                          valueGreenColor,
-                        ))
+                : _selectedTabIndex == 3
+                ? _buildAttendanceFilterTab(
+                    context,
+                    isDark,
+                    textThemeColor,
+                    silverText,
+                    goldAccent,
+                    valueGreenColor,
+                  )
                 : _buildSettingsTab(
                     context,
                     isDark,
@@ -1370,11 +1518,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                   icon: Icon(Icons.people_alt_rounded),
                   label: 'Nominal Roll',
                 ),
-                if (_canAccessEditTab)
-                  const BottomNavigationBarItem(
-                    icon: Icon(Icons.edit_calendar_rounded),
-                    label: 'Edit',
-                  ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.filter_list_rounded),
+                  label: 'Filter',
+                ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.settings_rounded),
                   label: 'Settings',
@@ -1384,6 +1531,520 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDatePickerTheme(BuildContext context, Widget child) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFFCD9B2D),
+          onPrimary: Colors.black,
+          surface: Color(0xFF0A2214),
+          onSurface: Colors.white,
+        ),
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildFilterLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4.0, left: 2.0),
+      child: Text(
+        label.toUpperCase(),
+        style: const TextStyle(
+          color: Color(0xFF8B9B90),
+          fontSize: 9,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterDateDisplay(String text, bool isDark, Color goldAccent, Color textThemeColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withOpacity(0.5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: goldAccent.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            text,
+            style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          Icon(Icons.calendar_month_rounded, color: goldAccent, size: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAttendanceFilterTab(
+    BuildContext context,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+    Color valueGreenColor,
+  ) {
+    final manager = PersonnelDataManager();
+    final categoryOptions = ['All'] + manager.categoryHierarchy.keys.toList();
+    final currentSubcategories = _filterCategory == 'All' 
+        ? <String>[] 
+        : (manager.categoryHierarchy[_filterCategory] is List 
+            ? List<String>.from(manager.categoryHierarchy[_filterCategory] as List)
+            : (manager.categoryHierarchy[_filterCategory] is Map
+                ? (manager.categoryHierarchy[_filterCategory] as Map).keys.cast<String>().toList()
+                : <String>[]));
+
+    final filteredPersonnel = nominalRollList.where((person) {
+      final armyNo = person['armyNo'] ?? '';
+      final status = manager.getStatus(armyNo);
+
+      if (_filterCategory != 'All' && status.category != _filterCategory) {
+        return false;
+      }
+
+      if (_filterSelectedSubcategories.isNotEmpty && 
+          (status.subcategory == null || !_filterSelectedSubcategories.contains(status.subcategory))) {
+        return false;
+      }
+
+      if (_filterStartDate != null) {
+        if (status.startDate.isBefore(_filterStartDate!)) {
+          return false;
+        }
+      }
+
+      if (_filterEndDate != null) {
+        if (status.endDate != null && status.endDate!.isAfter(_filterEndDate!)) {
+          return false;
+        }
+      }
+
+      if (_filterDestinationQuery.isNotEmpty) {
+        final dest = (status.destination ?? '').toLowerCase();
+        if (!dest.contains(_filterDestinationQuery)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+
+    return Column(
+      children: [
+        SizedBox(height: MediaQuery.of(context).padding.top + 80.0),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0C5A32).withOpacity(0.12) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark ? goldAccent.withOpacity(0.25) : const Color(0xFF0C5A32).withOpacity(0.15),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black.withOpacity(0.15) : const Color(0xFF0C5A32).withOpacity(0.04),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'ATTENDANCE FILTER CRITERIA',
+                  style: TextStyle(
+                    color: goldAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const Divider(height: 20, thickness: 0.5),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildFilterLabel('Category'),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: goldAccent.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _filterCategory,
+                                isExpanded: true,
+                                dropdownColor: isDark ? const Color(0xFF0A2214) : Colors.white,
+                                icon: Icon(Icons.arrow_drop_down, color: goldAccent),
+                                style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
+                                onChanged: (val) {
+                                  if (val != null) {
+                                    setState(() {
+                                      _filterCategory = val;
+                                      _filterSelectedSubcategories.clear();
+                                    });
+                                  }
+                                },
+                                items: categoryOptions.map((cat) {
+                                  return DropdownMenuItem<String>(
+                                    value: cat,
+                                    child: Text(cat),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 5,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildFilterLabel('Destination / Place'),
+                          TextFormField(
+                            controller: _filterDestinationController,
+                            style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              hintText: 'Search location...',
+                              hintStyle: TextStyle(color: silverText.withOpacity(0.5), fontSize: 12),
+                              prefixIcon: Icon(Icons.location_on_rounded, color: goldAccent, size: 16),
+                              filled: true,
+                              fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withOpacity(0.5),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: goldAccent.withOpacity(0.3), width: 1),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide(color: goldAccent, width: 1.2),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (currentSubcategories.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  _buildFilterLabel('Subcategories Filter'),
+                  SizedBox(
+                    height: 36,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: currentSubcategories.length,
+                      itemBuilder: (context, idx) {
+                        final sub = currentSubcategories[idx];
+                        final isSelected = _filterSelectedSubcategories.contains(sub);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: FilterChip(
+                            label: Text(
+                              sub,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isSelected ? (isDark ? Colors.black : Colors.white) : textThemeColor,
+                              ),
+                            ),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setState(() {
+                                if (selected) {
+                                  _filterSelectedSubcategories.add(sub);
+                                } else {
+                                  _filterSelectedSubcategories.remove(sub);
+                                }
+                              });
+                            },
+                            backgroundColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE),
+                            selectedColor: goldAccent,
+                            checkmarkColor: isDark ? Colors.black : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(
+                                color: isSelected ? goldAccent : goldAccent.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildFilterLabel('Start Date'),
+                          GestureDetector(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _filterStartDate ?? DateTime.now(),
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2030),
+                                builder: (ctx, child) => _buildDatePickerTheme(ctx, child!),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _filterStartDate = picked;
+                                });
+                              }
+                            },
+                            child: _buildFilterDateDisplay(
+                              _filterStartDate != null 
+                                  ? '${_filterStartDate!.day}/${_filterStartDate!.month}/${_filterStartDate!.year}'
+                                  : 'Select Start Date',
+                              isDark,
+                              goldAccent,
+                              textThemeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildFilterLabel('End Date'),
+                          GestureDetector(
+                            onTap: () async {
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: _filterEndDate ?? DateTime.now(),
+                                firstDate: _filterStartDate ?? DateTime(2020),
+                                lastDate: DateTime(2030),
+                                builder: (ctx, child) => _buildDatePickerTheme(ctx, child!),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _filterEndDate = picked;
+                                });
+                              }
+                            },
+                            child: _buildFilterDateDisplay(
+                              _filterEndDate != null 
+                                  ? '${_filterEndDate!.day}/${_filterEndDate!.month}/${_filterEndDate!.year}'
+                                  : 'Select End Date',
+                              isDark,
+                              goldAccent,
+                              textThemeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (_filterStartDate != null || _filterEndDate != null || _filterSelectedSubcategories.isNotEmpty || _filterDestinationQuery.isNotEmpty || _filterCategory != 'Leave') ...[
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: goldAccent,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _filterCategory = 'Leave';
+                          _filterSelectedSubcategories.clear();
+                          _filterStartDate = null;
+                          _filterEndDate = null;
+                          _filterDestinationController.clear();
+                          _filterDestinationQuery = '';
+                        });
+                      },
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text('Reset Filters', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'FILTERED RESULTS',
+                style: TextStyle(
+                  color: silverText,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              Text(
+                '${filteredPersonnel.length} PERSONNEL FOUND',
+                style: TextStyle(
+                  color: valueGreenColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  fontFamily: 'serif',
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Expanded(
+          child: filteredPersonnel.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.filter_list_off_rounded, size: 48, color: silverText.withOpacity(0.3)),
+                      const SizedBox(height: 10),
+                      Text(
+                        'No personnel matches current filters',
+                        style: TextStyle(color: silverText.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  itemCount: filteredPersonnel.length,
+                  itemBuilder: (context, index) {
+                    final person = filteredPersonnel[index];
+                    final armyNo = person['armyNo'] ?? '';
+                    final status = manager.getStatus(armyNo);
+                    final rank = person['rank'] ?? '';
+                    final name = person['name'] ?? '';
+                    final isLeave = status.category == 'Leave';
+                    
+                    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => PersonnelProfileScreen(person: person)),
+        );
+      },
+      child: Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      color: isDark ? const Color(0xFF0C5A32).withOpacity(0.08) : Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isDark ? goldAccent.withOpacity(0.2) : const Color(0xFF0C5A32).withOpacity(0.12),
+                          width: 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    '$rank $name',
+                                    style: TextStyle(
+                                      color: textThemeColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isLeave 
+                                        ? const Color(0xFFD32F2F).withOpacity(0.15)
+                                        : const Color(0xFF388E3C).withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    status.displayPath,
+                                    style: TextStyle(
+                                      color: isLeave ? Colors.redAccent : Colors.greenAccent,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.calendar_month_rounded, color: goldAccent, size: 14),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '${status.startDate.day}/${status.startDate.month}/${status.startDate.year}' +
+                                          (status.endDate != null 
+                                              ? ' to ${status.endDate!.day}/${status.endDate!.month}/${status.endDate!.year}'
+                                              : ' (Infinite)'),
+                                      style: TextStyle(color: silverText, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                                if (status.destination != null && status.destination!.isNotEmpty)
+                                  Row(
+                                    children: [
+                                      Icon(Icons.location_on_rounded, color: goldAccent, size: 14),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        status.destination!,
+                                        style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    );
+                  },
+                ),
+        ),
+      ],
     );
   }
 
@@ -5352,7 +6013,8 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       final pdfBytes = await pdf.save();
       
-      await saveAndDownloadFile(
+      // Save the PDF and get the file path (or URL on web)
+      final String pdfPath = await saveAndDownloadFile(
         filename: 'personnel_history_report.pdf',
         bytes: pdfBytes,
         mimeType: 'application/pdf',
@@ -5360,6 +6022,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       if (!mounted) return;
       Navigator.of(context).pop(); // Close loading
+
+      // Show a dialog with the PDF path and allow opening it
+      _showPdfPathDialog(context, pdfPath);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -5384,6 +6049,59 @@ class _DashboardScreenState extends State<DashboardScreen>
         );
       }
     }
+  }
+  void _showPdfPathDialog(BuildContext context, String path) {
+    if (kIsWeb) return; // On web, download is triggered automatically
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.picture_as_pdf, color: Colors.redAccent),
+            SizedBox(width: 8),
+            Text('PDF Saved'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('PDF has been saved to:'),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                path,
+                style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+          ElevatedButton.icon(
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Open'),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final result = await OpenFile.open(path);
+              if (mounted && result.type != ResultType.done) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Could not open file: ${result.message}')),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   void _showDownloadHistoryOptionsSheet(
@@ -5759,7 +6477,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                     ),
                     subtitle: Text(
-                      'Download Excel or PDF report with all personnel history',
+                      'Download PDF report with all personnel history',
                       style: TextStyle(color: silverText, fontSize: 11),
                     ),
                     trailing: Icon(
@@ -5838,7 +6556,7 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  void _showPersonFormDialog(
+  Future<void> _showPersonFormDialog(
     BuildContext context, {
     Map<String, String>? personToEdit,
     required bool isDark,
@@ -5846,8 +6564,9 @@ class _DashboardScreenState extends State<DashboardScreen>
     required Color silverText,
     required Color goldAccent,
     required Color valueGreenColor,
-  }) {
+  }) async {
     final manager = PersonnelDataManager();
+    final mockData = MockDataManager();
 
     final armyNoController = TextEditingController(
       text: personToEdit?['armyNo'] ?? '',
@@ -5871,62 +6590,28 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
     String fightingSelection = isFighting ? 'Fighting' : 'Non Fighting';
 
-    // Build lists dynamically to handle any custom values safely
+    // Load dynamic trades from MockDataManager (same source as Manage App Attributes)
+    final List<String> rawTrades = await mockData.getTrades();
+    final List<String> trades = rawTrades
+        .where((t) => t.toLowerCase() != 'all')
+        .toList();
+
     String tradeSelection =
-        personToEdit?['trade'] ?? personToEdit?['category'] ?? 'Gnr';
-    final List<String> trades = [
-      'Gnr',
-      'TA',
-      'OCU',
-      'DMT',
-      'DSV',
-      'Svy',
-      'Civ',
-      'NCB',
-      'SW',
-      'Clk',
-      'Ck',
-      'Engr',
-      'LAD',
-      'N/A',
-    ];
-    if (!trades.contains(tradeSelection)) {
-      trades.add(tradeSelection);
+        personToEdit?['trade'] ?? personToEdit?['category'] ?? '';
+    if (trades.isNotEmpty && !trades.contains(tradeSelection)) {
+      tradeSelection = trades.first;
     }
 
-    String rankSelection = personToEdit?['rank'] ?? 'Gnr';
-    final List<String> ranks = [
-      'Lt Col',
-      'Maj',
-      'Capt',
-      'Lt',
-      '2/Lt',
-      'SM',
-      'Sub',
-      'N/Sub',
-      'BQMH',
-      'RQMH',
-      'RHM Hav',
-      'BHM Hav',
-      'Hav',
-      'Lhav',
-      'Nk',
-      'Lnk',
-      'Gnr',
-      'Clk',
-      'TA',
-      'OCU',
-      'DMT',
-      'DSV',
-      'Svy',
-      'Civ',
-      'NCB',
-      'SW',
-      'Ck',
-      'Engr',
-    ];
-    if (!ranks.contains(rankSelection)) {
-      ranks.add(rankSelection);
+    // Load dynamic ranks from MockDataManager — exclude 'All' and category headers (items starting with spaces are sub-ranks; show trimmed)
+    final List<String> rawRanks = await mockData.getRanks();
+    final List<String> ranks = rawRanks
+        .where((r) => r.toLowerCase() != 'all' && r.startsWith(' '))
+        .map((r) => r.trim())
+        .toList();
+
+    String rankSelection = (personToEdit?['rank'] ?? '').trim();
+    if (ranks.isNotEmpty && !ranks.contains(rankSelection)) {
+      rankSelection = ranks.first;
     }
 
     String clSelection = personToEdit?['cl'] ?? 'Pb';
@@ -6842,6 +7527,15 @@ class _DashboardScreenState extends State<DashboardScreen>
           cl.contains(_rollSearchQuery) ||
           remarks.contains(_rollSearchQuery);
     }).toList();
+
+    filteredList.sort((a, b) {
+      final btyA = _getBattery(a);
+      final btyB = _getBattery(b);
+      if (btyA == btyB) return 0;
+      if (btyA == 'P Bty') return -1;
+      if (btyB == 'P Bty') return 1;
+      return btyA.compareTo(btyB);
+    });
 
     final List<String> divisions = [
       'All',
@@ -10270,8 +10964,10 @@ class PersonnelIdCardScreen extends StatelessWidget {
     final armyNo = person['armyNo'] ?? '';
     final classGroup = person['cl'] ?? 'N/A';
 
-    return Theme(
-      data: isDark ? ThemeData.dark() : ThemeData.light(),
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Theme(
+          data: isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
         backgroundColor: isDark
             ? const Color(0xFF03140A)
@@ -10622,6 +11318,26 @@ class PersonnelIdCardScreen extends StatelessWidget {
                           .getStatus(armyNo)
                           .displayPath,
                       valueColor: goldAccent,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditAssignmentScreen(
+                              person: person,
+                              isDark: isDark,
+                              textThemeColor: textThemeColor,
+                              silverText: silverText,
+                              goldAccent: goldAccent,
+                              valueGreenColor: valueGreenColor,
+                              onSaved: () {
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                        ).then((_) {
+                          setState(() {});
+                        });
+                      },
                     ),
                     _buildInfoDetailRow(
                       icon: Icons.calendar_month_rounded,
@@ -10718,6 +11434,8 @@ class PersonnelIdCardScreen extends StatelessWidget {
         ),
       ),
     );
+      },
+    );
   }
 
   Widget _buildCardShortField(String label, String value, Color goldAccent) {
@@ -10752,8 +11470,9 @@ class PersonnelIdCardScreen extends StatelessWidget {
     required String value,
     Color? valueColor,
     bool isItalic = false,
+    VoidCallback? onTap,
   }) {
-    return Padding(
+    Widget content = Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -10789,6 +11508,13 @@ class PersonnelIdCardScreen extends StatelessWidget {
         ],
       ),
     );
+    if (onTap != null) {
+      return InkWell(
+        onTap: onTap,
+        child: content,
+      );
+    }
+    return content;
   }
 
   Color _getHistoryDotColor(PersonStatus record) {

@@ -6,6 +6,7 @@ class PersonStatus {
   String? subSubcategory;
   final DateTime startDate;
   final DateTime? endDate;
+  String? destination;
 
   PersonStatus({
     required this.category,
@@ -13,6 +14,7 @@ class PersonStatus {
     this.subSubcategory,
     required this.startDate,
     this.endDate,
+    this.destination,
   });
 
   Map<String, dynamic> toJson() => {
@@ -21,6 +23,7 @@ class PersonStatus {
         'subSubcategory': subSubcategory,
         'startDate': startDate.toIso8601String(),
         'endDate': endDate?.toIso8601String(),
+        'destination': destination,
       };
 
   factory PersonStatus.fromJson(Map<String, dynamic> json) => PersonStatus(
@@ -31,6 +34,7 @@ class PersonStatus {
         endDate: json['endDate'] != null
             ? DateTime.parse(json['endDate'] as String)
             : null,
+        destination: json['destination'] as String?,
       );
 
   String get displayPath {

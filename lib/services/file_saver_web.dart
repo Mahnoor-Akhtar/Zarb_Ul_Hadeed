@@ -2,7 +2,7 @@
 import 'dart:html' as html;
 import 'dart:typed_data';
 
-Future<void> saveAndDownloadFile({
+Future<String> saveAndDownloadFile({
   required String filename,
   required Uint8List bytes,
   required String mimeType,
@@ -22,5 +22,8 @@ Future<void> saveAndDownloadFile({
 
   // Small delay before revoking so the browser can start the download
   await Future.delayed(const Duration(milliseconds: 200));
+  // Return the URL before revoking so caller can use it if needed
+  final resultUrl = url;
   html.Url.revokeObjectUrl(url);
+  return resultUrl;
 }
