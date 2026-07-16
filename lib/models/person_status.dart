@@ -43,4 +43,17 @@ class PersonStatus {
     if (subSubcategory != null) parts.add(subSubcategory!);
     return parts.join(' -> ');
   }
+
+  /// Matches a location/destination search query against assignment path and destination.
+  bool matchesLocationQuery(String query) {
+    if (query.isEmpty) return true;
+
+    final normalizedQuery = query.toLowerCase();
+    final searchableText = [
+      if (destination != null && destination!.isNotEmpty) destination!,
+      displayPath.replaceAll(' -> ', ' '),
+    ].join(' ').toLowerCase();
+
+    return searchableText.contains(normalizedQuery);
+  }
 }

@@ -1631,8 +1631,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
 
       if (_filterDestinationQuery.isNotEmpty) {
-        final dest = (status.destination ?? '').toLowerCase();
-        if (!dest.contains(_filterDestinationQuery)) {
+        if (!status.matchesLocationQuery(_filterDestinationQuery)) {
           return false;
         }
       }

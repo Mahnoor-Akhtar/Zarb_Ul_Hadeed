@@ -210,26 +210,30 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const SizedBox(height: 30),
 
                             // "ZARB-UL-HADEED" Gold Title
-                            ShaderMask(
-                              shaderCallback: (bounds) => const LinearGradient(
-                                colors: [
-                                  Color(0xFFFFF2C2),
-                                  Color(0xFFD4AF37),
-                                  Color(0xFF8A640F),
-                                  Color(0xFFFFF2C2),
-                                ],
-                                stops: [0.0, 0.35, 0.75, 1.0],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ).createShader(bounds),
-                              child: const Text(
-                                'ZARB-UL-HADEED',
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
-                                  letterSpacing: 2.0,
-                                  height: 1.0,
+                            SizedBox(
+                              width: double.infinity,
+                              child: ShaderMask(
+                                shaderCallback: (bounds) => const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFF2C2),
+                                    Color(0xFFD4AF37),
+                                    Color(0xFF8A640F),
+                                    Color(0xFFFFF2C2),
+                                  ],
+                                  stops: [0.0, 0.35, 0.75, 1.0],
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                ).createShader(bounds),
+                                child: const Text(
+                                  'ZARB-UL-HADEED',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 36,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 2.0,
+                                    height: 1.0,
+                                  ),
                                 ),
                               ),
                             ),
