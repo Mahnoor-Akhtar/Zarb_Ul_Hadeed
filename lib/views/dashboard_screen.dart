@@ -5427,8 +5427,13 @@ class _DashboardScreenState extends State<DashboardScreen>
           children: [
             CircleAvatar(
               radius: 28,
-              backgroundImage: const AssetImage(
-                'assets/images/profile_avatar.jpg',
+              backgroundColor: goldAccent.withValues(alpha: 0.15),
+              child: ClipOval(
+                child: SizedBox(
+                  width: 56,
+                  height: 56,
+                  child: _buildAvatarImage(person['avatar'] ?? ''),
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -8085,11 +8090,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                                           ),
                                           width: 1.2,
                                         ),
-                                        image: const DecorationImage(
-                                          image: AssetImage(
-                                            'assets/images/profile_avatar.jpg',
-                                          ),
-                                          fit: BoxFit.cover,
+                                      ),
+                                      child: ClipOval(
+                                        child: SizedBox(
+                                          width: 44,
+                                          height: 44,
+                                          child: _buildAvatarImage(person['avatar'] ?? ''),
                                         ),
                                       ),
                                     ),

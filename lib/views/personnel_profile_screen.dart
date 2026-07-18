@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import '../services/personnel_data_manager.dart';
 
 class PersonnelProfileScreen extends StatelessWidget {
@@ -34,7 +35,14 @@ class PersonnelProfileScreen extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 48,
-                backgroundImage: const AssetImage('assets/images/profile_avatar.jpg'),
+                backgroundColor: goldAccent.withValues(alpha: 0.15),
+                child: ClipOval(
+                  child: SizedBox(
+                    width: 96,
+                    height: 96,
+                    child: _buildAvatarImage(person['avatar'] ?? ''),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -99,6 +107,60 @@ class PersonnelProfileScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatarImage(String avatar) {
+    if (avatar.isEmpty) {
+      return Image.asset(
+        'assets/images/profile_avatar.jpg',
+        key: const ValueKey('profile_default'),
+        fit: BoxFit.cover,
+      );
+    }
+    if (avatar.startsWith('data:image')) {
+      try {
+        final cleanBase64 = avatar.split(',').last;
+        final bytes = base64Decode(cleanBase64);
+        return Image.memory(
+          bytes,
+          key: ValueKey(avatar),
+          fit: BoxFit.cover,
+        );
+      } catch (e) {
+        debugPrint('Error decoding base64 image: $e');
+        return Image.asset(
+          'assets/images/profile_avatar.jpg',
+          key: const ValueKey('profile_error'),
+          fit: BoxFit.cover,
+        );
+      }
+    }
+    if (avatar.startsWith('http')) {
+      return Image.network(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/profile_avatar.jpg',
+            key: const ValueKey('profile_net_error'),
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    }
+    if (avatar.startsWith('assets/')) {
+      return Image.asset(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      'assets/images/profile_avatar.jpg',
+      key: ValueKey(avatar),
+      fit: BoxFit.cover,
     );
   }
 }
