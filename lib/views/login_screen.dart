@@ -224,15 +224,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                 ).createShader(bounds),
-                                child: const Text(
-                                  'ZARB-UL-HADEED',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 36,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    letterSpacing: 2.0,
-                                    height: 1.0,
+                                child: const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'ZARB-UL-HADEED',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 2.0,
+                                      height: 1.0,
+                                    ),
                                   ),
                                 ),
                               ),

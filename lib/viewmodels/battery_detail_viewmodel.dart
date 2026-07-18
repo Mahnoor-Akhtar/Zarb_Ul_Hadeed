@@ -227,6 +227,9 @@ class BatteryDetailViewModel extends ChangeNotifier {
   }
 
   String getBattery(Map<String, String> person) {
+    if (person['battery'] != null && person['battery']!.isNotEmpty) {
+      return person['battery']!;
+    }
     final armyNo = person['armyNo'] ?? '';
     if (armyNo == 'NYA' || armyNo.isEmpty) return 'HQ Bty';
     final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');

@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:ui' show ImageFilter;
 import 'package:csv/csv.dart' as csv;
 import 'package:flutter/material.dart';
@@ -213,7 +216,15 @@ class _DashboardScreenState extends State<DashboardScreen>
         })
         .toList();
 
-    return Scaffold(
+    return PopScope(
+      canPop: _selectedTabIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        setState(() {
+          _selectedTabIndex = 0;
+        });
+      },
+      child: Scaffold(
       backgroundColor: bgColor,
       extendBodyBehindAppBar:
           true, // Enables content to scroll behind glass app bar
@@ -745,7 +756,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (_) => PersonnelProfileScreen(person: person),
+                                            builder: (context) => PersonnelIdCardScreen(
+                                              person: person,
+                                              isDark: isDark,
+                                              textThemeColor: textThemeColor,
+                                              silverText: silverText,
+                                              goldAccent: goldAccent,
+                                              valueGreenColor: valueGreenColor,
+                                            ),
                                           ),
                                         );
                                       },
@@ -1531,6 +1549,7 @@ class _DashboardScreenState extends State<DashboardScreen>
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -1631,7 +1650,10 @@ class _DashboardScreenState extends State<DashboardScreen>
       }
 
       if (_filterDestinationQuery.isNotEmpty) {
-        if (!status.matchesLocationQuery(_filterDestinationQuery)) {
+        final homeCity = _getCity(person).toLowerCase();
+        final matchesHomeCity = homeCity.contains(_filterDestinationQuery);
+        final matchesStatus = status.matchesLocationQuery(_filterDestinationQuery);
+        if (!matchesHomeCity && !matchesStatus) {
           return false;
         }
       }
@@ -1673,7 +1695,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                 ),
                 const Divider(height: 20, thickness: 0.5),
-                Row(
+                 Row(
                   children: [
                     Expanded(
                       flex: 4,
@@ -1703,6 +1725,10 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     setState(() {
                                       _filterCategory = val;
                                       _filterSelectedSubcategories.clear();
+                                      if (_filterCategory != 'Leave') {
+                                        _filterDestinationController.clear();
+                                        _filterDestinationQuery = '';
+                                      }
                                     });
                                   }
                                 },
@@ -1718,36 +1744,38 @@ class _DashboardScreenState extends State<DashboardScreen>
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 5,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildFilterLabel('Destination / Place'),
-                          TextFormField(
-                            controller: _filterDestinationController,
-                            style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
-                            decoration: InputDecoration(
-                              hintText: 'Search location...',
-                              hintStyle: TextStyle(color: silverText.withOpacity(0.5), fontSize: 12),
-                              prefixIcon: Icon(Icons.location_on_rounded, color: goldAccent, size: 16),
-                              filled: true,
-                              fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withOpacity(0.5),
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: goldAccent.withOpacity(0.3), width: 1),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(color: goldAccent, width: 1.2),
+                    if (_filterCategory == 'Leave') ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildFilterLabel('Destination / Place'),
+                            TextFormField(
+                              controller: _filterDestinationController,
+                              style: TextStyle(color: textThemeColor, fontSize: 13, fontWeight: FontWeight.bold),
+                              decoration: InputDecoration(
+                                hintText: 'Search location...',
+                                hintStyle: TextStyle(color: silverText.withOpacity(0.5), fontSize: 12),
+                                prefixIcon: Icon(Icons.location_on_rounded, color: goldAccent, size: 16),
+                                filled: true,
+                                fillColor: isDark ? const Color(0xFF03140A) : const Color(0xFFE8F5EE).withOpacity(0.5),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: goldAccent.withOpacity(0.3), width: 1),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: goldAccent, width: 1.2),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
                 if (currentSubcategories.isNotEmpty) ...[
@@ -1951,12 +1979,21 @@ class _DashboardScreenState extends State<DashboardScreen>
                     final isLeave = status.category == 'Leave';
                     
                     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => PersonnelProfileScreen(person: person)),
-        );
-      },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PersonnelIdCardScreen(
+                              person: person,
+                              isDark: isDark,
+                              textThemeColor: textThemeColor,
+                              silverText: silverText,
+                              goldAccent: goldAccent,
+                              valueGreenColor: valueGreenColor,
+                            ),
+                          ),
+                        );
+                      },
       child: Card(
                       margin: const EdgeInsets.only(bottom: 10),
                       color: isDark ? const Color(0xFF0C5A32).withOpacity(0.08) : Colors.white,
@@ -2022,13 +2059,15 @@ class _DashboardScreenState extends State<DashboardScreen>
                                     ),
                                   ],
                                 ),
-                                if (status.destination != null && status.destination!.isNotEmpty)
+                                if (isLeave)
                                   Row(
                                     children: [
                                       Icon(Icons.location_on_rounded, color: goldAccent, size: 14),
                                       const SizedBox(width: 4),
                                       Text(
-                                        status.destination!,
+                                        (status.destination != null && status.destination!.isNotEmpty)
+                                            ? status.destination!
+                                            : _getCity(person),
                                         style: TextStyle(color: textThemeColor, fontSize: 12, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -5557,8 +5596,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       final csvData = const csv.CsvEncoder().convert(rows);
       final csvBytes = Uint8List.fromList(utf8.encode(csvData));
       
+      final now = DateTime.now();
+      final dateStr = '${now.day.toString().padLeft(2, '0')}_${now.month.toString().padLeft(2, '0')}_${now.year}';
+
       await saveAndDownloadFile(
-        filename: 'personnel_history_export.csv',
+        filename: 'personnel_history_export_$dateStr.csv',
         bytes: csvBytes,
         mimeType: 'text/csv',
       );
@@ -6012,9 +6054,12 @@ class _DashboardScreenState extends State<DashboardScreen>
 
       final pdfBytes = await pdf.save();
       
+      final pdfNow = DateTime.now();
+      final pdfDateStr = '${pdfNow.day.toString().padLeft(2, '0')}_${pdfNow.month.toString().padLeft(2, '0')}_${pdfNow.year}';
+
       // Save the PDF and get the file path (or URL on web)
       final String pdfPath = await saveAndDownloadFile(
-        filename: 'personnel_history_report.pdf',
+        filename: 'personnel_history_report_$pdfDateStr.pdf',
         bytes: pdfBytes,
         mimeType: 'application/pdf',
       );
@@ -6051,31 +6096,79 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
   void _showPdfPathDialog(BuildContext context, String path) {
     if (kIsWeb) return; // On web, download is triggered automatically
+    
+    final isDark = widget.isDarkMode;
+    final textThemeColor = isDark ? Colors.white : const Color(0xFF042011);
+    final silverText = isDark ? const Color(0xFFE5E5E5) : const Color(0xFF4A5D52);
+    final goldAccent = isDark ? const Color(0xFFCD9B2D) : const Color(0xFF9E7715);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Row(
+        backgroundColor: isDark ? const Color(0xFF051C0F) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isDark
+                ? goldAccent.withValues(alpha: 0.3)
+                : const Color(0xFF0C5A32).withValues(alpha: 0.15),
+            width: 1.0,
+          ),
+        ),
+        title: Row(
           children: [
-            Icon(Icons.picture_as_pdf, color: Colors.redAccent),
-            SizedBox(width: 8),
-            Text('PDF Saved'),
+            const Icon(Icons.picture_as_pdf_rounded, color: Colors.redAccent, size: 24),
+            const SizedBox(width: 10),
+            Text(
+              'PDF Saved Successfully',
+              style: TextStyle(
+                color: textThemeColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('PDF has been saved to:'),
-            const SizedBox(height: 8),
+            Text(
+              'Your PDF report has been saved to:',
+              style: TextStyle(color: silverText, fontSize: 13),
+            ),
+            const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.all(10),
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(8),
+                color: isDark
+                    ? const Color(0xFF0C5A32).withValues(alpha: 0.08)
+                    : const Color(0xFF0C5A32).withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isDark
+                      ? goldAccent.withValues(alpha: 0.15)
+                      : const Color(0xFF0C5A32).withValues(alpha: 0.08),
+                ),
               ),
               child: SelectableText(
                 path,
-                style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                style: TextStyle(
+                  color: textThemeColor,
+                  fontSize: 11.5,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Tip: Tap the button below to view the PDF directly.',
+              style: TextStyle(
+                color: goldAccent,
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
               ),
             ),
           ],
@@ -6083,17 +6176,40 @@ class _DashboardScreenState extends State<DashboardScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
+            child: Text(
+              'Close',
+              style: TextStyle(
+                color: isDark ? silverText : Colors.grey[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           ElevatedButton.icon(
-            icon: const Icon(Icons.open_in_new, size: 16),
-            label: const Text('Open'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0C5A32),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              elevation: 0,
+            ),
+            icon: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+            label: const Text(
+              'View PDF',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             onPressed: () async {
               Navigator.of(ctx).pop();
               final result = await OpenFile.open(path);
               if (mounted && result.type != ResultType.done) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Could not open file: ${result.message}')),
+                  SnackBar(
+                    backgroundColor: Colors.redAccent,
+                    content: Text(
+                      'Could not open file: ${result.message}',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
                 );
               }
             },
@@ -6583,6 +6699,8 @@ class _DashboardScreenState extends State<DashboardScreen>
       text: personToEdit?['remarks'] ?? '',
     );
 
+    String avatarSelection = personToEdit?['avatar'] ?? '';
+
     bool isFighting = true;
     if (personToEdit != null) {
       isFighting = _isFighting(personToEdit);
@@ -6618,6 +6736,8 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (!classes.contains(clSelection)) {
       classes.add(clSelection);
     }
+
+    String batterySelection = personToEdit?['battery'] ?? (personToEdit != null ? _getBattery(personToEdit) : 'HQ Bty');
 
     String categorySelection = personToEdit?['category'] ?? 'Gnrs';
     final List<String> categories = [
@@ -6671,6 +6791,58 @@ class _DashboardScreenState extends State<DashboardScreen>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Profile Picture selection inside Form
+                      Center(
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () async {
+                                final base64 = await _pickImageAsBase64();
+                                if (base64 != null) {
+                                  setDialogState(() {
+                                    avatarSelection = base64;
+                                  });
+                                }
+                              },
+                              child: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 36,
+                                    backgroundColor: goldAccent.withValues(alpha: 0.3),
+                                    child: ClipOval(
+                                      child: _buildAvatarImage(avatarSelection),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: goldAccent,
+                                      child: const Icon(
+                                        Icons.camera_alt_rounded,
+                                        size: 12,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tap to update photo',
+                              style: TextStyle(
+                                color: silverText.withValues(alpha: 0.6),
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Fighting dropdown
                       Text(
                         'FIGHTING / NON FIGHTING *',
@@ -6956,6 +7128,68 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ),
                       const SizedBox(height: 12),
 
+                      // Battery dropdown
+                      Text(
+                        'BATTERY *',
+                        style: TextStyle(
+                          color: silverText,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF03140A)
+                              : const Color(0xFFE8F5EE).withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: goldAccent.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: batterySelection,
+                            dropdownColor: isDark
+                                ? const Color(0xFF0A2214)
+                                : Colors.white,
+                            style: TextStyle(
+                              color: textThemeColor,
+                              fontSize: 12,
+                            ),
+                            isExpanded: true,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'HQ Bty',
+                                child: Text('HQ Bty'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'P Bty',
+                                child: Text('P Bty'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'Q Bty',
+                                child: Text('Q Bty'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'R Bty',
+                                child: Text('R Bty'),
+                              ),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                setDialogState(() {
+                                  batterySelection = val;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
                       _buildFormTextField(
                         'PHONE NUMBER',
                         phoneController,
@@ -7024,12 +7258,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                       'category': categorySelection,
                       'rank': rankSelection,
                       'cl': clSelection,
+                      'battery': batterySelection,
                       'phone': phoneController.text.trim(),
                       'city': cityController.text.trim(),
                       'remarks': remarksController.text.trim(),
                       'isFighting': fightingSelection == 'Fighting'
                           ? 'true'
                           : 'false',
+                      'avatar': avatarSelection,
                     };
 
                     if (personToEdit == null) {
@@ -8282,6 +8518,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   String _getBattery(Map<String, String> person) {
+    if (person['battery'] != null && person['battery']!.isNotEmpty) {
+      return person['battery']!;
+    }
     final armyNo = person['armyNo'] ?? '';
     if (armyNo == 'NYA' || armyNo.isEmpty) {
       return 'HQ Bty';
@@ -8293,6 +8532,25 @@ class _DashboardScreenState extends State<DashboardScreen>
     if (lastDigit == 1 || lastDigit == 5) return 'P Bty';
     if (lastDigit == 2 || lastDigit == 6 || lastDigit == 8) return 'Q Bty';
     return 'R Bty';
+  }
+
+  String _getCity(Map<String, String> person) {
+    final armyNo = person['armyNo'] ?? '';
+    final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
+    final id = int.tryParse(cleanNo) ?? 0;
+    final cities = [
+      'Rawalpindi',
+      'Lahore',
+      'Karachi',
+      'Peshawar',
+      'Quetta',
+      'Multan',
+      'Faisalabad',
+      'Islamabad',
+      'Gujranwala',
+      'Sialkot',
+    ];
+    return cities[id % cities.length];
   }
 
   /// Returns the distinct color for each battery.
@@ -9791,6 +10049,81 @@ class _DashboardScreenState extends State<DashboardScreen>
       ),
     );
   }
+
+  Widget _buildAvatarImage(String avatar) {
+    if (avatar.isEmpty) {
+      return Image.asset(
+        'assets/images/profile_avatar.jpg',
+        key: const ValueKey('default'),
+        fit: BoxFit.cover,
+      );
+    }
+    if (avatar.startsWith('data:image')) {
+      try {
+        final cleanBase64 = avatar.split(',').last;
+        final bytes = base64Decode(cleanBase64);
+        return Image.memory(
+          bytes,
+          key: ValueKey(avatar),
+          fit: BoxFit.cover,
+        );
+      } catch (e) {
+        debugPrint('Error decoding base64 image: $e');
+        return Image.asset(
+          'assets/images/profile_avatar.jpg',
+          key: const ValueKey('error'),
+          fit: BoxFit.cover,
+        );
+      }
+    }
+    if (avatar.startsWith('http')) {
+      return Image.network(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/profile_avatar.jpg',
+            key: const ValueKey('net_error'),
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    }
+    if (avatar.startsWith('assets/')) {
+      return Image.asset(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      'assets/images/profile_avatar.jpg',
+      key: ValueKey(avatar),
+      fit: BoxFit.cover,
+    );
+  }
+
+  Future<String?> _pickImageAsBase64() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 50,
+        maxWidth: 200,
+        maxHeight: 200,
+      );
+      if (image == null) return null;
+
+      final bytes = await image.readAsBytes();
+      final String base64String = base64Encode(bytes);
+      final String mimeType = image.mimeType ?? 'image/jpeg';
+      return 'data:$mimeType;base64,$base64String';
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      return null;
+    }
+  }
 }
 
 class CategoryPersonnelListScreen extends StatefulWidget {
@@ -10026,6 +10359,9 @@ class _CategoryPersonnelListScreenState
   }
 
   String _getBattery(Map<String, String> person) {
+    if (person['battery'] != null && person['battery']!.isNotEmpty) {
+      return person['battery']!;
+    }
     final armyNo = person['armyNo'] ?? '';
     final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
     if (cleanNo.isEmpty) return 'HQ Bty';
@@ -10885,7 +11221,27 @@ class PersonnelIdCardScreen extends StatelessWidget {
     return 'Gnr';
   }
 
+  String _getBattery(Map<String, String> person) {
+    if (person['battery'] != null && person['battery']!.isNotEmpty) {
+      return person['battery']!;
+    }
+    final armyNo = person['armyNo'] ?? '';
+    if (armyNo == 'NYA' || armyNo.isEmpty) {
+      return 'HQ Bty';
+    }
+    final cleanNo = armyNo.replaceAll(RegExp(r'\D'), '');
+    if (cleanNo.isEmpty) return 'HQ Bty';
+    final lastDigit = int.tryParse(cleanNo[cleanNo.length - 1]) ?? 0;
+    if (lastDigit == 0 || lastDigit == 4) return 'HQ Bty';
+    if (lastDigit == 1 || lastDigit == 5) return 'P Bty';
+    if (lastDigit == 2 || lastDigit == 6 || lastDigit == 8) return 'Q Bty';
+    return 'R Bty';
+  }
+
   String _getPhoneNumber(Map<String, String> person) {
+    if (person['phone'] != null && person['phone']!.isNotEmpty) {
+      return person['phone']!;
+    }
     final armyNo = person['armyNo'] ?? '';
     final digits = armyNo.replaceAll(RegExp(r'\D'), '');
     final padded = digits.padRight(7, '0');
@@ -10953,18 +11309,22 @@ class PersonnelIdCardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFighting = _isFighting(person);
-    final trade = _getTrade(person);
-    final phone = _getPhoneNumber(person);
-    final city = _getCity(person);
-    final remarks = person['remarks'] ?? '';
-    final name = person['name'] ?? '';
-    final rank = person['rank'] ?? '';
-    final armyNo = person['armyNo'] ?? '';
-    final classGroup = person['cl'] ?? 'N/A';
+    Map<String, String>? localPersonData;
 
     return StatefulBuilder(
-      builder: (context, setState) {
+      builder: (context, setScreenState) {
+        localPersonData ??= Map<String, String>.from(person);
+
+        final isFighting = _isFighting(localPersonData!);
+        final trade = _getTrade(localPersonData!);
+        final phone = _getPhoneNumber(localPersonData!);
+        final city = _getCity(localPersonData!);
+        final battery = _getBattery(localPersonData!);
+        final remarks = localPersonData!['remarks'] ?? '';
+        final name = localPersonData!['name'] ?? '';
+        final rank = localPersonData!['rank'] ?? '';
+        final armyNo = localPersonData!['armyNo'] ?? '';
+        final classGroup = localPersonData!['cl'] ?? 'N/A';
         return Theme(
           data: isDark ? ThemeData.dark() : ThemeData.light(),
       child: Scaffold(
@@ -11108,23 +11468,62 @@ class PersonnelIdCardScreen extends StatelessWidget {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Left Slot: Profile Image (Regiment Crest)
-                                Container(
-                                  width: 80,
-                                  height: 95,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: goldAccent.withValues(alpha: 0.5),
-                                      width: 1.2,
-                                    ),
-                                    image: const DecorationImage(
-                                      image: AssetImage(
-                                        'assets/images/profile_avatar.jpg',
+                                // Left Slot: Circular Profile Image with Edit
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 90,
+                                      height: 90,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: goldAccent.withValues(alpha: 0.8),
+                                          width: 2,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.3),
+                                            blurRadius: 6,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
-                                      fit: BoxFit.cover,
+                                      child: ClipOval(
+                                        child: _buildAvatarImage(localPersonData!),
+                                      ),
                                     ),
-                                  ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final picker = ImagePicker();
+                                          final XFile? image = await picker.pickImage(
+                                            source: ImageSource.gallery,
+                                            imageQuality: 50,
+                                            maxWidth: 200,
+                                            maxHeight: 200,
+                                          );
+                                          if (image != null) {
+                                            final bytes = await image.readAsBytes();
+                                            final String base64String = base64Encode(bytes);
+                                            final String mimeType = image.mimeType ?? 'image/jpeg';
+                                            final base64 = 'data:$mimeType;base64,$base64String';
+                                            _updatePersonAvatar(localPersonData!, base64, localPersonData!, setScreenState);
+                                          }
+                                        },
+                                        child: CircleAvatar(
+                                          radius: 14,
+                                          backgroundColor: goldAccent,
+                                          child: const Icon(
+                                            Icons.camera_alt_rounded,
+                                            size: 14,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(width: 14),
 
@@ -11305,9 +11704,7 @@ class PersonnelIdCardScreen extends StatelessWidget {
                     _buildInfoDetailRow(
                       icon: Icons.shield_outlined,
                       label: 'Combat Classification',
-                      value: isFighting
-                          ? 'Fighting Division'
-                          : 'Support / Non-Fighting Division',
+                      value: isFighting ? 'Fighting' : 'Non Fighting',
                       valueColor: isFighting ? valueGreenColor : Colors.orange,
                     ),
                     _buildInfoDetailRow(
@@ -11329,12 +11726,12 @@ class PersonnelIdCardScreen extends StatelessWidget {
                               goldAccent: goldAccent,
                               valueGreenColor: valueGreenColor,
                               onSaved: () {
-                                setState(() {});
+                                setScreenState(() {});
                               },
                             ),
                           ),
                         ).then((_) {
-                          setState(() {});
+                          setScreenState(() {});
                         });
                       },
                     ),
@@ -11376,9 +11773,24 @@ class PersonnelIdCardScreen extends StatelessWidget {
                       value: classGroup,
                     ),
                     _buildInfoDetailRow(
+                      icon: Icons.shield_rounded,
+                      label: 'Sub Unit / Battery',
+                      value: battery,
+                    ),
+                    _buildInfoDetailRow(
                       icon: Icons.phone_rounded,
                       label: 'Phone Number',
                       value: phone,
+                      onTap: () {
+                        _showPhoneOptionsSheet(
+                          context,
+                          phone,
+                          isDark,
+                          textThemeColor,
+                          silverText,
+                          goldAccent,
+                        );
+                      },
                     ),
                     _buildInfoDetailRow(
                       icon: Icons.location_city_rounded,
@@ -11665,6 +12077,179 @@ class PersonnelIdCardScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _showPhoneOptionsSheet(
+    BuildContext context,
+    String phone,
+    bool isDark,
+    Color textThemeColor,
+    Color silverText,
+    Color goldAccent,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF051C0F) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: silverText.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                phone,
+                style: TextStyle(
+                  color: textThemeColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: Icon(Icons.call_rounded, color: goldAccent),
+                title: Text(
+                  'Call / Open Dial Pad',
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  final cleanPhone = phone.replaceAll(RegExp(r'\s+'), '');
+                  final Uri telLaunchUri = Uri(
+                    scheme: 'tel',
+                    path: cleanPhone,
+                  );
+                  if (await canLaunchUrl(telLaunchUri)) {
+                    await launchUrl(telLaunchUri);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Could not launch dial pad'),
+                      ),
+                    );
+                  }
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.copy_rounded, color: goldAccent),
+                title: Text(
+                  'Copy Phone Number',
+                  style: TextStyle(
+                    color: textThemeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Clipboard.setData(ClipboardData(text: phone));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: const Color(0xFF0C5A32),
+                      content: Text(
+                        'Copied $phone to clipboard',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAvatarImage(Map<String, String> person) {
+    final avatar = person['avatar'] ?? '';
+    if (avatar.isEmpty) {
+      return Image.asset(
+        'assets/images/profile_avatar.jpg',
+        key: const ValueKey('default_person'),
+        fit: BoxFit.cover,
+      );
+    }
+    if (avatar.startsWith('data:image')) {
+      try {
+        final cleanBase64 = avatar.split(',').last;
+        final bytes = base64Decode(cleanBase64);
+        return Image.memory(
+          bytes,
+          key: ValueKey(avatar),
+          fit: BoxFit.cover,
+        );
+      } catch (e) {
+        debugPrint('Error decoding base64 image: $e');
+        return Image.asset(
+          'assets/images/profile_avatar.jpg',
+          key: const ValueKey('error_person'),
+          fit: BoxFit.cover,
+        );
+      }
+    }
+    if (avatar.startsWith('http')) {
+      return Image.network(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'assets/images/profile_avatar.jpg',
+            key: const ValueKey('net_error_person'),
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    }
+    if (avatar.startsWith('assets/')) {
+      return Image.asset(
+        avatar,
+        key: ValueKey(avatar),
+        fit: BoxFit.cover,
+      );
+    }
+    return Image.asset(
+      'assets/images/profile_avatar.jpg',
+      key: ValueKey(avatar),
+      fit: BoxFit.cover,
+    );
+  }
+
+  void _updatePersonAvatar(
+    Map<String, String> person,
+    String avatarUrl,
+    Map<String, String> localPersonData,
+    void Function(void Function()) setScreenState,
+  ) {
+    final armyNo = person['armyNo'] ?? '';
+    if (armyNo.isEmpty) return;
+
+    final manager = PersonnelDataManager();
+    final updatedPerson = Map<String, String>.from(person);
+    updatedPerson['avatar'] = avatarUrl;
+
+    manager.editPerson(armyNo, updatedPerson);
+
+    setScreenState(() {
+      localPersonData['avatar'] = avatarUrl;
+    });
   }
 }
 
