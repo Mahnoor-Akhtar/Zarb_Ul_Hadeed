@@ -5351,6 +5351,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     String displayName = currentUsername.toUpperCase();
     String subDetails = 'System Account';
+    String avatarUrl = '';
 
     if (armyNo != null) {
       final person = nominalRollList.firstWhere(
@@ -5360,6 +5361,7 @@ class _DashboardScreenState extends State<DashboardScreen>
       if (person.isNotEmpty) {
         displayName = '${person['rank']} ${person['name']}';
         subDetails = 'Army No: ${person['armyNo']} • ${person['trade']}';
+        avatarUrl = person['avatar'] ?? '';
       }
     } else {
       if (currentUsername.toLowerCase() == 'superadmin') {
@@ -5432,7 +5434,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 child: SizedBox(
                   width: 56,
                   height: 56,
-                  child: _buildAvatarImage(person['avatar'] ?? ''),
+                  child: _buildAvatarImage(avatarUrl),
                 ),
               ),
             ),
